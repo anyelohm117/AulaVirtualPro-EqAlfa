@@ -1,4 +1,4 @@
-# 🚀 Nombre del Proyecto
+# 🚀 AulaVirtua Pro
 > NexaTech Consulting — Mayo–Agosto 2026
 
 ## 📋 Descripción
