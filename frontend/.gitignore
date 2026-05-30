@@ -14,8 +14,6 @@ dist-ssr
 
 # Editor directories and files
 .vscode/*
-favicon.svg
-icons.svg
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -24,4 +22,3 @@ icons.svg
 *.njsproj
 *.sln
 *.sw?
-assets
