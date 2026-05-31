@@ -74,7 +74,16 @@ export default function LoginPage() {
             <button type="submit" style={styles.btn} disabled={loading}>
               {loading ? "Ingresando..." : "INGRESAR"}
             </button>
-
+            <br />
+            <p style={{ textAlign: "center", fontSize: "12px", color: "#6b7280", marginTop: "12px" }}>
+              ¿No tienes cuenta?{" "}
+              <span
+                style={{ color: "#185FA5", cursor: "pointer", fontWeight: "600" }}
+                onClick={() => navigate("/register")}
+              >
+                Regístrate
+              </span>
+            </p>
             {error && <p style={styles.error}>{error}</p>}
           </form>
         </div>
@@ -91,6 +100,7 @@ const styles = {
     justifyContent: "center",
     backgroundColor: "#f0f4f8",
     fontFamily: "Inter, sans-serif",
+    padding: "2rem 0",
   },
   card: {
     display: "flex",
@@ -99,7 +109,6 @@ const styles = {
     boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
     width: "100%",
     maxWidth: "780px",
-    minHeight: "420px",
     backgroundColor: "#fff",
   },
   left: {
@@ -121,9 +130,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
   },
-  logoIcon: {
-    fontSize: "32px",
-  },
+  logoIcon: { fontSize: "32px" },
   appName: {
     color: "#fff",
     fontSize: "20px",
@@ -145,6 +152,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
+    overflowY: "auto",
   },
   title: {
     fontSize: "18px",
@@ -152,9 +160,7 @@ const styles = {
     color: "#111827",
     marginBottom: "1.5rem",
   },
-  field: {
-    marginBottom: "1rem",
-  },
+  field: { marginBottom: "0.75rem" },
   label: {
     display: "block",
     fontSize: "12px",
@@ -173,14 +179,6 @@ const styles = {
     color: "#111827",
     backgroundColor: "#fff",
   },
-  forgot: {
-    display: "block",
-    textAlign: "right",
-    fontSize: "12px",
-    color: "#185FA5",
-    cursor: "pointer",
-    marginBottom: "1.25rem",
-  },
   btn: {
     width: "100%",
     padding: "10px",
@@ -193,11 +191,23 @@ const styles = {
     cursor: "pointer",
     letterSpacing: "0.5px",
     fontFamily: "Inter, sans-serif",
+    marginTop: "10px",
   },
   error: {
     textAlign: "center",
     fontSize: "12px",
     color: "#DC2626",
-    marginTop: "10px",
+    marginBottom: "8px",
+  },
+  loginLink: {
+    textAlign: "center",
+    fontSize: "12px",
+    color: "#6b7280",
+    marginTop: "12px",
+  },
+  loginLinkBtn: {
+    color: "#185FA5",
+    cursor: "pointer",
+    fontWeight: "600",
   },
 };
