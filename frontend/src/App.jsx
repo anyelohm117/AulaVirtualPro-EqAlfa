@@ -7,11 +7,12 @@ import CoursePage from "./pages/CoursePage";
 import QuizPage from "./pages/QuizPage";
 import ProgressPage from "./pages/ProgressPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import RegisterPage from "./pages/RegisterPage";
 
 function PrivateRoute({ children, soloAdmin }) {
-  const { token, rol } = useAuth();
-  if (!token) return <Navigate to="/login" />;
-  if (soloAdmin && rol !== "admin") return <Navigate to="/catalog" />;
+  //const { token, rol } = useAuth();
+  //if (!token) return <Navigate to="/login" />;
+  //if (soloAdmin && rol !== "admin") return <Navigate to="/catalog" />;
   return children;
 }
 
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/quiz/:id" element={<PrivateRoute><QuizPage /></PrivateRoute>} />
           <Route path="/progress" element={<PrivateRoute><ProgressPage /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute soloAdmin><AdminDashboardPage /></PrivateRoute>} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
