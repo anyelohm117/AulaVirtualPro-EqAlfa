@@ -13,6 +13,7 @@ function PrivateRoute({ children, soloAdmin }) {
   //const { token, rol } = useAuth();
   //if (!token) return <Navigate to="/login" />;
   //if (soloAdmin && rol !== "admin") return <Navigate to="/catalog" />;
+  <Navigate to="/catalog" />
   return children;
 }
 
