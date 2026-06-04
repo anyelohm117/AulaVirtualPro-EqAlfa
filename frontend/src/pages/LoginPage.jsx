@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
-export default function LoginPage() {
+/*export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,6 +25,34 @@ export default function LoginPage() {
       navigate("/catalog");
     } catch (err) {
       setError("Credenciales inválidas");
+    } finally {
+      setLoading(false);
+    }
+  };
+  */
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!email || !password) {
+      setError("Inicie sesión con cualquier correo y contraseña para continuar");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await api.post("/auth/login", { email, password });
+      login(res.data.token, res.data.usuario);
+      navigate("/catalog");
+    } catch (err) {
+      setError("Credenciales inválidas");
+      navigate("/catalog");
     } finally {
       setLoading(false);
     }
