@@ -24,10 +24,20 @@ export default function CatalogPage() {
     <div style={styles.page}>
       <div style={styles.sidebar}>
         <i style={styles.sideIcon}>☰</i>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }}>🏠</span>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }}>📚</span>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }}>📋</span>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }}>🔍</span>
+        <span style={{ ...styles.sideIcon, fontSize: "20px" }}
+        onClick={() => navigate("/courses")}>
+          🏠
+        </span>
+        <span style={{ ...styles.sideIcon, fontSize: "20px" }}
+        onClick={() => navigate("/progress")}>
+          📚
+        </span>
+        <span style={{ ...styles.sideIcon, fontSize: "20px" }} onClick={() => navigate("/assignments")}>
+          📋
+        </span>
+        <span style={{ ...styles.sideIcon, fontSize: "20px" }} onClick={() => navigate("/search")}>
+          🔍
+        </span>
         <div style={{ marginTop: "auto" }}>
           <span
             style={{ ...styles.sideIcon, fontSize: "20px", cursor: "pointer" }}
