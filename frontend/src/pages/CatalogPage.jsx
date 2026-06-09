@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ProgressBar from "../components/ProgressBar";
 
 const cursosEjemplo = [
   { id: 1, titulo: "Introducción a la programación", instructor: "Ana Lopez", progreso: 65 },
@@ -11,8 +12,16 @@ const cursosEjemplo = [
   { id: 6, titulo: "Excel Avanzado", instructor: "Ana Lopez", progreso: 90 },
 ];
 
+const NAV_ITEMS = [
+  { icon: "🏠", label: "Inicio",        path: "/catalog" },
+  { icon: "📚", label: "Mi progreso",   path: "/progress" },
+  { icon: "📋", label: "Tareas",        path: "/assignments" },
+  { icon: "🔍", label: "Buscar",        path: "/search" },
+];
+
 export default function CatalogPage() {
   const [busqueda, setBusqueda] = useState("");
+  const [sidebarAbierto, setSidebarAbierto] = useState(false);
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -22,33 +31,66 @@ export default function CatalogPage() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.sidebar}>
-        <i style={styles.sideIcon}>☰</i>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }}
-        onClick={() => navigate("/courses")}>
-          🏠
-        </span>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }}
-        onClick={() => navigate("/progress")}>
-          📚
-        </span>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }} onClick={() => navigate("/assignments")}>
-          📋
-        </span>
-        <span style={{ ...styles.sideIcon, fontSize: "20px" }} onClick={() => navigate("/search")}>
-          🔍
-        </span>
+      {/* ── Overlay (solo visible cuando sidebar abierto) ── */}
+      {sidebarAbierto && (
+        <div
+          style={styles.overlay}
+          onClick={() => setSidebarAbierto(false)}
+        />
+      )}
+
+      {/* ── Sidebar ── */}
+      <div style={{
+        ...styles.sidebar,
+        width: sidebarAbierto ? "220px" : "56px",
+      }}>
+        {/* Botón hamburguesa */}
+        <button
+          style={styles.hamburger}
+          onClick={() => setSidebarAbierto((v) => !v)}
+          title={sidebarAbierto ? "Cerrar menú" : "Abrir menú"}
+          aria-label={sidebarAbierto ? "Cerrar menú" : "Abrir menú"}
+        >
+          <span style={styles.hLine} />
+          <span style={styles.hLine} />
+          <span style={styles.hLine} />
+        </button>
+
+        {/* Ítems de navegación */}
+        <nav style={styles.nav}>
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.path}
+              style={styles.navItem}
+              onClick={() => { navigate(item.path); setSidebarAbierto(false); }}
+              title={item.label}
+            >
+              <span style={styles.navIcon}>{item.icon}</span>
+              {sidebarAbierto && (
+                <span style={styles.navLabel}>{item.label}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* Cerrar sesión al fondo */}
         <div style={{ marginTop: "auto" }}>
-          <span
-            style={{ ...styles.sideIcon, fontSize: "20px", cursor: "pointer" }}
-            onClick={logout}
+          <button
+            style={styles.navItem}
+            onClick={() => { logout(); navigate("/login"); }}
             title="Cerrar sesión"
           >
-            🚪
-          </span>
+            <span style={styles.navIcon}>🚪</span>
+            {sidebarAbierto && (
+              <span style={{ ...styles.navLabel, color: "#f87171" }}>
+                Cerrar sesión
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
+      {/* ── Contenido principal ── */}
       <div style={styles.main}>
         <div style={styles.topbar}>
           <h2 style={styles.topTitle}>Mis cursos</h2>
@@ -82,15 +124,7 @@ export default function CatalogPage() {
                 <div style={styles.cardBody}>
                   <p style={styles.cardTitle}>{curso.titulo}</p>
                   <p style={styles.cardInstructor}>Instructor: {curso.instructor}</p>
-                  <div style={styles.progressWrap}>
-                    <div
-                      style={{
-                        ...styles.progressFill,
-                        width: `${curso.progreso}%`,
-                      }}
-                    />
-                  </div>
-                  <p style={styles.progressPct}>{curso.progreso}%</p>
+                  <ProgressBar value={curso.progreso} height={4} />
                   <button
                     style={styles.btnContinuar}
                     onClick={() => navigate(`/course/${curso.id}`)}
@@ -113,26 +147,83 @@ const styles = {
     minHeight: "100vh",
     fontFamily: "Inter, sans-serif",
     backgroundColor: "#f0f4f8",
+    position: "relative",
+  },
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 10,
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
   sidebar: {
-    width: "56px",
     backgroundColor: "#1a3a5c",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
-    padding: "16px 0",
-    gap: "24px",
+    alignItems: "flex-start",
+    padding: "12px 0",
+    gap: "4px",
+    transition: "width 0.22s ease",
+    overflow: "hidden",
+    flexShrink: 0,
+    position: "relative",
+    zIndex: 20,
   },
-  sideIcon: {
-    fontSize: "22px",
-    color: "#85B7EB",
+  hamburger: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "5px",
+    padding: "10px 16px",
+    background: "none",
+    border: "none",
     cursor: "pointer",
+    width: "56px",
+    flexShrink: 0,
+  },
+  hLine: {
+    display: "block",
+    width: "20px",
+    height: "2px",
+    backgroundColor: "#85B7EB",
+    borderRadius: "2px",
+  },
+  nav: {
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+    gap: "2px",
+    padding: "4px 0",
+  },
+  navItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "10px 16px",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    width: "100%",
+    textAlign: "left",
+    borderRadius: "0",
+    whiteSpace: "nowrap",
+  },
+  navIcon: {
+    fontSize: "18px",
+    width: "24px",
+    textAlign: "center",
+    flexShrink: 0,
+  },
+  navLabel: {
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#d1e8fa",
+    fontFamily: "Inter, sans-serif",
   },
   main: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
     backgroundColor: "#fff",
+    minWidth: 0,
   },
   topbar: {
     display: "flex",
@@ -181,6 +272,7 @@ const styles = {
     color: "#111827",
     outline: "none",
     fontFamily: "Inter, sans-serif",
+    boxSizing: "border-box",
   },
   grid: {
     padding: "16px 20px",
@@ -204,34 +296,19 @@ const styles = {
   },
   cardBody: {
     padding: "10px 12px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
   },
   cardTitle: {
     fontSize: "12px",
     fontWeight: "600",
     color: "#111827",
-    marginBottom: "4px",
     lineHeight: "1.4",
   },
   cardInstructor: {
     fontSize: "11px",
     color: "#6b7280",
-    marginBottom: "8px",
-  },
-  progressWrap: {
-    height: "4px",
-    backgroundColor: "#e5e7eb",
-    borderRadius: "2px",
-    marginBottom: "6px",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: "2px",
-    backgroundColor: "#185FA5",
-  },
-  progressPct: {
-    fontSize: "11px",
-    color: "#185FA5",
-    marginBottom: "8px",
   },
   btnContinuar: {
     width: "100%",
@@ -244,6 +321,7 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
     fontFamily: "Inter, sans-serif",
+    marginTop: "2px",
   },
   empty: {
     fontSize: "13px",
