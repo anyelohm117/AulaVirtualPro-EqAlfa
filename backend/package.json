@@ -2,15 +2,16 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "ejemplo.js",
+  "main": "src/index.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "seed": "node src/seeds/seed.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
