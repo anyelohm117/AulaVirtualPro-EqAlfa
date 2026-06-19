@@ -2,6 +2,23 @@ const Quiz       = require('../models/Quiz');
 const QuizResult = require('../models/QuizResult');
 
 /**
+ * @desc    Obtiene las preguntas de un quiz para mostrarlas al alumno
+ * @route   GET /api/v1/quiz/:id
+ * @access  Private (alumno)
+ */
+const getQuizById = async (req, res) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id).select('-preguntas.respuestaCorrecta');
+    if (!quiz) {
+      return res.status(404).json({ error: 'Quiz no encontrado' });
+    }
+    return res.status(200).json(quiz);
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al obtener el quiz', detalle: error.message });
+  }
+};
+
+/**
  * @desc    Recibe las respuestas del alumno, calcula la calificación y guarda el resultado
  * @route   POST /api/v1/quiz/:id/submit
  * @access  Private (alumno)
@@ -68,5 +85,19 @@ const getResultado = async (req, res) => {
     return res.status(500).json({ error: 'Error al obtener resultado', detalle: error.message });
   }
 };
+const getQuizzesByCurso = async (req, res) => {
+  try {
+    const quizzes = await Quiz.find({ cursoId: req.params.cursoId, activo: true })
+      .select('titulo cursoId');
+    return res.status(200).json(quizzes);
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al obtener quizzes', detalle: error.message });
+  }
+};
 
-module.exports = { submitQuiz, getResultado };
+module.exports = { 
+  getQuizById, 
+  submitQuiz, 
+  getResultado,
+  getQuizzesByCurso 
+};

@@ -10,5 +10,6 @@ router.post('/',   verifyToken, checkRole('admin', 'instructor'), crearCurso);
 router.put('/:id', verifyToken, checkRole('admin', 'instructor'), actualizarCurso);
 router.delete('/:id', verifyToken, checkRole('admin'), eliminarCurso);
 router.get('/:cursoId/lecciones/:leccionId/materiales', verifyToken, getMaterialesLeccion);
+router.patch('/:id', verifyToken, checkRole('admin', 'instructor'), actualizarCurso);
 
 module.exports = router;
