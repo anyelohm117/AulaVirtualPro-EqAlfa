@@ -8,7 +8,6 @@ import QuizPage from "./pages/QuizPage";
 import ProgressPage from "./pages/ProgressPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import RegisterPage from "./pages/RegisterPage";
-import AssignmentsPage from "./pages/AssignmentsPage";
 import SearchPage from "./pages/SearchPage";
 import TeacherDashboardPage from "./pages/TeacherDashboardPage";
 
@@ -61,7 +60,6 @@ export default function App() {
           <Route path="/course/:id" element={<PrivateRoute><CoursePage /></PrivateRoute>} />
           <Route path="/quiz/:id" element={<PrivateRoute><QuizPage /></PrivateRoute>} />
           <Route path="/progress" element={<PrivateRoute><ProgressPage /></PrivateRoute>} />
-          <Route path="/assignments" element={<PrivateRoute><AssignmentsPage /></PrivateRoute>} />
           <Route path="/search" element={<PrivateRoute><SearchPage /></PrivateRoute>} />
 
           {/* Instructor / Profesor */}
