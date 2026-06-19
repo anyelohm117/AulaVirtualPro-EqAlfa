@@ -1,42 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
-const usuariosIniciales = [
-  { id: 1, nombre: "Alan Santillan", correo: "alan@empresa.com", rol: "Alumno", cursos: 4, activo: true },
-  { id: 2, nombre: "Ana Lopez", correo: "ana@empresa.com", rol: "Instructor", cursos: 6, activo: true },
-  { id: 3, nombre: "Carlos Ruiz", correo: "carlos@empresa.com", rol: "Alumno", cursos: 2, activo: false },
-];
-
-const cursosIniciales = [
-  { id: 1, titulo: "Introducción a la programación", instructor: "Ana Lopez", alumnos: 38, promedio: 82, publicado: true },
-  { id: 2, titulo: "Gestión de proyectos", instructor: "Ana Lopez", alumnos: 25, promedio: 75, publicado: true },
-  { id: 3, titulo: "Marketing Digital", instructor: "Ana Lopez", alumnos: 0, promedio: null, publicado: false },
-];
-
-const statsData = {
-  totalUsuarios: 142,
-  nuevosEsteMes: 8,
-  cursosActivos: 12,
-  cursosBorrador: 3,
-  quizzesTotales: 48,
-  tasaAprobacion: 78,
-};
+import api from "../services/api";
 
 export default function AdminDashboardPage() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
-  const [usuarios, setUsuarios] = useState(usuariosIniciales);
-  const [cursos, setCursos] = useState(cursosIniciales);
-  const [tabActiva, setTabActiva] = useState("usuarios");
 
-  const eliminarUsuario = (id) => {
-    setUsuarios((prev) => prev.filter((u) => u.id !== id));
+  const [cursos, setCursos] = useState([]);
+  const [reporte, setReporte] = useState([]);
+  const [loadingCursos, setLoadingCursos] = useState(true);
+  const [loadingReporte, setLoadingReporte] = useState(true);
+  const [error, setError] = useState("");
+  const [tabActiva, setTabActiva] = useState("cursos");
+
+  useEffect(() => {
+    cargarCursos();
+    cargarReporte();
+  }, []);
+
+  const cargarCursos = async () => {
+    setLoadingCursos(true);
+    try {
+      const res = await api.get("/cursos");
+      setCursos(res.data);
+    } catch {
+      setError("No se pudieron cargar los cursos.");
+    } finally {
+      setLoadingCursos(false);
+    }
   };
 
-  const eliminarCurso = (id) => {
-    setCursos((prev) => prev.filter((c) => c.id !== id));
+  const cargarReporte = async () => {
+    setLoadingReporte(true);
+    try {
+      const res = await api.get("/reportes/admin");
+      setReporte(res.data);
+    } catch {
+      setError("No se pudo cargar el reporte de alumnos.");
+    } finally {
+      setLoadingReporte(false);
+    }
   };
+
+  const eliminarCurso = async (id) => {
+    if (!window.confirm("¿Desactivar este curso?")) return;
+    try {
+      await api.delete(`/cursos/${id}`);
+      setCursos((prev) => prev.filter((c) => c._id !== id));
+    } catch {
+      alert("No se pudo eliminar el curso.");
+    }
+  };
+
+  // Estadísticas derivadas de datos reales
+  const cursosActivos = cursos.filter((c) => c.activo).length;
+  const totalAlumnos = reporte.length;
+  const todasCalificaciones = reporte.flatMap((r) => r.calificaciones || []);
+  const aprobadas = todasCalificaciones.filter((c) => c.aprobado).length;
+  const tasaAprobacion = todasCalificaciones.length > 0
+    ? Math.round((aprobadas / todasCalificaciones.length) * 100)
+    : 0;
 
   return (
     <div style={styles.page}>
@@ -48,7 +72,7 @@ export default function AdminDashboardPage() {
           </div>
           <div style={styles.topRight}>
             <span style={styles.adminName}>{usuario || "Administrador"}</span>
-            <button style={styles.btnLogout} onClick={logout}>
+            <button style={styles.btnLogout} onClick={() => { logout(); navigate("/login"); }}>
               Cerrar sesión
             </button>
           </div>
@@ -56,153 +80,156 @@ export default function AdminDashboardPage() {
 
         <div style={styles.statsGrid}>
           <div style={styles.statCard}>
-            <p style={styles.statLabel}>Total usuarios</p>
-            <p style={styles.statVal}>{statsData.totalUsuarios}</p>
-            <p style={styles.statSub}>+{statsData.nuevosEsteMes} este mes</p>
-          </div>
-          <div style={styles.statCard}>
             <p style={styles.statLabel}>Cursos activos</p>
-            <p style={styles.statVal}>{statsData.cursosActivos}</p>
-            <p style={styles.statSub}>{statsData.cursosBorrador} en borrador</p>
+            <p style={styles.statVal}>{cursosActivos}</p>
+            <p style={styles.statSub}>de {cursos.length} totales</p>
           </div>
           <div style={styles.statCard}>
-            <p style={styles.statLabel}>Quizzes totales</p>
-            <p style={styles.statVal}>{statsData.quizzesTotales}</p>
-            <p style={styles.statSub}>esta semana</p>
+            <p style={styles.statLabel}>Alumnos registrados</p>
+            <p style={styles.statVal}>{totalAlumnos}</p>
+            <p style={styles.statSub}>activos en la plataforma</p>
+          </div>
+          <div style={styles.statCard}>
+            <p style={styles.statLabel}>Quizzes realizados</p>
+            <p style={styles.statVal}>{todasCalificaciones.length}</p>
+            <p style={styles.statSub}>en total</p>
           </div>
           <div style={styles.statCard}>
             <p style={styles.statLabel}>Tasa de aprobación</p>
-            <p style={styles.statVal}>{statsData.tasaAprobacion}%</p>
+            <p style={styles.statVal}>{tasaAprobacion}%</p>
             <p style={styles.statSub}>promedio general</p>
           </div>
         </div>
 
+        {error && <p style={styles.errorMsg}>{error}</p>}
+
         <div style={styles.tabs}>
-          <button
-            style={{ ...styles.tab, ...(tabActiva === "usuarios" ? styles.tabActiva : {}) }}
-            onClick={() => setTabActiva("usuarios")}
-          >
-            Usuarios
-          </button>
           <button
             style={{ ...styles.tab, ...(tabActiva === "cursos" ? styles.tabActiva : {}) }}
             onClick={() => setTabActiva("cursos")}
           >
             Cursos
           </button>
+          <button
+            style={{ ...styles.tab, ...(tabActiva === "alumnos" ? styles.tabActiva : {}) }}
+            onClick={() => setTabActiva("alumnos")}
+          >
+            Reporte de alumnos
+          </button>
         </div>
-
-        {tabActiva === "usuarios" && (
-          <div style={styles.section}>
-            <div style={styles.sectionHeader}>
-              <h3 style={styles.sectionTitle}>Usuarios registrados</h3>
-              <button style={styles.btnAdd}>+ Nuevo usuario</button>
-            </div>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Nombre</th>
-                  <th style={styles.th}>Correo</th>
-                  <th style={styles.th}>Rol</th>
-                  <th style={styles.th}>Cursos</th>
-                  <th style={styles.th}>Estado</th>
-                  <th style={styles.th}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usuarios.map((u) => (
-                  <tr key={u.id}>
-                    <td style={styles.td}>{u.nombre}</td>
-                    <td style={styles.td}>{u.correo}</td>
-                    <td style={styles.td}>
-                      <span style={{
-                        ...styles.badge,
-                        backgroundColor: u.rol === "Instructor" ? "#E6F1FB" : "#f3f4f6",
-                        color: u.rol === "Instructor" ? "#185FA5" : "#374151",
-                      }}>
-                        {u.rol}
-                      </span>
-                    </td>
-                    <td style={styles.td}>{u.cursos}</td>
-                    <td style={styles.td}>
-                      <span style={{
-                        ...styles.badge,
-                        backgroundColor: u.activo ? "#dcfce7" : "#fef9c3",
-                        color: u.activo ? "#15803d" : "#854d0e",
-                      }}>
-                        {u.activo ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
-                    <td style={styles.td}>
-                      <button style={styles.actionBtn} title="Editar">✏️</button>
-                      <button
-                        style={styles.actionBtn}
-                        title="Eliminar"
-                        onClick={() => eliminarUsuario(u.id)}
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
 
         {tabActiva === "cursos" && (
           <div style={styles.section}>
             <div style={styles.sectionHeader}>
               <h3 style={styles.sectionTitle}>Cursos registrados</h3>
-              <button style={styles.btnAdd}>+ Nuevo curso</button>
             </div>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Curso</th>
-                  <th style={styles.th}>Instructor</th>
-                  <th style={styles.th}>Alumnos</th>
-                  <th style={styles.th}>Promedio</th>
-                  <th style={styles.th}>Estado</th>
-                  <th style={styles.th}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cursos.map((c) => (
-                  <tr key={c.id}>
-                    <td style={styles.td}>{c.titulo}</td>
-                    <td style={styles.td}>{c.instructor}</td>
-                    <td style={styles.td}>{c.alumnos}</td>
-                    <td style={styles.td}>{c.promedio ? `${c.promedio}%` : "—"}</td>
-                    <td style={styles.td}>
-                      <span style={{
-                        ...styles.badge,
-                        backgroundColor: c.publicado ? "#dcfce7" : "#fef9c3",
-                        color: c.publicado ? "#15803d" : "#854d0e",
-                      }}>
-                        {c.publicado ? "Publicado" : "Borrador"}
-                      </span>
-                    </td>
-                    <td style={styles.td}>
-                      <button
-                        style={styles.actionBtn}
-                        title="Ver curso"
-                        onClick={() => navigate(`/course/${c.id}`)}
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        style={styles.actionBtn}
-                        title="Eliminar"
-                        onClick={() => eliminarCurso(c.id)}
-                      >
-                        🗑️
-                      </button>
-                    </td>
+            {loadingCursos ? (
+              <p style={styles.emptyTxt}>Cargando cursos...</p>
+            ) : cursos.length === 0 ? (
+              <p style={styles.emptyTxt}>No hay cursos registrados.</p>
+            ) : (
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Curso</th>
+                    <th style={styles.th}>Módulos</th>
+                    <th style={styles.th}>Estado</th>
+                    <th style={styles.th}>Acciones</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {cursos.map((c) => (
+                    <tr key={c._id}>
+                      <td style={styles.td}>{c.titulo}</td>
+                      <td style={styles.td}>{c.modulos?.length ?? "—"}</td>
+                      <td style={styles.td}>
+                        <span style={{
+                          ...styles.badge,
+                          backgroundColor: c.activo ? "#dcfce7" : "#fef9c3",
+                          color: c.activo ? "#15803d" : "#854d0e",
+                        }}>
+                          {c.activo ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
+                      <td style={styles.td}>
+                        <button
+                          style={styles.actionBtn}
+                          title="Ver curso"
+                          onClick={() => navigate(`/course/${c._id}`)}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          style={styles.actionBtn}
+                          title="Desactivar"
+                          onClick={() => eliminarCurso(c._id)}
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {tabActiva === "alumnos" && (
+          <div style={styles.section}>
+            <div style={styles.sectionHeader}>
+              <h3 style={styles.sectionTitle}>Progreso y calificaciones por alumno</h3>
+            </div>
+            {loadingReporte ? (
+              <p style={styles.emptyTxt}>Cargando reporte...</p>
+            ) : reporte.length === 0 ? (
+              <p style={styles.emptyTxt}>No hay alumnos registrados.</p>
+            ) : (
+              <div style={styles.reporteList}>
+                {reporte.map((r) => (
+                  <div key={r.alumno.id} style={styles.reporteCard}>
+                    <div style={styles.reporteHeader}>
+                      <span style={styles.reporteNombre}>{r.alumno.nombre}</span>
+                      <span style={styles.reporteEmail}>{r.alumno.email}</span>
+                    </div>
+
+                    <div style={styles.reporteCol}>
+                      <p style={styles.reporteColTitle}>Progreso por curso</p>
+                      {r.progresos.length === 0 ? (
+                        <p style={styles.emptyTxt}>Sin cursos iniciados.</p>
+                      ) : (
+                        r.progresos.map((p, i) => (
+                          <div key={i} style={styles.reporteRow}>
+                            <span>{p.curso || "Curso eliminado"}</span>
+                            <span style={styles.reporteBold}>{p.porcentaje}%</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div style={styles.reporteCol}>
+                      <p style={styles.reporteColTitle}>Calificaciones</p>
+                      {r.calificaciones.length === 0 ? (
+                        <p style={styles.emptyTxt}>Sin quizzes realizados.</p>
+                      ) : (
+                        r.calificaciones.map((c, i) => (
+                          <div key={i} style={styles.reporteRow}>
+                            <span>{c.quiz || "Quiz eliminado"}</span>
+                            <span style={{
+                              ...styles.badge,
+                              backgroundColor: c.aprobado ? "#dcfce7" : "#fee2e2",
+                              color: c.aprobado ? "#15803d" : "#dc2626",
+                            }}>
+                              {c.calificacion}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -297,6 +324,11 @@ const styles = {
     color: "#6b7280",
     marginTop: "2px",
   },
+  errorMsg: {
+    padding: "10px 20px",
+    fontSize: "12px",
+    color: "#dc2626",
+  },
   tabs: {
     display: "flex",
     borderBottom: "0.5px solid #e5e7eb",
@@ -331,16 +363,9 @@ const styles = {
     fontWeight: "600",
     color: "#111827",
   },
-  btnAdd: {
-    padding: "6px 14px",
-    backgroundColor: "#185FA5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
+  emptyTxt: {
     fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
+    color: "#9ca3af",
   },
   table: {
     width: "100%",
@@ -374,5 +399,54 @@ const styles = {
     fontSize: "13px",
     padding: "2px 6px",
     borderRadius: "4px",
+  },
+  reporteList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+  reporteCard: {
+    border: "0.5px solid #e5e7eb",
+    borderRadius: "10px",
+    padding: "14px",
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: "16px",
+  },
+  reporteHeader: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+  reporteNombre: {
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#111827",
+  },
+  reporteEmail: {
+    fontSize: "11px",
+    color: "#9ca3af",
+  },
+  reporteCol: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  reporteColTitle: {
+    fontSize: "11px",
+    fontWeight: "600",
+    color: "#6b7280",
+    marginBottom: "2px",
+  },
+  reporteRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: "12px",
+    color: "#374151",
+    padding: "2px 0",
+  },
+  reporteBold: {
+    fontWeight: "600",
+    color: "#185FA5",
   },
 };
