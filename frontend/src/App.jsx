@@ -10,12 +10,38 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import RegisterPage from "./pages/RegisterPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
 import SearchPage from "./pages/SearchPage";
+import TeacherDashboardPage from "./pages/TeacherDashboardPage";
 
-function PrivateRoute({ children, soloAdmin }) {
-  //const { token, rol } = useAuth();
-  //if (!token) return <Navigate to="/login" />;
-  //if (soloAdmin && rol !== "admin") return <Navigate to="/catalog" />;
+/** Ruta privada: requiere sesión activa */
+function PrivateRoute({ children }) {
+  const { token } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
   return children;
+}
+
+/** Ruta solo para admin */
+function AdminRoute({ children }) {
+  const { token, rol } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
+  if (rol !== "admin") return <Navigate to="/" replace />;
+  return children;
+}
+
+/** Ruta solo para instructor */
+function InstructorRoute({ children }) {
+  const { token, rol } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
+  if (rol !== "instructor" && rol !== "admin") return <Navigate to="/" replace />;
+  return children;
+}
+
+/** Redirección inteligente al home según rol */
+function HomeRedirect() {
+  const { token, rol } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
+  if (rol === "admin") return <Navigate to="/admin" replace />;
+  if (rol === "instructor") return <Navigate to="/teacher" replace />;
+  return <Navigate to="/catalog" replace />;
 }
 
 export default function App() {
@@ -23,16 +49,29 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Públicas */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Redirección raíz por rol */}
+          <Route path="/" element={<HomeRedirect />} />
+
+          {/* Alumno */}
           <Route path="/catalog" element={<PrivateRoute><CatalogPage /></PrivateRoute>} />
           <Route path="/course/:id" element={<PrivateRoute><CoursePage /></PrivateRoute>} />
           <Route path="/quiz/:id" element={<PrivateRoute><QuizPage /></PrivateRoute>} />
           <Route path="/progress" element={<PrivateRoute><ProgressPage /></PrivateRoute>} />
-          <Route path="/admin" element={<PrivateRoute soloAdmin><AdminDashboardPage /></PrivateRoute>} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/assignments" element={<PrivateRoute><AssignmentsPage /></PrivateRoute>} />
           <Route path="/search" element={<PrivateRoute><SearchPage /></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/login" />} />
+
+          {/* Instructor / Profesor */}
+          <Route path="/teacher" element={<InstructorRoute><TeacherDashboardPage /></InstructorRoute>} />
+
+          {/* Admin */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
