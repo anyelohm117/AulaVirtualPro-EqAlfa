@@ -3,33 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
-/*export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (!email || !password) {
-      setError("Credenciales inválidas");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      login(res.data.token, res.data.usuario);
-      navigate("/catalog");
-    } catch (err) {
-      setError("Credenciales inválidas");
-    } finally {
-      setLoading(false);
-    }
-  };
-  */
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,17 +15,26 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     if (!email || !password) {
-      setError("Inicie sesión con cualquier correo y contraseña para continuar");
+      setError("Ingresa tu correo y contraseña.");
       return;
     }
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { email, password });
-      login(res.data.token, res.data.usuario);
-      navigate("/catalog");
+      const { token, usuario } = res.data;
+      login(token, usuario);
+
+      // Redirección según rol
+      if (usuario.rol === "admin") {
+        navigate("/admin");
+      } else if (usuario.rol === "instructor") {
+        navigate("/teacher");
+      } else {
+        navigate("/catalog");
+      }
     } catch (err) {
-      setError("Credenciales inválidas");
-      navigate("/catalog");
+      const msg = err.response?.data?.error || "Credenciales inválidas";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -99,10 +81,12 @@ export default function LoginPage() {
 
             <span style={styles.forgot}>¿Olvidaste tu contraseña?</span>
 
+            {error && <p style={styles.error}>{error}</p>}
+
             <button type="submit" style={styles.btn} disabled={loading}>
               {loading ? "Ingresando..." : "INGRESAR"}
             </button>
-            <br />
+
             <p style={{ textAlign: "center", fontSize: "12px", color: "#6b7280", marginTop: "12px" }}>
               ¿No tienes cuenta?{" "}
               <span
@@ -112,7 +96,6 @@ export default function LoginPage() {
                 Regístrate
               </span>
             </p>
-            {error && <p style={styles.error}>{error}</p>}
           </form>
         </div>
       </div>
@@ -159,21 +142,9 @@ const styles = {
     justifyContent: "center",
   },
   logoIcon: { fontSize: "32px" },
-  appName: {
-    color: "#fff",
-    fontSize: "20px",
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  appSub: {
-    color: "#85B7EB",
-    fontSize: "13px",
-    textAlign: "center",
-  },
-  divider: {
-    width: "1px",
-    backgroundColor: "#e5e7eb",
-  },
+  appName: { color: "#fff", fontSize: "20px", fontWeight: "600", textAlign: "center" },
+  appSub: { color: "#85B7EB", fontSize: "13px", textAlign: "center" },
+  divider: { width: "1px", backgroundColor: "#e5e7eb" },
   right: {
     flex: 1.2,
     padding: "2.5rem 2rem",
@@ -182,20 +153,9 @@ const styles = {
     justifyContent: "center",
     overflowY: "auto",
   },
-  title: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: "1.5rem",
-  },
+  title: { fontSize: "18px", fontWeight: "600", color: "#111827", marginBottom: "1.5rem" },
   field: { marginBottom: "0.75rem" },
-  label: {
-    display: "block",
-    fontSize: "12px",
-    fontWeight: "500",
-    color: "#6b7280",
-    marginBottom: "4px",
-  },
+  label: { display: "block", fontSize: "12px", fontWeight: "500", color: "#6b7280", marginBottom: "4px" },
   input: {
     width: "100%",
     padding: "9px 12px",
@@ -206,6 +166,15 @@ const styles = {
     fontFamily: "Inter, sans-serif",
     color: "#111827",
     backgroundColor: "#fff",
+    boxSizing: "border-box",
+  },
+  forgot: {
+    display: "block",
+    textAlign: "right",
+    fontSize: "12px",
+    color: "#185FA5",
+    cursor: "pointer",
+    marginBottom: "1rem",
   },
   btn: {
     width: "100%",
@@ -219,23 +188,7 @@ const styles = {
     cursor: "pointer",
     letterSpacing: "0.5px",
     fontFamily: "Inter, sans-serif",
-    marginTop: "10px",
+    marginTop: "4px",
   },
-  error: {
-    textAlign: "center",
-    fontSize: "12px",
-    color: "#DC2626",
-    marginBottom: "8px",
-  },
-  loginLink: {
-    textAlign: "center",
-    fontSize: "12px",
-    color: "#6b7280",
-    marginTop: "12px",
-  },
-  loginLinkBtn: {
-    color: "#185FA5",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
+  error: { textAlign: "center", fontSize: "12px", color: "#DC2626", marginBottom: "8px" },
 };
