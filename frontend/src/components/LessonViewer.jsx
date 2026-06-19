@@ -19,7 +19,7 @@ export default function LessonViewer({ leccion, cursoId, onCompletada }) {
     if (completada || loading) return;
     setLoading(true);
     try {
-      await api.post(`/cursos/${cursoId}/lecciones/${leccion.id}/completar`);
+      await api.post(`/progreso/cursos/${cursoId}/lecciones/${leccion.id}/completar`);
       setCompletada(true);
       if (onCompletada) onCompletada(leccion.id);
     } catch (err) {
