@@ -1,31 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import ProgressBar from "../components/ProgressBar";
-
-const cursosEjemplo = [
-  { id: 1, titulo: "Introducción a la programación", instructor: "Ana Lopez", progreso: 65 },
-  { id: 2, titulo: "Gestión de proyectos", instructor: "Ana Lopez", progreso: 40 },
-  { id: 3, titulo: "Comunicación efectiva", instructor: "Ana Lopez", progreso: 80 },
-  { id: 4, titulo: "Marketing Digital", instructor: "Ana Lopez", progreso: 20 },
-  { id: 5, titulo: "Seguridad Informática", instructor: "Ana Lopez", progreso: 55 },
-  { id: 6, titulo: "Excel Avanzado", instructor: "Ana Lopez", progreso: 90 },
-];
+import api from "../services/api";
 
 const NAV_ITEMS = [
   { icon: "🏠", label: "Inicio",        path: "/catalog" },
   { icon: "📚", label: "Mi progreso",   path: "/progress" },
-  { icon: "📋", label: "Tareas",        path: "/assignments" },//en trabajo
   { icon: "🔍", label: "+ Cursos",      path: "/search" },
 ];
 
 export default function CatalogPage() {
   const [busqueda, setBusqueda] = useState("");
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
+  const [cursos, setCursos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
 
-  const cursosFiltrados = cursosEjemplo.filter((c) =>
+  useEffect(() => {
+    const cargarCursos = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await api.get("/cursos");
+        setCursos(res.data);
+      } catch (err) {
+        setError("No se pudieron cargar los cursos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargarCursos();
+  }, []);
+
+  const cursosFiltrados = cursos.filter((c) =>
     c.titulo.toLowerCase().includes(busqueda.toLowerCase())
   );
 
@@ -112,30 +121,39 @@ export default function CatalogPage() {
           />
         </div>
 
-        <div style={styles.grid}>
-          {cursosFiltrados.length === 0 ? (
-            <p style={styles.empty}>No se encontraron cursos.</p>
-          ) : (
-            cursosFiltrados.map((curso) => (
-              <div key={curso.id} style={styles.card}>
-                <div style={styles.thumb}>
-                  <span style={{ fontSize: "28px" }}>🖼️</span>
+        {loading && <p style={styles.empty}>Cargando cursos...</p>}
+        {error && <p style={{ ...styles.empty, color: "#dc2626" }}>{error}</p>}
+
+        {!loading && !error && (
+          <div style={styles.grid}>
+            {cursosFiltrados.length === 0 ? (
+              <p style={styles.empty}>No se encontraron cursos.</p>
+            ) : (
+              cursosFiltrados.map((curso) => (
+                <div key={curso._id} style={styles.card}>
+                  <div style={styles.thumb}>
+                    {curso.imagen
+                      ? <img src={curso.imagen} alt={curso.titulo} style={styles.thumbImg} onError={(e) => { e.target.style.display = "none"; }} />
+                      : <span style={{ fontSize: "28px" }}>🖼️</span>
+                    }
+                  </div>
+                  <div style={styles.cardBody}>
+                    <p style={styles.cardTitle}>{curso.titulo}</p>
+                    {curso.descripcion && (
+                      <p style={styles.cardInstructor}>{curso.descripcion}</p>
+                    )}
+                    <button
+                      style={styles.btnContinuar}
+                      onClick={() => navigate(`/course/${curso._id}`)}
+                    >
+                      Continuar
+                    </button>
+                  </div>
                 </div>
-                <div style={styles.cardBody}>
-                  <p style={styles.cardTitle}>{curso.titulo}</p>
-                  <p style={styles.cardInstructor}>Instructor: {curso.instructor}</p>
-                  <ProgressBar value={curso.progreso} height={4} />
-                  <button
-                    style={styles.btnContinuar}
-                    onClick={() => navigate(`/course/${curso.id}`)}
-                  >
-                    Continuar
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -293,6 +311,12 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  thumbImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
   },
   cardBody: {
     padding: "10px 12px",
@@ -309,6 +333,10 @@ const styles = {
   cardInstructor: {
     fontSize: "11px",
     color: "#6b7280",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
   },
   btnContinuar: {
     width: "100%",
