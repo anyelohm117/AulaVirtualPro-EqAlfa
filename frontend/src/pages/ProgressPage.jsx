@@ -1,31 +1,68 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
-const statsData = {
-  cursosCompletados: 3,
-  totalCursos: 6,
-  quizzesAprobados: 8,
-  totalQuizzes: 10,
-  promedio: 85,
-  horasEstudio: 24,
-};
-
-const cursosAvance = [
-  { id: 1, nombre: "Introducción a la programación", progreso: 90 },
-  { id: 2, nombre: "Gestión de proyectos", progreso: 65 },
-  { id: 3, nombre: "Comunicación efectiva", progreso: 40 },
-  { id: 4, nombre: "Marketing Digital", progreso: 20 },
-];
-
-const historialQuizzes = [
-  { id: 1, quiz: "Quiz: Tipos de datos", curso: "Intro. programación", puntaje: 85, fecha: "2025-05-10", aprobado: true },
-  { id: 2, quiz: "Quiz: Ciclos", curso: "Intro. programación", puntaje: 70, fecha: "2025-05-12", aprobado: true },
-  { id: 3, quiz: "Quiz: Funciones", curso: "Intro. programación", puntaje: 55, fecha: "2025-05-14", aprobado: false },
-];
+import api from "../services/api";
 
 export default function ProgressPage() {
   const { usuario } = useAuth();
   const navigate = useNavigate();
+
+  const [cursosAvance, setCursosAvance] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const cargarProgreso = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const resCursos = await api.get("/cursos");
+        const cursos = resCursos.data;
+
+        const avance = await Promise.all(
+          cursos.map(async (curso) => {
+            try {
+              const [detalle, progreso] = await Promise.all([
+                api.get(`/cursos/${curso._id}`),
+                api.get(`/progreso/${curso._id}`),
+              ]);
+              const totalLecciones = (detalle.data.modulos || []).reduce(
+                (acc, m) => acc + (m.lecciones?.length || 0), 0
+              );
+              return {
+                id: curso._id,
+                nombre: curso.titulo,
+                porcentaje: progreso.data.porcentaje || 0,
+                totalLecciones,
+                completadas: progreso.data.leccionesCompletadas?.length || 0,
+              };
+            } catch {
+              return {
+                id: curso._id,
+                nombre: curso.titulo,
+                porcentaje: 0,
+                totalLecciones: 0,
+                completadas: 0,
+              };
+            }
+          })
+        );
+
+        setCursosAvance(avance);
+      } catch (err) {
+        setError("No se pudo cargar tu progreso.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargarProgreso();
+  }, []);
+
+  const cursosCompletados = cursosAvance.filter((c) => c.porcentaje === 100).length;
+  const totalCursos = cursosAvance.length;
+  const promedioGeneral = totalCursos > 0
+    ? Math.round(cursosAvance.reduce((acc, c) => acc + c.porcentaje, 0) / totalCursos)
+    : 0;
 
   return (
     <div style={styles.page}>
@@ -40,86 +77,51 @@ export default function ProgressPage() {
           </div>
         </div>
 
-        <div style={styles.statsGrid}>
-          <div style={styles.statCard}>
-            <p style={styles.statLabel}>Cursos completados</p>
-            <p style={styles.statVal}>{statsData.cursosCompletados}</p>
-            <p style={styles.statSub}>de {statsData.totalCursos} inscritos</p>
-          </div>
-          <div style={styles.statCard}>
-            <p style={styles.statLabel}>Quizzes aprobados</p>
-            <p style={styles.statVal}>{statsData.quizzesAprobados}</p>
-            <p style={styles.statSub}>de {statsData.totalQuizzes} realizados</p>
-          </div>
-          <div style={styles.statCard}>
-            <p style={styles.statLabel}>Calificación promedio</p>
-            <p style={styles.statVal}>{statsData.promedio}</p>
-            <p style={styles.statSub}>sobre 100</p>
-          </div>
-          <div style={styles.statCard}>
-            <p style={styles.statLabel}>Horas de estudio</p>
-            <p style={styles.statVal}>{statsData.horasEstudio}</p>
-            <p style={styles.statSub}>esta semana</p>
-          </div>
-        </div>
+        {loading && <p style={styles.loadingMsg}>Cargando tu progreso...</p>}
+        {error && <p style={{ ...styles.loadingMsg, color: "#dc2626" }}>{error}</p>}
 
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Avance por curso</h3>
-          {cursosAvance.map((curso) => (
-            <div
-              key={curso.id}
-              style={styles.cursoRow}
-              onClick={() => navigate(`/course/${curso.id}`)}
-            >
-              <span style={styles.cursoNombre}>{curso.nombre}</span>
-              <div style={styles.barWrap}>
-                <div
-                  style={{
-                    ...styles.barFill,
-                    width: `${curso.progreso}%`,
-                  }}
-                />
+        {!loading && !error && (
+          <>
+            <div style={styles.statsGrid}>
+              <div style={styles.statCard}>
+                <p style={styles.statLabel}>Cursos completados</p>
+                <p style={styles.statVal}>{cursosCompletados}</p>
+                <p style={styles.statSub}>de {totalCursos} inscritos</p>
               </div>
-              <span style={styles.barPct}>{curso.progreso}%</span>
+              <div style={styles.statCard}>
+                <p style={styles.statLabel}>Avance promedio</p>
+                <p style={styles.statVal}>{promedioGeneral}%</p>
+                <p style={styles.statSub}>en todos tus cursos</p>
+              </div>
             </div>
-          ))}
-        </div>
 
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Historial de quizzes</h3>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Quiz</th>
-                <th style={styles.th}>Curso</th>
-                <th style={styles.th}>Puntaje</th>
-                <th style={styles.th}>Fecha</th>
-                <th style={styles.th}>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {historialQuizzes.map((item) => (
-                <tr key={item.id}>
-                  <td style={styles.td}>{item.quiz}</td>
-                  <td style={styles.td}>{item.curso}</td>
-                  <td style={styles.td}>{item.puntaje}/100</td>
-                  <td style={styles.td}>{item.fecha}</td>
-                  <td style={styles.td}>
-                    <span
-                      style={{
-                        ...styles.badge,
-                        backgroundColor: item.aprobado ? "#dcfce7" : "#fee2e2",
-                        color: item.aprobado ? "#15803d" : "#dc2626",
-                      }}
-                    >
-                      {item.aprobado ? "Aprobado" : "Reprobado"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            <div style={styles.section}>
+              <h3 style={styles.sectionTitle}>Avance por curso</h3>
+              {cursosAvance.length === 0 ? (
+                <p style={styles.emptyTxt}>Aún no tienes cursos.</p>
+              ) : (
+                cursosAvance.map((curso) => (
+                  <div
+                    key={curso.id}
+                    style={styles.cursoRow}
+                    onClick={() => navigate(`/course/${curso.id}`)}
+                  >
+                    <span style={styles.cursoNombre}>{curso.nombre}</span>
+                    <div style={styles.barWrap}>
+                      <div
+                        style={{
+                          ...styles.barFill,
+                          width: `${curso.porcentaje}%`,
+                        }}
+                      />
+                    </div>
+                    <span style={styles.barPct}>{curso.porcentaje}%</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
+        )}
 
         <div style={styles.footer}>
           <button
@@ -182,9 +184,15 @@ const styles = {
     fontSize: "13px",
     color: "#6b7280",
   },
+  loadingMsg: {
+    padding: "32px 20px",
+    textAlign: "center",
+    fontSize: "13px",
+    color: "#6b7280",
+  },
   statsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(2, 1fr)",
     gap: "12px",
     padding: "16px 20px",
     borderBottom: "0.5px solid #e5e7eb",
@@ -219,6 +227,10 @@ const styles = {
     color: "#111827",
     marginBottom: "12px",
   },
+  emptyTxt: {
+    fontSize: "12px",
+    color: "#9ca3af",
+  },
   cursoRow: {
     display: "flex",
     alignItems: "center",
@@ -249,31 +261,6 @@ const styles = {
     width: "36px",
     textAlign: "right",
     flexShrink: 0,
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: "12px",
-  },
-  th: {
-    textAlign: "left",
-    padding: "6px 8px",
-    fontSize: "11px",
-    fontWeight: "600",
-    color: "#6b7280",
-    borderBottom: "0.5px solid #e5e7eb",
-  },
-  td: {
-    padding: "8px",
-    color: "#111827",
-    borderBottom: "0.5px solid #e5e7eb",
-  },
-  badge: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: "99px",
-    fontSize: "11px",
-    fontWeight: "600",
   },
   footer: {
     padding: "14px 20px",
