@@ -89,4 +89,46 @@ const eliminarCurso = async (req, res) => {
   }
 };
 
-module.exports = { getCursos, getCursoById, crearCurso, actualizarCurso, eliminarCurso };
+/**
+ * @desc    Obtiene los materiales descargables de una lección específica
+ * @route   GET /api/v1/cursos/:cursoId/lecciones/:leccionId/materiales
+ * @access  Private
+ */
+const getMaterialesLeccion = async (req, res) => {
+  try {
+    const curso = await Course.findById(req.params.cursoId);
+    if (!curso) {
+      return res.status(404).json({ error: 'Curso no encontrado' });
+    }
+
+    let leccionEncontrada = null;
+    curso.modulos.forEach(modulo => {
+      modulo.lecciones.forEach(leccion => {
+        if (leccion._id.toString() === req.params.leccionId) {
+          leccionEncontrada = leccion;
+        }
+      });
+    });
+
+    if (!leccionEncontrada) {
+      return res.status(404).json({ error: 'Lección no encontrada' });
+    }
+
+    const materiales = leccionEncontrada.materialURL
+      ? [{ id: leccionEncontrada._id, nombre: leccionEncontrada.titulo, tipo: 'pdf', url: leccionEncontrada.materialURL }]
+      : [];
+
+    return res.status(200).json(materiales);
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al obtener materiales', detalle: error.message });
+  }
+};
+
+module.exports = {
+  getCursos,
+  getCursoById,
+  crearCurso,
+  actualizarCurso,
+  eliminarCurso,
+  getMaterialesLeccion
+};
