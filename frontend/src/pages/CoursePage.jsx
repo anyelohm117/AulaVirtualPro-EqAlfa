@@ -1,86 +1,108 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import LessonViewer from "../components/LessonViewer";
 import MaterialDownload from "../components/MaterialDownload";
 import ProgressBar from "../components/ProgressBar";
-
-// --- Mock mientras no existe el endpoint ---
-const cursoData = {
-  titulo: "Introducción a la programación",
-  progreso: 2,
-  totalLecciones: 5,
-  modulos: [
-    {
-      id: 1,
-      titulo: "Módulo 1: Fundamentos",
-      lecciones: [
-        { id: 1, titulo: "1.1 ¿Qué es programar?", contenido: "Programar es el proceso de diseñar e implementar un programa de computadora. En esta lección aprenderás los conceptos básicos que todo programador debe conocer para comenzar a escribir código.", completada: true },
-        { id: 2, titulo: "1.2 Tipos de datos", contenido: "Los tipos de datos definen qué clase de valor puede almacenar una variable. Los más comunes son: enteros, flotantes, cadenas de texto y booleanos.", completada: false },
-      ],
-    },
-    {
-      id: 2,
-      titulo: "Módulo 2: Estructuras",
-      lecciones: [
-        { id: 3, titulo: "2.1 Condicionales", contenido: "Las estructuras condicionales permiten ejecutar diferentes bloques de código según una condición. El if/else es la más común.", completada: false },
-        { id: 4, titulo: "2.2 Ciclos", contenido: "Los ciclos permiten repetir un bloque de código múltiples veces. Los más usados son for y while.", completada: false },
-      ],
-    },
-    {
-      id: 3,
-      titulo: "Módulo 3: Funciones",
-      lecciones: [
-        { id: 5, titulo: "3.1 Definir funciones", contenido: "Una función es un bloque de código reutilizable que realiza una tarea específica. Se define con la palabra clave function o con arrow functions.", completada: false },
-      ],
-    },
-  ],
-};
-// ------------------------------------------
+import api from "../services/api";
 
 export default function CoursePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [modulosAbiertos, setModulosAbiertos] = useState({ 1: true });
-  const [leccionActiva, setLeccionActiva] = useState(cursoData.modulos[0].lecciones[0]);
-  const [progresoLocal, setProgresoLocal] = useState(cursoData.progreso);
 
-  const todasLecciones = cursoData.modulos.flatMap((m) => m.lecciones);
-  const indexActual = todasLecciones.findIndex((l) => l.id === leccionActiva.id);
-  const pctProgreso = Math.round((progresoLocal / cursoData.totalLecciones) * 100);
+  const [curso, setCurso] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [modulosAbiertos, setModulosAbiertos] = useState({});
+  const [leccionActivaId, setLeccionActivaId] = useState(null);
+  const [leccionesCompletadas, setLeccionesCompletadas] = useState([]);
+
+  useEffect(() => {
+    const cargarCurso = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await api.get(`/cursos/${id}`);
+        setCurso(res.data);
+        if (res.data.modulos?.length > 0) {
+          setModulosAbiertos({ [res.data.modulos[0]._id]: true });
+          if (res.data.modulos[0].lecciones?.length > 0) {
+            setLeccionActivaId(res.data.modulos[0].lecciones[0]._id);
+          }
+        }
+        // Intentar traer el progreso ya guardado del alumno
+        try {
+          const prog = await api.get(`/progreso/${id}`);
+          setLeccionesCompletadas(prog.data.leccionesCompletadas || []);
+        } catch {
+          // si falla (p. ej. rol no es alumno), seguimos sin progreso
+        }
+      } catch (err) {
+        setError("No se pudo cargar el curso.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargarCurso();
+  }, [id]);
+
+  const todasLecciones = useMemo(
+    () => (curso?.modulos || []).flatMap((m) => m.lecciones),
+    [curso]
+  );
+
+  const leccionActiva = todasLecciones.find((l) => l._id === leccionActivaId);
+  const indexActual = todasLecciones.findIndex((l) => l._id === leccionActivaId);
+  const totalLecciones = todasLecciones.length;
+  const completadasCount = leccionesCompletadas.length;
+  const pctProgreso = totalLecciones > 0
+    ? Math.round((completadasCount / totalLecciones) * 100)
+    : 0;
 
   const toggleModulo = (moduloId) => {
     setModulosAbiertos((prev) => ({ ...prev, [moduloId]: !prev[moduloId] }));
   };
 
   const irAnterior = () => {
-    if (indexActual > 0) setLeccionActiva(todasLecciones[indexActual - 1]);
+    if (indexActual > 0) setLeccionActivaId(todasLecciones[indexActual - 1]._id);
   };
 
   const irSiguiente = () => {
     if (indexActual < todasLecciones.length - 1) {
-      setLeccionActiva(todasLecciones[indexActual + 1]);
+      setLeccionActivaId(todasLecciones[indexActual + 1]._id);
     } else {
       navigate(`/quiz/${id}`);
     }
   };
 
   const handleLeccionCompletada = (leccionId) => {
-    // Actualiza el conteo local de progreso
-    setProgresoLocal((prev) => Math.min(prev + 1, cursoData.totalLecciones));
-    // Marca la lección como completada en el listado local
-    cursoData.modulos.forEach((m) => {
-      m.lecciones.forEach((l) => {
-        if (l.id === leccionId) l.completada = true;
-      });
-    });
+    setLeccionesCompletadas((prev) =>
+      prev.includes(leccionId) ? prev : [...prev, leccionId]
+    );
   };
+
+  if (loading) {
+    return <div style={styles.centerMsg}>Cargando curso...</div>;
+  }
+
+  if (error || !curso) {
+    return <div style={{ ...styles.centerMsg, color: "#dc2626" }}>{error || "Curso no encontrado."}</div>;
+  }
+
+  if (totalLecciones === 0) {
+    return (
+      <div style={styles.centerMsg}>
+        <p>Este curso aún no tiene lecciones.</p>
+        <button style={styles.btnVolverSimple} onClick={() => navigate("/catalog")}>← Volver al catálogo</button>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
       {/* ── Sidebar ── */}
       <div style={styles.sidebar}>
         <div style={styles.sideHeader}>
-          <h3 style={styles.sideTitle}>{cursoData.titulo}</h3>
+          <h3 style={styles.sideTitle}>{curso.titulo}</h3>
         </div>
 
         <div style={styles.sideProgress}>
@@ -90,41 +112,44 @@ export default function CoursePage() {
             showLabel={false}
           />
           <span style={styles.progTxt}>
-            {progresoLocal} / {cursoData.totalLecciones} lecciones · {pctProgreso}%
+            {completadasCount} / {totalLecciones} lecciones · {pctProgreso}%
           </span>
         </div>
 
-        {cursoData.modulos.map((modulo) => (
-          <div key={modulo.id} style={styles.modulo}>
+        {curso.modulos.map((modulo) => (
+          <div key={modulo._id} style={styles.modulo}>
             <div
               style={styles.moduloHeader}
-              onClick={() => toggleModulo(modulo.id)}
+              onClick={() => toggleModulo(modulo._id)}
             >
               <span>{modulo.titulo}</span>
               <span style={styles.chevron}>
-                {modulosAbiertos[modulo.id] ? "▾" : "▸"}
+                {modulosAbiertos[modulo._id] ? "▾" : "▸"}
               </span>
             </div>
 
-            {modulosAbiertos[modulo.id] &&
-              modulo.lecciones.map((leccion) => (
-                <div
-                  key={leccion.id}
-                  style={{
-                    ...styles.leccion,
-                    ...(leccionActiva.id === leccion.id ? styles.leccionActiva : {}),
-                  }}
-                  onClick={() => setLeccionActiva(leccion)}
-                >
-                  <span style={{
-                    ...styles.playIcon,
-                    color: leccion.completada ? "#15803d" : (leccionActiva.id === leccion.id ? "#185FA5" : "#9ca3af"),
-                  }}>
-                    {leccion.completada ? "✓" : "▶"}
-                  </span>
-                  {leccion.titulo}
-                </div>
-              ))}
+            {modulosAbiertos[modulo._id] &&
+              modulo.lecciones.map((leccion) => {
+                const completada = leccionesCompletadas.includes(leccion._id);
+                return (
+                  <div
+                    key={leccion._id}
+                    style={{
+                      ...styles.leccion,
+                      ...(leccionActivaId === leccion._id ? styles.leccionActiva : {}),
+                    }}
+                    onClick={() => setLeccionActivaId(leccion._id)}
+                  >
+                    <span style={{
+                      ...styles.playIcon,
+                      color: completada ? "#15803d" : (leccionActivaId === leccion._id ? "#185FA5" : "#9ca3af"),
+                    }}>
+                      {completada ? "✓" : "▶"}
+                    </span>
+                    {leccion.titulo}
+                  </div>
+                );
+              })}
           </div>
         ))}
       </div>
@@ -132,7 +157,7 @@ export default function CoursePage() {
       {/* ── Contenido principal ── */}
       <div style={styles.main}>
         <div style={styles.topbar}>
-          <h2 style={styles.topTitle}>{leccionActiva.titulo}</h2>
+          <h2 style={styles.topTitle}>{leccionActiva?.titulo}</h2>
           <span style={styles.topCount}>
             {indexActual + 1} / {todasLecciones.length}
           </span>
@@ -141,14 +166,18 @@ export default function CoursePage() {
         <div style={styles.content}>
           {/* Visor de lección */}
           <LessonViewer
-            leccion={leccionActiva}
+            leccion={{
+              ...leccionActiva,
+              id: leccionActiva?._id,
+              completada: leccionesCompletadas.includes(leccionActiva?._id),
+            }}
             cursoId={id}
             onCompletada={handleLeccionCompletada}
           />
 
           {/* Materiales descargables */}
           <div style={styles.materialesWrap}>
-            <MaterialDownload leccionId={leccionActiva.id} cursoId={id} />
+            <MaterialDownload leccionId={leccionActiva?._id} cursoId={id} />
           </div>
         </div>
 
@@ -178,6 +207,28 @@ const styles = {
     minHeight: "100vh",
     fontFamily: "Inter, sans-serif",
     backgroundColor: "#fff",
+  },
+  centerMsg: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "16px",
+    minHeight: "100vh",
+    fontFamily: "Inter, sans-serif",
+    color: "#6b7280",
+    fontSize: "14px",
+  },
+  btnVolverSimple: {
+    padding: "8px 18px",
+    backgroundColor: "#185FA5",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "Inter, sans-serif",
   },
   sidebar: {
     width: "240px",
