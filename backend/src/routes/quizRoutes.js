@@ -1,6 +1,6 @@
 const express     = require('express');
 const router      = express.Router();
-const { getQuizById, submitQuiz, getResultado } = require('../controllers/quizController');
+const { submitQuiz, getResultado, getQuizById, getQuizzesByCurso } = require('../controllers/quizController');
 const verifyToken = require('../middleware/verifyToken');
 const checkRole   = require('../middleware/checkRole');
 
