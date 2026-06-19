@@ -22,13 +22,6 @@ const ICONOS_TIPO = {
   otro: { emoji: "📎", color: "#4b5563", bg: "#f3f4f6" },
 };
 
-// Datos mock para desarrollo — reemplazar con llamada real a la API
-const MOCK_MATERIALES = [
-  { id: 1, nombre: "Slides de la lección.pdf", tipo: "pdf", url: "#", tamaño: "1.2 MB" },
-  { id: 2, nombre: "Ejercicios prácticos.zip", tipo: "zip", url: "#", tamaño: "840 KB" },
-  { id: 3, nombre: "Lectura complementaria.pdf", tipo: "pdf", url: "#", tamaño: "320 KB" },
-];
-
 export default function MaterialDownload({ leccionId, cursoId }) {
   const [materiales, setMateriales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,9 +39,7 @@ export default function MaterialDownload({ leccionId, cursoId }) {
         );
         setMateriales(res.data);
       } catch (err) {
-        // Mientras no exista el endpoint, usamos los mock
-        console.warn("API no disponible, usando datos mock:", err.message);
-        setMateriales(MOCK_MATERIALES);
+        setError(err);
       } finally {
         setLoading(false);
       }
