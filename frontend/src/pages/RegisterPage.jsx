@@ -3,22 +3,19 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [phone, setPhone] = useState("");
+  const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [exito, setExito] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
-    if (!name || !lastName || !email || !password || !confirmPassword) {
+    if (!nombre || !email || !password || !confirmPassword) {
       setError("Por favor completa todos los campos obligatorios.");
       return;
     }
@@ -28,18 +25,11 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      await api.post("/auth/register", {
-        nombre: name,
-        apellidoPaterno: lastName,
-        apellidoMaterno: middleName,
-        fechaNacimiento: birthDate,
-        telefono: phone,
-        email,
-        password,
-      });
-      navigate("/login");
+      await api.post("/auth/register", { nombre, email, password });
+      setExito("Cuenta creada correctamente. Redirigiendo al inicio de sesión...");
+      setTimeout(() => navigate("/login"), 1200);
     } catch (err) {
-      setError("Error al registrar. Intenta de nuevo.");
+      setError(err.response?.data?.error || "Error al registrar. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -63,55 +53,12 @@ export default function RegisterPage() {
 
           <form onSubmit={handleRegister} noValidate>
             <div style={styles.field}>
-              <label style={styles.label}>Nombre</label>
+              <label style={styles.label}>Nombre completo</label>
               <input
                 type="text"
-                placeholder="Solo nombre (sin apellidos)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Apellido Paterno</label>
-              <input
-                type="text"
-                placeholder="Solo apellido paterno"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Apellido Materno</label>
-              <input
-                type="text"
-                placeholder="Solo apellido materno"
-                value={middleName}
-                onChange={(e) => setMiddleName(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Fecha de nacimiento</label>
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Número de teléfono</label>
-              <input
-                type="tel"
-                placeholder="123-456-7890"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Nombre y apellidos"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
                 style={styles.input}
               />
             </div>
@@ -150,6 +97,7 @@ export default function RegisterPage() {
             </div>
 
             {error && <p style={styles.error}>{error}</p>}
+            {exito && <p style={styles.exito}>{exito}</p>}
 
             <button type="submit" style={styles.btn} disabled={loading}>
               {loading ? "Registrando..." : "FINALIZAR REGISTRO"}
@@ -177,6 +125,7 @@ const styles = {
     justifyContent: "center",
     backgroundColor: "#f0f4f8",
     fontFamily: "Inter, sans-serif",
+    padding: "2rem 0",
   },
   card: {
     display: "flex",
@@ -258,14 +207,7 @@ const styles = {
     fontFamily: "Inter, sans-serif",
     color: "#111827",
     backgroundColor: "#fff",
-  },
-  forgot: {
-    display: "block",
-    textAlign: "right",
-    fontSize: "12px",
-    color: "#185FA5",
-    cursor: "pointer",
-    marginBottom: "1.25rem",
+    boxSizing: "border-box",
   },
   btn: {
     width: "100%",
@@ -285,5 +227,17 @@ const styles = {
     fontSize: "12px",
     color: "#DC2626",
     marginTop: "10px",
+  },
+  exito: {
+    textAlign: "center",
+    fontSize: "12px",
+    color: "#15803d",
+    marginTop: "10px",
+  },
+  loginLink: {
+    textAlign: "center",
+    fontSize: "12px",
+    color: "#6b7280",
+    marginTop: "14px",
   },
 };
