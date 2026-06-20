@@ -12,18 +12,20 @@ import api from "../services/api";
 export default function LessonViewer({ leccion, cursoId, onCompletada }) {
   const [completada, setCompletada] = useState(leccion?.completada || false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   if (!leccion) return null;
 
   const handleCompletar = async () => {
     if (completada || loading) return;
     setLoading(true);
+    setError("");
     try {
       await api.post(`/progreso/cursos/${cursoId}/lecciones/${leccion.id}/completar`);
       setCompletada(true);
       if (onCompletada) onCompletada(leccion.id);
     } catch (err) {
-      console.error("Error al marcar lección como completada:", err);
+      setError(err.response?.data?.error || "No se pudo guardar tu avance. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -72,6 +74,7 @@ export default function LessonViewer({ leccion, cursoId, onCompletada }) {
             {loading ? "Guardando..." : "✓ Marcar como completada"}
           </button>
         )}
+        {error && <p style={styles.errorTxt}>{error}</p>}
       </div>
     </div>
   );
@@ -143,6 +146,11 @@ const styles = {
   },
   footer: {
     paddingTop: "4px",
+  },
+  errorTxt: {
+    marginTop: "8px",
+    fontSize: "12px",
+    color: "#dc2626",
   },
   btnCompletar: {
     padding: "10px 20px",
