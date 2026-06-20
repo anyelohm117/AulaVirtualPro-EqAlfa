@@ -94,10 +94,19 @@ const getQuizzesByCurso = async (req, res) => {
     return res.status(500).json({ error: 'Error al obtener quizzes', detalle: error.message });
   }
 };
-
-module.exports = { 
-  getQuizById, 
-  submitQuiz, 
-  getResultado,
-  getQuizzesByCurso 
+/**
+ * @desc    Obtiene todos los resultados de quiz del alumno autenticado
+ * @route   GET /api/v1/quiz/resultados/mios
+ * @access  Private (alumno)
+ */
+const getMisResultados = async (req, res) => {
+  try {
+    const resultados = await QuizResult.find({ alumnoId: req.user.id })
+      .populate({ path: 'quizId', select: 'titulo cursoId' });
+    return res.status(200).json(resultados);
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al obtener resultados', detalle: error.message });
+  }
 };
+
+module.exports = { submitQuiz, getResultado, getQuizById, getQuizzesByCurso, getMisResultados };

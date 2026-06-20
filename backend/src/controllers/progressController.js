@@ -61,5 +61,19 @@ const getProgreso = async (req, res) => {
     return res.status(500).json({ error: 'Error al obtener progreso', detalle: error.message });
   }
 };
+/**
+ * @desc    Obtiene todo el progreso del alumno autenticado en todos sus cursos
+ * @route   GET /api/v1/progreso
+ * @access  Private (alumno)
+ */
+const getMiProgreso = async (req, res) => {
+  try {
+    const progresos = await Progress.find({ alumnoId: req.user.id })
+      .populate({ path: 'cursoId', select: 'titulo' });
+    return res.status(200).json(progresos);
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al obtener progreso', detalle: error.message });
+  }
+};
 
-module.exports = { marcarLeccion, getProgreso };
+module.exports = { marcarLeccion, getProgreso, getMiProgreso };
