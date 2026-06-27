@@ -89,6 +89,17 @@ export default function TeacherDashboardPage() {
     setExito("");
   };
 
+  const handleEliminar = async (curso) => {
+    const confirmar = window.confirm(`¿Eliminar el curso "${curso.titulo}"? Esta acción lo desactivará.`);
+    if (!confirmar) return;
+    try {
+      await api.delete(`/cursos/${curso._id}`);
+      await cargarCursos();
+    } catch (err) {
+      alert("Error al eliminar el curso.");
+    }
+  };
+
   return (
     <div style={s.page}>
       {/* Sidebar */}
@@ -168,7 +179,10 @@ export default function TeacherDashboardPage() {
                         {curso.activo ? "Activo" : "Inactivo"}
                       </span>
                     </div>
-                    <button style={s.btnEdit} onClick={() => abrirEditar(curso)}>✏️ Editar Curso</button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button style={s.btnEdit} onClick={() => abrirEditar(curso)}>✏️ Editar</button>
+                      <button style={{ ...s.btnEdit, backgroundColor: "#fff", color: "#dc2626", border: "1px solid #dc2626" }} onClick={() => handleEliminar(curso)}>🗑️ Eliminar</button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -376,7 +390,7 @@ const s = {
   },
   btnEdit: {
     marginTop: "12px",
-    width: "100%",
+    flex: 1,
     padding: "8px",
     backgroundColor: "#f0f4f8",
     border: "1px solid #d1d5db",

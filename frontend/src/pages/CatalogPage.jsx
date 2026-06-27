@@ -15,24 +15,32 @@ export default function CatalogPage() {
   const [busqueda, setBusqueda] = useState("");
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
   const [cursos, setCursos] = useState([]);
+  const [progresoPorCurso, setProgresoPorCurso] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const cargarCursos = async () => {
-      try {
-        const res = await api.get("/cursos");
-        setCursos(res.data);
-      } catch (err) {
-        setError("No se pudieron cargar los cursos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargarCursos();
-  }, []);
+ useEffect(() => {
+  const cargarCursos = async () => {
+    try {
+      const res = await api.get("/cursos");
+      setCursos(res.data);
+
+      const resProgreso = await api.get("/progreso");
+      const mapa = {};
+      resProgreso.data.forEach((p) => {
+        mapa[p.cursoId?._id] = p.porcentaje;
+      });
+      setProgresoPorCurso(mapa);
+    } catch (err) {
+      setError("No se pudieron cargar los cursos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  cargarCursos();
+}, []);
 
   const cursosFiltrados = cursos.filter((c) =>
     c.titulo.toLowerCase().includes(busqueda.toLowerCase())
@@ -121,7 +129,7 @@ export default function CatalogPage() {
                   <div style={styles.cardBody}>
                     <p style={styles.cardTitle}>{curso.titulo}</p>
                     <p style={styles.cardInstructor}>{curso.descripcion}</p>
-                    <ProgressBar value={0} height={4} />
+                    <ProgressBar value={progresoPorCurso[curso._id] || 0} height={4} />
                     <button
                       style={styles.btnContinuar}
                       onClick={() => navigate(`/course/${curso._id}`)}

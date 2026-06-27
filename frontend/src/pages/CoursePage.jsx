@@ -81,6 +81,12 @@ export default function CoursePage() {
     <div style={styles.page}>
       <div style={styles.sidebar}>
         <div style={styles.sideHeader}>
+          <button
+            onClick={() => navigate("/catalog")}
+            style={{ fontSize: "11px", color: "#185FA5", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0, fontFamily: "Inter, sans-serif", fontWeight: "600" }}
+          >
+            ← Volver al catálogo
+          </button>
           <h3 style={styles.sideTitle}>{curso.titulo}</h3>
         </div>
 
@@ -129,6 +135,7 @@ export default function CoursePage() {
 
         <div style={styles.content}>
           <LessonViewer
+            key={leccionActiva?._id}
             leccion={{ ...leccionActiva, id: leccionActiva?._id, completada: estaCompletada(leccionActiva?._id) }}
             cursoId={id}
             onCompletada={handleLeccionCompletada}
