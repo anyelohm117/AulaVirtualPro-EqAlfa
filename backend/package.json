@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "seed": "node src/seeds/seed.js",
-    "test:api": "node src/tests/test.js"
+    "seed": "node src/seeds/seed.js"
   },
   "keywords": [],
   "author": "",
