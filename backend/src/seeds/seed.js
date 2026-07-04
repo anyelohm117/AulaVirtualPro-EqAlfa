@@ -1,12 +1,13 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
 const bcrypt   = require('bcryptjs');
+const { connectDB, MONGO_URI } = require('../config/database');
+const mongoose = require('mongoose');
 const User     = require('../models/User');
 const Course   = require('../models/Course');
 const Quiz     = require('../models/Quiz');
 
 const seed = async () => {
-  await mongoose.connect(process.env.MONGO_URI);
+  await connectDB();
   console.log('🌱 Iniciando seed...');
 
 
