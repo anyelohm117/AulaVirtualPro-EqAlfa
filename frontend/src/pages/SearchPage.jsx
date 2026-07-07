@@ -1,390 +1,195 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-
-const catalogoCursos = [
-  { id: 1,  nombre: "Introducción a la programación", materia: "Programación",      profesor: "Ana Lopez",       costo: 0,    moneda: "MXN", descripcion: "Aprende los fundamentos: variables, condicionales y ciclos.", rating: 4.8, alumnos: 1240 },
-  { id: 2,  nombre: "Gestión de proyectos Agile",     materia: "Administración",     profesor: "Carlos Mendez",   costo: 599,  moneda: "MXN", descripcion: "Metodologías ágiles para gestionar equipos y proyectos.", rating: 4.6, alumnos: 880 },
-  { id: 3,  nombre: "Comunicación efectiva",          materia: "Habilidades blandas", profesor: "Laura García",   costo: 399,  moneda: "MXN", descripcion: "Técnicas de oratoria, escucha activa y negociación.", rating: 4.7, alumnos: 2100 },
-  { id: 4,  nombre: "Marketing Digital",              materia: "Marketing",           profesor: "Roberto Torres",  costo: 799,  moneda: "MXN", descripcion: "SEO, redes sociales y estrategias de contenido.", rating: 4.5, alumnos: 1560 },
-  { id: 5,  nombre: "Seguridad Informática",          materia: "Ciberseguridad",      profesor: "Miguel Ángel Ruiz", costo: 999, moneda: "MXN", descripcion: "Amenazas, vulnerabilidades y buenas prácticas.", rating: 4.9, alumnos: 730 },
-  { id: 6,  nombre: "Excel Avanzado",                 materia: "Ofimática",           profesor: "Patricia Herrera", costo: 299, moneda: "MXN", descripcion: "Tablas dinámicas, macros VBA y dashboards.", rating: 4.8, alumnos: 3200 },
-  { id: 7,  nombre: "Herramientas Digitales",         materia: "Tecnología",          profesor: "Ana Lopez",        costo: 0,   moneda: "MXN", descripcion: "Domina las herramientas más usadas en el trabajo moderno.", rating: 4.4, alumnos: 1890 },
-  { id: 8,  nombre: "Python para Ciencia de Datos",   materia: "Programación",        profesor: "Diego Salas",      costo: 1199, moneda: "MXN", descripcion: "Pandas, NumPy, visualización y machine learning básico.", rating: 4.9, alumnos: 950 },
-  { id: 9,  nombre: "Diseño UX/UI",                   materia: "Diseño",              profesor: "Valeria Cruz",     costo: 899, moneda: "MXN", descripcion: "Prototipado, wireframes y principios de usabilidad.", rating: 4.7, alumnos: 670 },
-  { id: 10, nombre: "Inglés de Negocios",              materia: "Idiomas",             profesor: "Sandra Williams",  costo: 699, moneda: "MXN", descripcion: "Vocabulario, presentaciones y correos en inglés profesional.", rating: 4.6, alumnos: 1430 },
-  { id: 11, nombre: "Liderazgo y trabajo en equipo",  materia: "Habilidades blandas", profesor: "Carlos Mendez",   costo: 499, moneda: "MXN", descripcion: "Habilidades de liderazgo, motivación y resolución de conflictos.", rating: 4.5, alumnos: 1120 },
-  { id: 12, nombre: "SQL y Bases de Datos",           materia: "Programación",        profesor: "Diego Salas",      costo: 0,   moneda: "MXN", descripcion: "Consultas, joins, procedimientos y optimización.", rating: 4.8, alumnos: 2050 },
-];
-
-const NAV_ITEMS = [
-  { icon: "🏠", label: "Inicio",      path: "/catalog" },
-  { icon: "📚", label: "Mi progreso", path: "/progress" },
-  { icon: "📋", label: "Tareas",      path: "/assignments" },
-  { icon: "🔍", label: "+ Cursos",    path: "/search" },
-];
-
-const MATERIAS = ["Todas", ...Array.from(new Set(catalogoCursos.map(c => c.materia))).sort()];
+import api from "../services/api";
 
 export default function SearchPage() {
-  const [query, setQuery]           = useState("");
-  const [filtroMateria, setFiltroMateria] = useState("Todas");
-  const [filtroPrecio, setFiltroPrecio]   = useState("todos");
-  const [sidebarAbierto, setSidebarAbierto] = useState(false);
-  const { usuario, logout } = useAuth();
   const navigate = useNavigate();
+  const [cursos, setCursos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
+  const [inscribiendo, setInscribiendo] = useState(null);
+  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
-  const resultados = catalogoCursos.filter((c) => {
-    const q = query.toLowerCase();
-    const matchQ = !q ||
-      c.nombre.toLowerCase().includes(q) ||
-      c.profesor.toLowerCase().includes(q) ||
-      c.materia.toLowerCase().includes(q);
-    const matchM = filtroMateria === "Todas" || c.materia === filtroMateria;
-    const matchP =
-      filtroPrecio === "todos" ? true :
-      filtroPrecio === "gratis" ? c.costo === 0 :
-      c.costo > 0;
-    return matchQ && matchM && matchP;
-  });
+  useEffect(() => {
+    cargarDisponibles();
+  }, []);
 
-  const renderStars = (rating) => {
-    const full = Math.floor(rating);
-    return "★".repeat(full) + (rating % 1 >= 0.5 ? "½" : "") + "☆".repeat(5 - Math.ceil(rating));
+  const cargarDisponibles = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/inscripciones/disponibles");
+      setCursos(res.data);
+    } catch (err) {
+      console.error("Error al cargar cursos:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleInscribirse = async (cursoId) => {
+    setInscribiendo(cursoId);
+    setMensaje({ texto: "", tipo: "" });
+    try {
+      await api.post(`/inscripciones/${cursoId}`);
+      setCursos(prev =>
+        prev.map(c => c._id === cursoId ? { ...c, yaInscrito: true } : c)
+      );
+      setMensaje({ texto: "¡Te inscribiste correctamente! Ya puedes verlo en Mis Cursos.", tipo: "ok" });
+    } catch (err) {
+      const msg = err.response?.data?.error || "Error al inscribirse.";
+      setMensaje({ texto: msg, tipo: "error" });
+    } finally {
+      setInscribiendo(null);
+    }
+  };
+
+  const cursosFiltrados = cursos.filter(c =>
+    c.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
+    c.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  const disponibles = cursosFiltrados.filter(c => !c.yaInscrito);
+  const inscritos   = cursosFiltrados.filter(c => c.yaInscrito);
 
   return (
     <div style={s.page}>
-      {sidebarAbierto && (
-        <div style={s.overlay} onClick={() => setSidebarAbierto(false)} />
+      <div style={s.topbar}>
+        <button style={s.backBtn} onClick={() => navigate("/catalog")}>← Mis cursos</button>
+        <h2 style={s.title}>Explorar cursos</h2>
+      </div>
+
+      <div style={s.searchWrap}>
+        <input
+          type="text"
+          placeholder="Buscar por nombre o descripción..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          style={s.searchInput}
+        />
+      </div>
+
+      {mensaje.texto && (
+        <div style={{ ...s.banner, ...(mensaje.tipo === "ok" ? s.bannerOk : s.bannerErr) }}>
+          {mensaje.texto}
+          <button style={s.bannerClose} onClick={() => setMensaje({ texto: "", tipo: "" })}>✕</button>
+        </div>
       )}
 
-      {/* Sidebar */}
-      <div style={{ ...s.sidebar, width: sidebarAbierto ? "220px" : "56px" }}>
-        <button
-          style={s.hamburger}
-          onClick={() => setSidebarAbierto((v) => !v)}
-        >
-          <span style={s.hLine} />
-          <span style={s.hLine} />
-          <span style={s.hLine} />
-        </button>
-        <nav style={s.nav}>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.path}
-              style={{
-                ...s.navItem,
-                backgroundColor: item.path === "/search" ? "rgba(255,255,255,0.1)" : "transparent",
-              }}
-              onClick={() => { navigate(item.path); setSidebarAbierto(false); }}
-              title={item.label}
-            >
-              <span style={s.navIcon}>{item.icon}</span>
-              {sidebarAbierto && <span style={s.navLabel}>{item.label}</span>}
-            </button>
-          ))}
-        </nav>
-        <div style={{ marginTop: "auto" }}>
-          <button style={s.navItem} onClick={() => { logout(); navigate("/login"); }} title="Cerrar sesión">
-            <span style={s.navIcon}>🚪</span>
-            {sidebarAbierto && <span style={{ ...s.navLabel, color: "#f87171" }}>Cerrar sesión</span>}
-          </button>
-        </div>
-      </div>
-
-      {/* Main */}
-      <div style={s.main}>
-        {/* Topbar */}
-        <div style={s.topbar}>
-          <h2 style={s.topTitle}>🔍 Explorar cursos</h2>
-          <div style={s.userInfo}>
-            <div style={s.avatar}>{usuario ? usuario.charAt(0).toUpperCase() : "U"}</div>
-            <span style={s.userName}>Hola, {usuario || "Usuario"}</span>
-          </div>
-        </div>
-
-        {/* Buscador */}
-        <div style={s.searchSection}>
-          <input
-            type="text"
-            placeholder="Buscar por materia, profesor o nombre del curso..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            style={s.searchInput}
-          />
-          <span style={s.searchIcon}>🔍</span>
-        </div>
-
-        {/* Filtros */}
-        <div style={s.filtrosBar}>
-          <div style={s.filtroGroup}>
-            <span style={s.filtroLabel}>Materia:</span>
-            <select
-              value={filtroMateria}
-              onChange={(e) => setFiltroMateria(e.target.value)}
-              style={s.select}
-            >
-              {MATERIAS.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
-          <div style={s.filtroGroup}>
-            <span style={s.filtroLabel}>Precio:</span>
-            {["todos", "gratis", "pago"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFiltroPrecio(f)}
-                style={{
-                  ...s.filtroBtn,
-                  backgroundColor: filtroPrecio === f ? "#185FA5" : "#f3f4f6",
-                  color: filtroPrecio === f ? "#fff" : "#374151",
-                }}
-              >
-                {f === "todos" ? "Todos" : f === "gratis" ? "Gratis" : "De pago"}
-              </button>
-            ))}
-          </div>
-          <span style={s.resultCount}>{resultados.length} curso{resultados.length !== 1 ? "s" : ""}</span>
-        </div>
-
-        {/* Grid de cursos */}
-        <div style={s.grid}>
-          {resultados.length === 0 ? (
-            <p style={s.empty}>No se encontraron cursos con esos criterios.</p>
-          ) : (
-            resultados.map((curso) => (
-              <div key={curso.id} style={s.card}>
-                <div style={s.cardThumb}>
-                  <span style={{ fontSize: "32px" }}>📚</span>
-                  <span style={{
-                    ...s.precioTag,
-                    backgroundColor: curso.costo === 0 ? "#d1fae5" : "#dbeafe",
-                    color: curso.costo === 0 ? "#065f46" : "#1e40af",
-                  }}>
-                    {curso.costo === 0 ? "GRATIS" : `$${curso.costo.toLocaleString()} MXN`}
-                  </span>
-                </div>
-                <div style={s.cardBody}>
-                  <p style={s.cardMateria}>{curso.materia}</p>
-                  <p style={s.cardNombre}>{curso.nombre}</p>
-                  <p style={s.cardDesc}>{curso.descripcion}</p>
-                  <div style={s.cardProfesor}>
-                    <div style={s.miniAvatar}>{curso.profesor.charAt(0)}</div>
-                    <span style={s.profesorNombre}>{curso.profesor}</span>
+      {loading ? (
+        <p style={s.empty}>Cargando cursos disponibles...</p>
+      ) : (
+        <div style={s.content}>
+          {/* Cursos disponibles para inscribirse */}
+          <div style={s.section}>
+            <h3 style={s.sectionTitle}>
+              Disponibles para inscribirse
+              <span style={s.count}>{disponibles.length}</span>
+            </h3>
+            {disponibles.length === 0 ? (
+              <p style={s.empty}>
+                {busqueda ? "No se encontraron cursos con ese término." : "Ya estás inscrito en todos los cursos disponibles."}
+              </p>
+            ) : (
+              <div style={s.grid}>
+                {disponibles.map(curso => (
+                  <div key={curso._id} style={s.card}>
+                    <div style={s.thumb}>
+                      {curso.imagen
+                        ? <img src={curso.imagen} alt={curso.titulo} style={s.thumbImg} onError={e => e.target.style.display="none"} />
+                        : <span style={{ fontSize: "32px" }}>📚</span>
+                      }
+                    </div>
+                    <div style={s.cardBody}>
+                      <p style={s.cardTitle}>{curso.titulo}</p>
+                      <p style={s.cardDesc}>{curso.descripcion || "Sin descripción"}</p>
+                      <div style={s.cardMeta}>
+                        <span style={s.metaBadge}>
+                          {curso.modulos?.length || 0} módulos
+                        </span>
+                        <span style={s.metaBadge}>
+                          {curso.modulos?.reduce((acc, m) => acc + (m.lecciones?.length || 0), 0) || 0} lecciones
+                        </span>
+                      </div>
+                      <button
+                        style={{
+                          ...s.btnInscribir,
+                          ...(inscribiendo === curso._id ? s.btnDisabled : {}),
+                        }}
+                        onClick={() => handleInscribirse(curso._id)}
+                        disabled={inscribiendo === curso._id}
+                      >
+                        {inscribiendo === curso._id ? "Inscribiendo..." : "Inscribirme"}
+                      </button>
+                    </div>
                   </div>
-                  <div style={s.cardMeta}>
-                    <span style={s.stars}>{renderStars(curso.rating)}</span>
-                    <span style={s.rating}>{curso.rating}</span>
-                    <span style={s.alumnos}>({curso.alumnos.toLocaleString()})</span>
-                  </div>
-                  <button style={s.btnInscribir}>
-                    {curso.costo === 0 ? "Inscribirse gratis" : "Ver curso"}
-                  </button>
-                </div>
+                ))}
               </div>
-            ))
+            )}
+          </div>
+
+          {/* Cursos ya inscritos */}
+          {inscritos.length > 0 && (
+            <div style={s.section}>
+              <h3 style={s.sectionTitle}>
+                Ya inscrito
+                <span style={{ ...s.count, backgroundColor: "#dcfce7", color: "#15803d" }}>{inscritos.length}</span>
+              </h3>
+              <div style={s.grid}>
+                {inscritos.map(curso => (
+                  <div key={curso._id} style={{ ...s.card, opacity: 0.7 }}>
+                    <div style={s.thumb}>
+                      {curso.imagen
+                        ? <img src={curso.imagen} alt={curso.titulo} style={s.thumbImg} onError={e => e.target.style.display="none"} />
+                        : <span style={{ fontSize: "32px" }}>📚</span>
+                      }
+                    </div>
+                    <div style={s.cardBody}>
+                      <p style={s.cardTitle}>{curso.titulo}</p>
+                      <p style={s.cardDesc}>{curso.descripcion || "Sin descripción"}</p>
+                      <button
+                        style={s.btnYaInscrito}
+                        onClick={() => navigate(`/course/${curso._id}`)}
+                      >
+                        ✓ Inscrito — Ir al curso
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 const s = {
-  page: {
-    display: "flex",
-    minHeight: "100vh",
-    fontFamily: "Inter, sans-serif",
-    backgroundColor: "#f0f4f8",
-    position: "relative",
-  },
-  overlay: { position: "fixed", inset: 0, zIndex: 10, backgroundColor: "rgba(0,0,0,0.25)" },
-  sidebar: {
-    backgroundColor: "#1a3a5c",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    padding: "12px 0",
-    gap: "4px",
-    transition: "width 0.22s ease",
-    overflow: "hidden",
-    flexShrink: 0,
-    position: "relative",
-    zIndex: 20,
-  },
-  hamburger: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "5px",
-    padding: "10px 16px",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    width: "56px",
-    flexShrink: 0,
-  },
-  hLine: { display: "block", width: "20px", height: "2px", backgroundColor: "#85B7EB", borderRadius: "2px" },
-  nav: { display: "flex", flexDirection: "column", width: "100%", gap: "2px", padding: "4px 0" },
-  navItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "10px 16px",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    width: "100%",
-    textAlign: "left",
-    whiteSpace: "nowrap",
-  },
-  navIcon: { fontSize: "18px", width: "24px", textAlign: "center", flexShrink: 0 },
-  navLabel: { fontSize: "13px", fontWeight: "500", color: "#d1e8fa" },
-  main: { flex: 1, display: "flex", flexDirection: "column", backgroundColor: "#fff", minWidth: 0 },
-  topbar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "14px 20px",
-    borderBottom: "0.5px solid #e5e7eb",
-  },
-  topTitle: { fontSize: "16px", fontWeight: "600", color: "#111827", margin: 0 },
-  userInfo: { display: "flex", alignItems: "center", gap: "8px" },
-  avatar: {
-    width: "30px", height: "30px", borderRadius: "50%", backgroundColor: "#E6F1FB",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: "12px", fontWeight: "600", color: "#185FA5",
-  },
-  userName: { fontSize: "13px", color: "#6b7280" },
-  searchSection: {
-    position: "relative",
-    padding: "14px 20px",
-    borderBottom: "0.5px solid #e5e7eb",
-  },
-  searchInput: {
-    width: "100%",
-    padding: "10px 12px 10px 36px",
-    fontSize: "13px",
-    border: "1px solid #d1d5db",
-    borderRadius: "10px",
-    backgroundColor: "#f9fafb",
-    color: "#111827",
-    outline: "none",
-    fontFamily: "Inter, sans-serif",
-    boxSizing: "border-box",
-  },
-  searchIcon: {
-    position: "absolute",
-    left: "32px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    fontSize: "14px",
-    pointerEvents: "none",
-  },
-  filtrosBar: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    padding: "10px 20px",
-    borderBottom: "0.5px solid #e5e7eb",
-    flexWrap: "wrap",
-  },
-  filtroGroup: { display: "flex", alignItems: "center", gap: "6px" },
-  filtroLabel: { fontSize: "12px", color: "#6b7280", fontWeight: "500", whiteSpace: "nowrap" },
-  select: {
-    padding: "4px 8px",
-    fontSize: "12px",
-    border: "1px solid #d1d5db",
-    borderRadius: "6px",
-    backgroundColor: "#f9fafb",
-    color: "#374151",
-    fontFamily: "Inter, sans-serif",
-    cursor: "pointer",
-  },
-  filtroBtn: {
-    padding: "4px 12px",
-    border: "none",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "500",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
-  },
-  resultCount: { fontSize: "12px", color: "#9ca3af", marginLeft: "auto" },
-  grid: {
-    padding: "16px 20px",
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-    gap: "14px",
-    overflowY: "auto",
-  },
-  card: {
-    border: "0.5px solid #e5e7eb",
-    borderRadius: "12px",
-    overflow: "hidden",
-    backgroundColor: "#fff",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-    display: "flex",
-    flexDirection: "column",
-  },
-  cardThumb: {
-    height: "90px",
-    backgroundColor: "#EEF4FF",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  precioTag: {
-    position: "absolute",
-    top: "8px",
-    right: "8px",
-    padding: "2px 8px",
-    borderRadius: "20px",
-    fontSize: "10px",
-    fontWeight: "700",
-    fontFamily: "Inter, sans-serif",
-  },
-  cardBody: {
-    padding: "12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "5px",
-    flex: 1,
-  },
-  cardMateria: {
-    fontSize: "10px",
-    fontWeight: "700",
-    color: "#185FA5",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    margin: 0,
-  },
-  cardNombre: { fontSize: "13px", fontWeight: "600", color: "#111827", margin: 0, lineHeight: "1.4" },
-  cardDesc: { fontSize: "11px", color: "#6b7280", margin: 0, lineHeight: "1.5" },
-  cardProfesor: { display: "flex", alignItems: "center", gap: "6px", marginTop: "4px" },
-  miniAvatar: {
-    width: "20px", height: "20px", borderRadius: "50%",
-    backgroundColor: "#dbeafe", color: "#1e40af",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: "10px", fontWeight: "700", flexShrink: 0,
-  },
-  profesorNombre: { fontSize: "11px", color: "#374151", fontWeight: "500" },
-  cardMeta: { display: "flex", alignItems: "center", gap: "4px" },
-  stars: { fontSize: "11px", color: "#f59e0b" },
-  rating: { fontSize: "11px", fontWeight: "600", color: "#111827" },
-  alumnos: { fontSize: "10px", color: "#9ca3af" },
-  btnInscribir: {
-    width: "100%",
-    padding: "7px",
-    backgroundColor: "#185FA5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
-    marginTop: "auto",
-  },
-  empty: { fontSize: "13px", color: "#6b7280", gridColumn: "1 / -1", textAlign: "center", padding: "2rem 0" },
+  page: { minHeight: "100vh", backgroundColor: "#f0f4f8", fontFamily: "Inter, sans-serif" },
+  topbar: { padding: "14px 20px", backgroundColor: "#fff", borderBottom: "0.5px solid #e5e7eb", display: "flex", alignItems: "center", gap: "14px" },
+  backBtn: { background: "none", border: "none", color: "#185FA5", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: 0 },
+  title: { fontSize: "16px", fontWeight: "600", color: "#111827" },
+  searchWrap: { padding: "12px 20px", backgroundColor: "#fff", borderBottom: "0.5px solid #e5e7eb" },
+  searchInput: { width: "100%", maxWidth: "480px", padding: "8px 12px", fontSize: "13px", border: "0.5px solid #d1d5db", borderRadius: "8px", outline: "none", fontFamily: "Inter, sans-serif", boxSizing: "border-box" },
+  banner: { margin: "16px 20px 0", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", justifyContent: "space-between", alignItems: "center" },
+  bannerOk: { backgroundColor: "#dcfce7", color: "#15803d" },
+  bannerErr: { backgroundColor: "#fee2e2", color: "#991b1b" },
+  bannerClose: { background: "none", border: "none", cursor: "pointer", fontSize: "14px", color: "inherit", padding: "0 4px" },
+  content: { padding: "16px 20px" },
+  section: { marginBottom: "28px" },
+  sectionTitle: { fontSize: "13px", fontWeight: "600", color: "#111827", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" },
+  count: { fontSize: "11px", fontWeight: "600", padding: "2px 8px", borderRadius: "99px", backgroundColor: "#E6F1FB", color: "#185FA5" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px" },
+  card: { backgroundColor: "#fff", borderRadius: "12px", border: "0.5px solid #e5e7eb", overflow: "hidden" },
+  thumb: { height: "100px", backgroundColor: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  thumbImg: { width: "100%", height: "100%", objectFit: "cover" },
+  cardBody: { padding: "12px", display: "flex", flexDirection: "column", gap: "6px" },
+  cardTitle: { fontSize: "13px", fontWeight: "600", color: "#111827", lineHeight: "1.3" },
+  cardDesc: { fontSize: "11px", color: "#6b7280", lineHeight: "1.4", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" },
+  cardMeta: { display: "flex", gap: "6px", flexWrap: "wrap" },
+  metaBadge: { fontSize: "10px", padding: "2px 7px", borderRadius: "99px", backgroundColor: "#f3f4f6", color: "#374151" },
+  btnInscribir: { width: "100%", padding: "8px", backgroundColor: "#185FA5", color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: "4px" },
+  btnDisabled: { backgroundColor: "#e5e7eb", color: "#9ca3af", cursor: "not-allowed" },
+  btnYaInscrito: { width: "100%", padding: "8px", backgroundColor: "#f0fdf4", color: "#15803d", border: "0.5px solid #86efac", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: "4px" },
+  empty: { fontSize: "13px", color: "#9ca3af", textAlign: "center", padding: "2rem 0" },
 };
