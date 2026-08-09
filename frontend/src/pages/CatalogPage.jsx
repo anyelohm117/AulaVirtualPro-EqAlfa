@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Home, BookOpen, ClipboardList, Search, GraduationCap } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import "../styles/global.css";
 import "../styles/layout.css";
 import "../styles/courses.css";
 import "../styles/components.css";
-const NAV=[{icon:'🏠',label:'Mis cursos',path:'/catalog'},{icon:'📚',label:'Mi progreso',path:'/progress'},{icon:'📋',label:'Tareas',path:'/assignments'},{icon:'🔍',label:'Explorar',path:'/search'}];
+const NAV=[{icon:Home,label:'Mis cursos',path:'/catalog'},{icon:BookOpen,label:'Mi progreso',path:'/progress'},{icon:ClipboardList,label:'Tareas',path:'/assignments'},{icon:Search,label:'Explorar',path:'/search'}];
 export default function CatalogPage() {
   const [busqueda,setBusqueda]=useState(""); const [cursos,setCursos]=useState([]); const [prog,setProg]=useState({}); const [loading,setLoading]=useState(true); const [error,setError]=useState("");
   const {usuario,logout}=useAuth(); const navigate=useNavigate();
@@ -16,12 +17,12 @@ export default function CatalogPage() {
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-brand">
-          <div className="sidebar-logo">🎓</div>
+          <div className="sidebar-logo"><GraduationCap size={18} color="#fff"/></div>
           <div><p className="sidebar-title">AulaVirtual Pro</p><p className="sidebar-role">Alumno</p></div>
         </div>
       </div>
       <nav className="sidebar-nav">
-        {NAV.map(item=><button key={item.path} onClick={()=>navigate(item.path)} className={`nav-item ${location.pathname===item.path?'active':''}`}><span className="nav-icon">{item.icon}</span>{item.label}</button>)}
+        {NAV.map(item=><button key={item.path} onClick={()=>navigate(item.path)} className={`nav-item ${location.pathname===item.path?'active':''}`}><span className="nav-icon"><item.icon size={16}/></span>{item.label}</button>)}
       </nav>
       <div className="sidebar-footer">
         <div className="user-profile-badge">
@@ -38,12 +39,12 @@ export default function CatalogPage() {
       <div className="main-content">
         <header className="page-header">
           <div><h1 className="page-title">Mis cursos</h1><p className="page-subtitle">{cursos.length} curso{cursos.length!==1?'s':''} inscrito{cursos.length!==1?'s':''}</p></div>
-          <div className="search-input-wrapper"><span className="search-icon">🔍</span><input type="text" placeholder="Buscar..." value={busqueda} onChange={e=>setBusqueda(e.target.value)} className="search-input"/></div>
+          <div className="search-input-wrapper"><span className="search-icon"><Search size={16}/></span><input type="text" placeholder="Buscar..." value={busqueda} onChange={e=>setBusqueda(e.target.value)} className="search-input"/></div>
         </header>
         <div className="page-body">
           {loading?<div className="loading-state"><div className="loading-state-inner"><div className="spinner-large"/><p className="loading-text">Cargando tus cursos...</p></div></div>
           :error?<p className="error-state">{error}</p>
-          :cursos.length===0?<div className="empty-state"><div className="empty-state-icon">📚</div><h2 className="empty-state-title">Aún no tienes cursos</h2><p className="empty-state-desc">Explora el catálogo y únete a los cursos disponibles.</p><button onClick={()=>navigate("/search")} className="btn-action-primary">Explorar cursos →</button></div>
+          :cursos.length===0?<div className="empty-state"><div className="empty-state-icon"><BookOpen size={48}/></div><h2 className="empty-state-title">Aún no tienes cursos</h2><p className="empty-state-desc">Explora el catálogo y únete a los cursos disponibles.</p><button onClick={()=>navigate("/search")} className="btn-action-primary">Explorar cursos →</button></div>
           :filtrados.length===0?<div className="empty-state"><p className="empty-state-desc">Sin resultados para "{busqueda}"</p><button onClick={()=>setBusqueda("")} className="btn-soft">Ver todos</button></div>
           :<div className="courses-grid">
             {filtrados.map(curso=>{
@@ -51,7 +52,7 @@ export default function CatalogPage() {
               return (
                 <div key={curso._id} onClick={()=>navigate(`/course/${curso._id}`)} className="course-card">
                   <div className={`course-card-banner ${curso.imagen?'':'course-card-banner-default'}`} style={curso.imagen?{backgroundImage:`url(${curso.imagen})`,backgroundSize:'cover',backgroundPosition:'center'}:undefined}>
-                    {!curso.imagen&&<div className="course-card-banner-icon">📚</div>}
+                    {!curso.imagen&&<div className="course-card-banner-icon"><BookOpen size={28}/></div>}
                     <div className="course-card-overlay"/>
                     <div className="course-card-progress-overlay">
                       <div className="progress-bar-thin-wrapper"><div className="progress-bar-thin-bg"><div className="progress-bar-thin-fill" style={{width:`${pct}%`}}/></div><span className="progress-bar-text">{pct}%</span></div>

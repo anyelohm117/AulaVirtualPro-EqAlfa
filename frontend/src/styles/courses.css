@@ -6,17 +6,27 @@
 
 .course-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   overflow: hidden;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
 }
 
 .course-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+.course-card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.course-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .course-card-banner {
@@ -117,10 +127,29 @@
   background: var(--primary-gradient);
   color: #fff;
   border: none;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
+  box-shadow: var(--shadow-button);
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+
+.btn-start-course:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-button-hover);
+}
+
+.btn-start-course:active {
+  transform: translateY(0) scale(0.98);
+  background: var(--primary-700);
+  box-shadow: none;
+}
+
+.btn-start-course:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .course-viewer-container {
@@ -149,6 +178,7 @@
 .btn-back-link {
   background: none;
   border: none;
+  border-radius: var(--radius-xs);
   color: rgba(255, 255, 255, 0.65);
   font-size: 12.5px;
   cursor: pointer;
@@ -156,10 +186,16 @@
   align-items: center;
   gap: 5px;
   margin-bottom: 10px;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .btn-back-link:hover {
   color: #fff;
+}
+
+.btn-back-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .course-sidebar-title {
@@ -189,6 +225,16 @@
   border: none;
   cursor: pointer;
   border-bottom: 1px solid var(--border-subtle);
+  transition: background-color var(--duration-base) var(--ease-out);
+}
+
+.module-accordion-item:hover {
+  background: var(--border-subtle);
+}
+
+.module-accordion-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary) inset;
 }
 
 .module-accordion-badge {
@@ -215,7 +261,16 @@
   border: none;
   cursor: pointer;
   border-bottom: 1px solid var(--bg-main);
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-base) var(--ease-out);
+}
+
+.lesson-item-btn:hover {
+  background: var(--primary-50);
+}
+
+.lesson-item-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary) inset;
 }
 
 .lesson-item-btn.active {
@@ -246,7 +301,7 @@
 
 .quiz-card {
   background: #fff;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   width: 100%;
   max-width: 620px;
   box-shadow: var(--shadow-lg);
@@ -258,13 +313,24 @@
   align-items: center;
   gap: 12px;
   padding: 13px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
-  transition: all 0.15s ease;
+  transition: border-color var(--duration-base) var(--ease-out),
+              background-color var(--duration-base) var(--ease-out);
   width: 100%;
   background: #fff;
   border: 2px solid var(--border-light);
+}
+
+.quiz-option-btn:hover {
+  border-color: var(--primary-200);
+  background: var(--primary-50);
+}
+
+.quiz-option-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .quiz-option-btn.selected {
@@ -423,16 +489,33 @@
   background: var(--border-subtle);
   color: #475569;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-prev:hover:not(:disabled) {
+  background: var(--border-light);
+  transform: translateY(-1px);
+}
+
+.btn-prev:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-prev:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-prev:disabled {
   opacity: 0.4;
   cursor: default;
+  transform: none;
 }
 
 .btn-next {
@@ -440,11 +523,37 @@
   background: var(--primary-gradient);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: var(--shadow-button);
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+
+.btn-next:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-button-hover);
+}
+
+.btn-next:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  background: var(--primary-700);
+  box-shadow: none;
+}
+
+.btn-next:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
+}
+
+.btn-next:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .course-viewer-body {
@@ -495,7 +604,7 @@
 
 .quiz-result-card {
   background: #fff;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 3rem 2.5rem;
   max-width: 460px;
   width: 100%;
@@ -685,26 +794,47 @@
   background: var(--primary-gradient);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: var(--shadow-button);
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+
+.quiz-next-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-button-hover);
+}
+
+.quiz-next-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  background: var(--primary-700);
+  box-shadow: none;
+}
+
+.quiz-next-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .quiz-next-btn:disabled {
   background: #E2E8F0;
   color: #94A3B8;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .search-card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: all 0.15s ease;
+  transition: all var(--duration-base) var(--ease-out);
 }
 
 .search-card-inscrito {
@@ -774,11 +904,28 @@
   background: var(--success-bg);
   color: var(--success);
   border: 1px solid var(--success-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-go-course:hover {
+  background: #D1FAE5;
+  transform: translateY(-1px);
+}
+
+.btn-go-course:active {
+  transform: translateY(0) scale(0.98);
+  background: var(--success-border);
+}
+
+.btn-go-course:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-enroll {
@@ -786,15 +933,36 @@
   background: var(--primary-gradient);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: var(--shadow-button);
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+
+.btn-enroll:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-button-hover);
+}
+
+.btn-enroll:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  background: var(--primary-700);
+  box-shadow: none;
+}
+
+.btn-enroll:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-enroll:disabled {
   background: #E2E8F0;
   color: #94A3B8;
   cursor: pointer;
+  transform: none;
+  box-shadow: none;
 }

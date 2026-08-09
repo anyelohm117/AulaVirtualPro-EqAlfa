@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FileText, Trophy, ClipboardList } from "lucide-react";
 import api from "../services/api";
 import "../styles/global.css";
 import "../styles/courses.css";
@@ -11,13 +12,13 @@ export default function QuizPage() {
   const [resultado,setResultado]=useState(null); const [enviando,setEnviando]=useState(false);
   useEffect(()=>{(async()=>{ try{ const r1=await api.get(`/quiz/curso/${cursoId}`); if(!r1.data.length){setError("Este curso no tiene quiz disponible.");return;} const r2=await api.get(`/quiz/${r1.data[0]._id}`); setQuiz(r2.data); }catch{setError("No se pudo cargar el quiz.");}finally{setLoading(false);} })();},[cursoId]);
   if(loading)return(<div className="loading-screen"><div className="spinner-large"/></div>);
-  if(error)return(<div className="quiz-error"><span className="quiz-error-icon">📝</span><p className="quiz-error-text">{error}</p><button onClick={()=>navigate(-1)} className="btn-action-primary">Volver al curso</button></div>);
+  if(error)return(<div className="quiz-error"><span className="quiz-error-icon"><FileText size={24}/></span><p className="quiz-error-text">{error}</p><button onClick={()=>navigate(-1)} className="btn-action-primary">Volver al curso</button></div>);
   if(!quiz)return null;
   if(resultado){
     const ok=resultado.aprobado;
     return(<div className="quiz-container">
       <div className="quiz-result-card">
-        <div className={`quiz-result-icon ${ok?'quiz-result-icon-success':'quiz-result-icon-fail'}`}>{ok?'🏆':'📋'}</div>
+        <div className={`quiz-result-icon ${ok?'quiz-result-icon-success':'quiz-result-icon-fail'}`}>{ok?<Trophy size={48}/>:<ClipboardList size={48}/>}</div>
         <h2 className="quiz-result-title">{ok?'¡Felicitaciones!':'Sigue practicando'}</h2>
         <p className="quiz-result-desc">{ok?'Has aprobado el quiz satisfactoriamente.':'Revisa el material e inténtalo de nuevo.'}</p>
         <div className="quiz-result-grade"><span className={`quiz-result-grade-value ${ok?'quiz-result-grade-success':'quiz-result-grade-fail'}`}>{resultado.calificacion}</span><span className="quiz-result-grade-total">/10</span></div>

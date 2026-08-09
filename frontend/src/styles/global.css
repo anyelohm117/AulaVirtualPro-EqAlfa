@@ -5,9 +5,22 @@
   --primary-hover: #0C447C;
   --primary-gradient: linear-gradient(135deg, #185FA5, #0C447C);
   --primary-gradient-alt: linear-gradient(135deg, #185FA5, #2980D4);
+  --primary-gradient-hover: linear-gradient(135deg, #1B6BB8, #0F5089);
   --sidebar-bg: #1E3A5C;
   --sidebar-gradient: linear-gradient(135deg, #1E3A5C, #0C2240);
-  
+  --sidebar-hover: #395270;
+  --sidebar-active: #172B45;
+
+  /* Escala derivada de --primary (tints/shades) */
+  --primary-50: #F1F5FA;
+  --primary-100: #DCE7F2;
+  --primary-200: #B5CCE2;
+  --primary-300: #80A7CE;
+  --primary-700: #0A3866;
+  --primary-800: #082C51;
+
+  --surface-glow: radial-gradient(circle at 30% 20%, rgba(24, 95, 165, 0.06), transparent 60%);
+
   --bg-main: #F8FAFC;
   --bg-white: #ffffff;
   
@@ -22,20 +35,69 @@
   --success: #059669;
   --success-bg: #E1F5EE;
   --success-border: #A7F3D0;
+  --success-hover: #047857;
+  --success-active: #065F46;
   
   --danger: #DC2626;
   --danger-bg: #FEF2F2;
   --danger-border: #FECACA;
+  --danger-hover: #B91C1C;
+  --danger-active: #991B1B;
   
   --purple: #7C3AED;
   --purple-bg: #F5F3FF;
+  --purple-hover: #6D28D9;
+  --purple-active: #5B21B6;
   
   --warning: #D97706;
   --warning-bg: #FFFBEB;
-  
+  --warning-hover: #B45309;
+  --warning-active: #92400E;
+
+  /* Foco accesible */
+  --ring-primary: rgba(24, 95, 165, 0.35);
+
+  /* Escala de sombras (sm sin cambio, md/lg ahora multicapa) */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-sm: 0 1px 4px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.05);
+  --shadow-button: 0 2px 8px rgba(24, 95, 165, 0.25);
+  --shadow-button-hover: 0 6px 16px rgba(24, 95, 165, 0.32);
+
+  /* Escala de radios */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 350ms;
+
+  /* Spacing (ritmo 4/8dp) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 * {

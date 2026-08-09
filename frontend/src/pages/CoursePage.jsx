@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ChevronUp, ChevronDown, Check, ArrowLeft } from "lucide-react";
 import LessonViewer from "../components/LessonViewer";
 import MaterialDownload from "../components/MaterialDownload";
 import api from "../services/api";
@@ -40,12 +41,12 @@ export default function CoursePage() {
             <div key={modulo._id}>
               <button onClick={()=>setModulosAbiertos(p=>({...p,[modulo._id]:!p[modulo._id]}))} className="module-accordion-item">
                 <div className="module-accordion-head"><div className="module-accordion-badge">{mi+1}</div><span className="module-accordion-title">{modulo.titulo}</span></div>
-                <span className="module-accordion-arrow">{modulosAbiertos[modulo._id]?'▲':'▼'}</span>
+                <span className="module-accordion-arrow">{modulosAbiertos[modulo._id]?<ChevronUp size={16}/>:<ChevronDown size={16}/>}</span>
               </button>
               {modulosAbiertos[modulo._id]&&modulo.lecciones.map((lec,li)=>{
                 const activa=leccionActiva?._id===lec._id; const done=estaCompletada(lec._id);
                 return(<button key={lec._id} onClick={()=>setLeccionActiva(lec)} className={`lesson-item-btn ${activa?'active':''}`}>
-                  <div className={`lesson-status-icon ${done?'lesson-status-done':activa?'lesson-status-active':'lesson-status-pending'}`}>{done?'✓':li+1}</div>
+                  <div className={`lesson-status-icon ${done?'lesson-status-done':activa?'lesson-status-active':'lesson-status-pending'}`}>{done?<Check size={14}/>:li+1}</div>
                   <span className={`lesson-title ${activa?'lesson-title-active':done?'lesson-title-done':''}`}>{lec.titulo}</span>
                   {lec.duracion>0&&<span className="lesson-duration">{lec.duracion}m</span>}
                 </button>);
@@ -64,7 +65,7 @@ export default function CoursePage() {
         </header>
         <div className="course-viewer-body">
           {leccionActiva?(<><LessonViewer key={leccionActiva._id} leccion={{...leccionActiva,id:leccionActiva._id,completada:estaCompletada(leccionActiva._id)}} cursoId={id} onCompletada={handleCompletada}/><div className="course-viewer-material"><MaterialDownload leccionId={leccionActiva._id} cursoId={id}/></div></>)
-          :(<div className="lesson-select-empty"><div><div className="lesson-select-empty-icon">👈</div><p className="lesson-select-empty-text">Selecciona una lección del panel izquierdo</p></div></div>)}
+          :(<div className="lesson-select-empty"><div><div className="lesson-select-empty-icon"><ArrowLeft size={32}/></div><p className="lesson-select-empty-text">Selecciona una lección del panel izquierdo</p></div></div>)}
         </div>
       </div>
     </div>

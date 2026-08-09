@@ -33,7 +33,7 @@
   width: 36px;
   height: 36px;
   background: var(--primary-gradient-alt);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,7 +64,7 @@
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
   color: rgba(255, 255, 255, 0.6);
@@ -72,12 +72,22 @@
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: all 0.15s ease;
+  transition: background-color var(--duration-base) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--sidebar-hover);
   color: #fff;
+}
+
+.nav-item:active {
+  background: var(--sidebar-active);
+}
+
+.nav-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .nav-item.active {
@@ -103,7 +113,7 @@
   gap: 10px;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   margin-bottom: 8px;
 }
 
@@ -135,15 +145,27 @@
   padding: 8px;
   background: rgba(220, 38, 38, 0.15);
   border: 1px solid rgba(220, 38, 38, 0.3);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: #FCA5A5;
   font-size: 13px;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
 }
 
 .btn-logout:hover {
   background: rgba(220, 38, 38, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-logout:active {
+  transform: translateY(0) scale(0.98);
+  background: rgba(220, 38, 38, 0.32);
+}
+
+.btn-logout:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .main-content {
@@ -195,11 +217,11 @@
   padding: 8px 14px 8px 36px;
   font-size: 13px;
   border: 1.5px solid var(--border-light);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   outline: none;
   background: var(--bg-main);
   width: 220px;
-  transition: all 0.15s ease;
+  transition: all var(--duration-base) var(--ease-out);
 }
 
 .search-input:focus {

@@ -28,7 +28,7 @@
   width: 44px;
   height: 44px;
   background: var(--primary-gradient-alt);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,7 +96,7 @@
   width: 100%;
   max-width: 420px;
   background: #fff;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 2.5rem;
   box-shadow: var(--shadow-lg);
 }
@@ -118,7 +118,7 @@
   padding: 10px 14px;
   background: var(--success-bg);
   color: #065F46;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   margin-bottom: 16px;
   border: 1px solid var(--success-border);
@@ -128,7 +128,7 @@
   padding: 10px 14px;
   background: var(--danger-bg);
   color: #991B1B;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   margin-bottom: 16px;
   border: 1px solid var(--danger-border);
@@ -164,11 +164,11 @@
   padding: 11px 14px 11px 42px;
   font-size: 14px;
   border: 1.5px solid var(--border-light);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   outline: none;
   color: var(--text-dark);
   background: var(--bg-main);
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-base) var(--ease-out);
 }
 
 .auth-input:focus {
@@ -187,8 +187,19 @@
   transform: translateY(-50%);
   background: none;
   border: none;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   font-size: 16px;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.password-toggle:hover {
+  opacity: 0.7;
+}
+
+.password-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-primary {
@@ -197,7 +208,7 @@
   background: var(--primary-gradient);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -206,16 +217,32 @@
   justify-content: center;
   gap: 8px;
   margin-top: 4px;
-  transition: opacity 0.15s;
+  box-shadow: var(--shadow-button);
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
 }
 
-.btn-primary:hover {
-  opacity: 0.95;
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-button-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  background: var(--primary-700);
+  box-shadow: none;
+}
+
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-primary:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .auth-footer {
@@ -263,13 +290,27 @@
   padding: 9px 14px;
   background: var(--bg-main);
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out);
 }
 
 .demo-btn:hover {
-  background: #EFF6FF;
+  background: var(--primary-50);
+  border-color: var(--primary-200);
+  transform: translateY(-1px);
+}
+
+.demo-btn:active {
+  transform: translateY(0) scale(0.98);
+  background: var(--primary-100);
+}
+
+.demo-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .demo-btn-role {
@@ -298,7 +339,7 @@
   padding: 14px 10px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   text-align: center;
 }
 
@@ -320,7 +361,7 @@
   width: 60px;
   height: 60px;
   background: var(--primary-gradient-alt);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;

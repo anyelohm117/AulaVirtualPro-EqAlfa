@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { GraduationCap, BookOpen, ClipboardList, Pencil, Trash2, Package, ChevronUp, ChevronDown, Timer, Paperclip, Calendar } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import "../styles/global.css";
@@ -17,7 +18,7 @@ export default function TeacherDashboardPage() {
   const recargarDetalle=async()=>{ if(!cursoDetalle)return; const r=await api.get(`/cursos/${cursoDetalle._id}`); setCursoDetalle(r.data); };
   const abrirEditar=(c)=>{ setForm({titulo:c.titulo,descripcion:c.descripcion||"",imagen:c.imagen||""}); setCursoSel(c); setError(""); setExito(""); setVista("editar"); };
   const abrirModulos=async(c)=>{ const r=await api.get(`/cursos/${c._id}`); setCursoDetalle(r.data); setVista("modulos"); setVistaM(null); setModOpen(null); setErrM(""); };
-  const handleGuardar=async(e)=>{ e.preventDefault(); if(!form.titulo.trim()){setError("Título obligatorio.");return;} setGuardando(true); setError(""); try{ if(vista==="crear"){await api.post("/cursos",form);setExito("Curso creado ✅");}else{await api.put(`/cursos/${cursoSel._id}`,form);setExito("Curso actualizado ✅");} await cargarCursos(); setTimeout(()=>{setExito("");setVista("lista");},1500); }catch(err){setError(err.response?.data?.error||"Error.");}finally{setGuardando(false);} };
+  const handleGuardar=async(e)=>{ e.preventDefault(); if(!form.titulo.trim()){setError("Título obligatorio.");return;} setGuardando(true); setError(""); try{ if(vista==="crear"){await api.post("/cursos",form);setExito("Curso creado");}else{await api.put(`/cursos/${cursoSel._id}`,form);setExito("Curso actualizado");} await cargarCursos(); setTimeout(()=>{setExito("");setVista("lista");},1500); }catch(err){setError(err.response?.data?.error||"Error.");}finally{setGuardando(false);} };
   const handleEliminar=async(c)=>{ if(!window.confirm(`¿Eliminar "${c.titulo}"?`))return; try{await api.delete(`/cursos/${c._id}`);await cargarCursos();}catch{alert("Error.");} };
   const handleAddMod=async(e)=>{ e.preventDefault(); if(!formMod.titulo){setErrM("Título obligatorio.");return;} setGuardM(true); setErrM(""); try{await api.post(`/cursos/${cursoDetalle._id}/modulos`,{titulo:formMod.titulo,orden:cursoDetalle.modulos.length+1});setFormMod({titulo:""});setVistaM(null);await recargarDetalle();}catch(err){setErrM(err.response?.data?.error||"Error.");}finally{setGuardM(false);} };
   const handleDelMod=async(mid)=>{ if(!window.confirm("¿Eliminar módulo y sus lecciones?"))return; try{await api.delete(`/cursos/${cursoDetalle._id}/modulos/${mid}`);if(modOpen===mid)setModOpen(null);await recargarDetalle();}catch{alert("Error.");} };
@@ -25,21 +26,21 @@ export default function TeacherDashboardPage() {
   const handleUpdLec=async(e)=>{ e.preventDefault(); if(!formLec.titulo){setErrM("Título obligatorio.");return;} setGuardM(true); setErrM(""); try{await api.put(`/cursos/${cursoDetalle._id}/modulos/${modOpen}/lecciones/${lecEdit._id}`,formLec);setVistaM(null);setLecEdit(null);await recargarDetalle();}catch(err){setErrM(err.response?.data?.error||"Error.");}finally{setGuardM(false);} };
   const handleDelLec=async(mid,lid)=>{ if(!window.confirm("¿Eliminar lección?"))return; try{await api.delete(`/cursos/${cursoDetalle._id}/modulos/${mid}/lecciones/${lid}`);await recargarDetalle();}catch{alert("Error.");} };
   const abrirEditLec=(mod,lec)=>{ setModOpen(mod._id); setLecEdit(lec); setFormLec({titulo:lec.titulo,contenido:lec.contenido||"",materialURL:lec.materialURL||"",duracion:lec.duracion||0}); setVistaM("editLec"); setErrM(""); };
-  const handleCrearTarea=async(e)=>{ e.preventDefault(); if(!formT.titulo||!formT.fechaEntrega||!cursoTarea){setErrT("Completa todos los campos.");return;} try{await api.post("/tareas",{...formT,cursoId:cursoTarea});setExitoT("Tarea creada ✅");setFormT({titulo:"",descripcion:"",fechaEntrega:"",puntos:100});await cargarTareas(cursoTarea);setTimeout(()=>{setExitoT("");setVistaT("lista");},1500);}catch(err){setErrT(err.response?.data?.error||"Error.");} };
+  const handleCrearTarea=async(e)=>{ e.preventDefault(); if(!formT.titulo||!formT.fechaEntrega||!cursoTarea){setErrT("Completa todos los campos.");return;} try{await api.post("/tareas",{...formT,cursoId:cursoTarea});setExitoT("Tarea creada");setFormT({titulo:"",descripcion:"",fechaEntrega:"",puntos:100});await cargarTareas(cursoTarea);setTimeout(()=>{setExitoT("");setVistaT("lista");},1500);}catch(err){setErrT(err.response?.data?.error||"Error.");} };
   const handleDelTarea=async(id)=>{ if(!window.confirm("¿Eliminar tarea?"))return; try{await api.delete(`/tareas/${id}`);await cargarTareas(cursoTarea);}catch{alert("Error.");} };
   const cambiarTab=(t)=>{ setTabActiva(t); setVista("lista"); if(t==="tareas"&&cursos.length>0){const cid=cursos[0]._id;setCursoTarea(cid);cargarTareas(cid);} };
   return(
     <div className="app-layout">
       <aside className="sidebar">
-        <div className="sidebar-header"><div className="sidebar-brand"><div className="sidebar-logo">🎓</div><div><p className="sidebar-title">AulaVirtual Pro</p><p className="sidebar-role">Instructor</p></div></div></div>
-        <nav className="sidebar-nav">{[['📚','Mis Cursos','cursos'],['📋','Tareas','tareas']].map(([ico,lbl,t])=><button key={t} onClick={()=>cambiarTab(t)} className={`nav-item ${tabActiva===t?'active':''}`}><span className="nav-icon">{ico}</span>{lbl}</button>)}</nav>
+        <div className="sidebar-header"><div className="sidebar-brand"><div className="sidebar-logo"><GraduationCap size={18} color="#fff"/></div><div><p className="sidebar-title">AulaVirtual Pro</p><p className="sidebar-role">Instructor</p></div></div></div>
+        <nav className="sidebar-nav">{[[BookOpen,'Mis Cursos','cursos'],[ClipboardList,'Tareas','tareas']].map(([Icon,lbl,t])=><button key={t} onClick={()=>cambiarTab(t)} className={`nav-item ${tabActiva===t?'active':''}`}><span className="nav-icon"><Icon size={16}/></span>{lbl}</button>)}</nav>
         <div className="sidebar-footer"><div className="user-profile-badge"><div className="user-avatar">{usuario?.[0]?.toUpperCase()||'P'}</div><div><p className="user-name">{usuario||'Profesor'}</p><p className="sidebar-role">Instructor</p></div></div><button onClick={()=>{logout();navigate("/login");}} className="btn-logout">Cerrar sesión</button></div>
       </aside>
       <main className="dashboard-main">
         {tabActiva==="cursos"&&(
           <>
             <div className="section-header">
-              <div><h1 className="section-title">{vista==='lista'?'Mis Cursos':vista==='crear'?'Crear Curso':vista==='editar'?'Editar Curso':'📚 '+cursoDetalle?.titulo}</h1><p className="section-subtitle">{vista==='lista'?`${cursos.length} curso(s)`:vista==='modulos'?`${cursoDetalle?.modulos?.length||0} módulos · ${cursoDetalle?.modulos?.reduce((a,m)=>a+m.lecciones.length,0)||0} lecciones`:''}</p></div>
+              <div><h1 className="section-title">{vista==='lista'?'Mis Cursos':vista==='crear'?'Crear Curso':vista==='editar'?'Editar Curso':<span style={{display:'inline-flex',alignItems:'center',gap:8}}><BookOpen size={20}/>{cursoDetalle?.titulo}</span>}</h1><p className="section-subtitle">{vista==='lista'?`${cursos.length} curso(s)`:vista==='modulos'?`${cursoDetalle?.modulos?.length||0} módulos · ${cursoDetalle?.modulos?.reduce((a,m)=>a+m.lecciones.length,0)||0} lecciones`:''}</p></div>
               <div className="section-actions">
                 {vista==='lista'&&<button onClick={()=>{setForm({titulo:"",descripcion:"",imagen:""});setCursoSel(null);setError("");setExito("");setVista("crear");}} className="btn-action-primary">+ Nuevo Curso</button>}
                 {vista==='modulos'&&<><button onClick={()=>{setVista("lista");setCursoDetalle(null);}} className="btn-secondary">← Volver</button><button onClick={()=>{setVistaM("addMod");setErrM("");}} className="btn-accent">+ Módulo</button></>}
@@ -50,15 +51,15 @@ export default function TeacherDashboardPage() {
               <>
                 {loading&&<p className="loading-text">Cargando cursos...</p>}
                 {error&&<p className="form-error">{error}</p>}
-                {!loading&&cursos.length===0&&<div className="empty-state"><div className="empty-state-icon">📚</div><p className="empty-state-desc">Aún no has creado cursos</p><button onClick={()=>{setForm({titulo:"",descripcion:"",imagen:""});setCursoSel(null);setVista("crear");}} className="btn-action-primary">Crear primer curso</button></div>}
+                {!loading&&cursos.length===0&&<div className="empty-state"><div className="empty-state-icon"><BookOpen size={48}/></div><p className="empty-state-desc">Aún no has creado cursos</p><button onClick={()=>{setForm({titulo:"",descripcion:"",imagen:""});setCursoSel(null);setVista("crear");}} className="btn-action-primary">Crear primer curso</button></div>}
                 <div className="teacher-course-grid">
                   {cursos.map(c=>(
                     <div key={c._id} className="teacher-course-card">
-                      <div className="teacher-course-banner" style={c.imagen?{backgroundImage:`url(${c.imagen})`,backgroundSize:'cover',backgroundPosition:'center'}:undefined}>{!c.imagen&&<span className="teacher-course-banner-icon">📚</span>}<div className="teacher-course-status"><span className={`badge ${c.activo?'badge-success':'badge-danger'}`}>{c.activo?'Activo':'Inactivo'}</span></div></div>
+                      <div className="teacher-course-banner" style={c.imagen?{backgroundImage:`url(${c.imagen})`,backgroundSize:'cover',backgroundPosition:'center'}:undefined}>{!c.imagen&&<span className="teacher-course-banner-icon"><BookOpen size={22}/></span>}<div className="teacher-course-status"><span className={`badge ${c.activo?'badge-success':'badge-danger'}`}>{c.activo?'Activo':'Inactivo'}</span></div></div>
                       <div className="teacher-course-body">
                         <h3 className="teacher-course-title">{c.titulo}</h3>
                         <p className="teacher-course-desc">{c.descripcion||'Sin descripción'}</p>
-                        <div className="teacher-course-actions"><button onClick={()=>abrirEditar(c)} className="btn-card-edit">✏️ Editar</button><button onClick={()=>abrirModulos(c)} className="btn-card-modules">📚 Módulos</button><button onClick={()=>handleEliminar(c)} className="btn-card-delete">🗑️</button></div>
+                        <div className="teacher-course-actions"><button onClick={()=>abrirEditar(c)} className="btn-card-edit"><Pencil size={14}/> Editar</button><button onClick={()=>abrirModulos(c)} className="btn-card-modules"><BookOpen size={14}/> Módulos</button><button onClick={()=>handleEliminar(c)} className="btn-card-delete"><Trash2 size={14}/></button></div>
                       </div>
                     </div>
                   ))}
@@ -78,12 +79,12 @@ export default function TeacherDashboardPage() {
               <div className="module-list">
                 {vistaM==='addMod'&&<div className="editor-panel editor-panel-purple"><h3 className="editor-panel-title">Nuevo módulo</h3><form onSubmit={handleAddMod} className="editor-form-inline"><div className="field-grow"><label className="form-label">Título *</label><input className="form-control" placeholder="Ej. Fundamentos básicos" value={formMod.titulo} onChange={e=>setFormMod({titulo:e.target.value})}/></div><button type="submit" disabled={guardM} className="btn-accent">{guardM?'Guardando...':'Agregar'}</button><button type="button" onClick={()=>setVistaM(null)} className="btn-secondary">Cancelar</button></form>{errM&&<p className="form-error">{errM}</p>}</div>}
                 {(vistaM==='addLec'||vistaM==='editLec')&&<div className="editor-panel editor-panel-primary"><h3 className="editor-panel-title">{vistaM==='addLec'?'Nueva lección':`Editando: ${lecEdit?.titulo}`}</h3><form onSubmit={vistaM==='addLec'?handleAddLec:handleUpdLec} className="form-stack">{[{label:'Título *',key:'titulo',ph:'Ej. Introducción al tema'},{label:'Contenido/descripción',key:'contenido',ph:'Describe de qué trata esta lección...',area:true},{label:'URL del material (YouTube, Drive, PDF...)',key:'materialURL',ph:'https://youtube.com/watch?v=... o https://drive.google.com/...'}].map(f=><div key={f.key} className="form-field"><label className="form-label">{f.label}</label>{f.area?<textarea placeholder={f.ph} value={formLec[f.key]} onChange={e=>setFormLec({...formLec,[f.key]:e.target.value})} className="form-control form-textarea"/>:<input type="text" placeholder={f.ph} value={formLec[f.key]} onChange={e=>setFormLec({...formLec,[f.key]:e.target.value})} className="form-control"/>}</div>)}<div className="form-field"><label className="form-label">Duración (minutos)</label><input type="number" min={0} value={formLec.duracion} onChange={e=>setFormLec({...formLec,duracion:Number(e.target.value)})} className="form-control form-control-narrow"/></div>{errM&&<p className="form-error">{errM}</p>}<div className="form-actions"><button type="button" onClick={()=>{setVistaM(null);setLecEdit(null);setErrM("");}} className="btn-secondary">Cancelar</button><button type="submit" disabled={guardM} className="btn-action-primary">{guardM?'Guardando...':vistaM==='addLec'?'Agregar lección':'Guardar cambios'}</button></div></form></div>}
-                {cursoDetalle.modulos.length===0?<div className="empty-state"><div className="empty-state-icon">📦</div><p className="empty-state-desc">Sin módulos todavía</p><button onClick={()=>setVistaM("addMod")} className="btn-accent">+ Crear primer módulo</button></div>
+                {cursoDetalle.modulos.length===0?<div className="empty-state"><div className="empty-state-icon"><Package size={48}/></div><p className="empty-state-desc">Sin módulos todavía</p><button onClick={()=>setVistaM("addMod")} className="btn-accent">+ Crear primer módulo</button></div>
                 :cursoDetalle.modulos.sort((a,b)=>a.orden-b.orden).map((mod,mi)=>(
                   <div key={mod._id} className="module-card">
                     <div className="module-header">
                       <div className="module-heading"><div className="module-number">{mi+1}</div><div><p className="module-title">{mod.titulo}</p><p className="module-count">{mod.lecciones.length} lección(es)</p></div></div>
-                      <div className="module-actions"><button onClick={()=>{setModOpen(modOpen===mod._id?null:mod._id);setVistaM(null);}} className="btn-ghost">{modOpen===mod._id?'▲ Ocultar':'▼ Ver lecciones'}</button><button onClick={()=>{setModOpen(mod._id);setFormLec({titulo:"",contenido:"",materialURL:"",duracion:0});setVistaM("addLec");setErrM("");}} className="btn-ghost-purple">+ Lección</button><button onClick={()=>handleDelMod(mod._id)} className="btn-ghost-delete">🗑️</button></div>
+                      <div className="module-actions"><button onClick={()=>{setModOpen(modOpen===mod._id?null:mod._id);setVistaM(null);}} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5}}>{modOpen===mod._id?<><ChevronUp size={14}/> Ocultar</>:<><ChevronDown size={14}/> Ver lecciones</>}</button><button onClick={()=>{setModOpen(mod._id);setFormLec({titulo:"",contenido:"",materialURL:"",duracion:0});setVistaM("addLec");setErrM("");}} className="btn-ghost-purple">+ Lección</button><button onClick={()=>handleDelMod(mod._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
                     </div>
                     {modOpen===mod._id&&(mod.lecciones.length===0?<p className="editor-note">Sin lecciones. Haz clic en "+ Lección" para agregar.</p>:mod.lecciones.map((lec,li)=>(
                       <div key={lec._id} className="lesson-row">
@@ -93,12 +94,12 @@ export default function TeacherDashboardPage() {
                             <p className="lesson-name">{lec.titulo}</p>
                             {lec.contenido&&<p className="lesson-desc">{lec.contenido}</p>}
                             <div className="lesson-meta">
-                              {lec.duracion>0&&<span className="meta-chip chip-muted">⏱ {lec.duracion} min</span>}
-                              {lec.materialURL&&<a href={lec.materialURL} target="_blank" rel="noreferrer" className="meta-chip chip-link">📎 Ver material</a>}
+                              {lec.duracion>0&&<span className="meta-chip chip-muted" style={{display:'inline-flex',alignItems:'center',gap:4}}><Timer size={12}/> {lec.duracion} min</span>}
+                              {lec.materialURL&&<a href={lec.materialURL} target="_blank" rel="noreferrer" className="meta-chip chip-link" style={{display:'inline-flex',alignItems:'center',gap:4}}><Paperclip size={12}/> Ver material</a>}
                             </div>
                           </div>
                         </div>
-                        <div className="lesson-actions"><button onClick={()=>abrirEditLec(mod,lec)} className="btn-ghost">✏️ Editar</button><button onClick={()=>handleDelLec(mod._id,lec._id)} className="btn-ghost-delete">🗑️</button></div>
+                        <div className="lesson-actions"><button onClick={()=>abrirEditLec(mod,lec)} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5}}><Pencil size={14}/> Editar</button><button onClick={()=>handleDelLec(mod._id,lec._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
                       </div>
                     )))}
                   </div>
@@ -125,8 +126,8 @@ export default function TeacherDashboardPage() {
               </form>
             </div>}
             {vistaT==='lista'&&(!cursoTarea?<div className="empty-state"><p className="panel-empty">Selecciona un curso para ver sus tareas</p></div>
-            :tareas.length===0?<div className="empty-state"><div className="empty-state-icon">📋</div><p className="empty-state-desc">Sin tareas en este curso</p><button onClick={()=>setVistaT("crear")} className="btn-accent">+ Crear primera tarea</button></div>
-            :<div className="task-list">{tareas.map(t=><div key={t._id} className="task-item"><div className="task-info"><p className="task-title">{t.titulo}</p>{t.descripcion&&<p className="task-desc">{t.descripcion}</p>}<div className="task-meta"><span className="task-meta-item">📅 {new Date(t.fechaEntrega).toLocaleDateString('es-MX')}</span><span className="task-meta-points">{t.puntos} pts</span></div></div><button onClick={()=>handleDelTarea(t._id)} className="btn-delete-sm">🗑️ Eliminar</button></div>)}</div>)}
+            :tareas.length===0?<div className="empty-state"><div className="empty-state-icon"><ClipboardList size={48}/></div><p className="empty-state-desc">Sin tareas en este curso</p><button onClick={()=>setVistaT("crear")} className="btn-accent">+ Crear primera tarea</button></div>
+            :<div className="task-list">{tareas.map(t=><div key={t._id} className="task-item"><div className="task-info"><p className="task-title">{t.titulo}</p>{t.descripcion&&<p className="task-desc">{t.descripcion}</p>}<div className="task-meta"><span className="task-meta-item" style={{display:'inline-flex',alignItems:'center',gap:4}}><Calendar size={12}/> {new Date(t.fechaEntrega).toLocaleDateString('es-MX')}</span><span className="task-meta-points">{t.puntos} pts</span></div></div><button onClick={()=>handleDelTarea(t._id)} className="btn-delete-sm" style={{display:'inline-flex',alignItems:'center',gap:4}}><Trash2 size={14}/> Eliminar</button></div>)}</div>)}
           </>
         )}
       </main>

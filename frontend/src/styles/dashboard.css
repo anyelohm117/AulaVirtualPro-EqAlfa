@@ -48,9 +48,10 @@
 
 .table-card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .table-avatar {
@@ -101,7 +102,7 @@
 
 .teacher-course-card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -161,12 +162,28 @@
   padding: 7px;
   background: var(--border-subtle);
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   color: var(--text-body);
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-card-edit:hover {
+  background: var(--border-light);
+  transform: translateY(-1px);
+}
+
+.btn-card-edit:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-card-edit:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-card-modules {
@@ -174,75 +191,177 @@
   padding: 7px;
   background: var(--purple-bg);
   border: 1px solid #DDD6FE;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   color: var(--purple);
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-card-modules:hover {
+  background: #EDE9FE;
+  transform: translateY(-1px);
+}
+
+.btn-card-modules:active {
+  transform: translateY(0) scale(0.98);
+  background: #DDD6FE;
+}
+
+.btn-card-modules:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-card-delete {
   padding: 7px 10px;
   background: var(--danger-bg);
   border: 1px solid var(--danger-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   color: var(--danger);
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-card-delete:hover {
+  background: #FEE2E2;
+  transform: translateY(-1px);
+}
+
+.btn-card-delete:active {
+  transform: translateY(0) scale(0.98);
+  background: #FECACA;
+}
+
+.btn-card-delete:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-ghost {
   padding: 5px 10px;
   background: #fff;
   border: 1px solid var(--border-light);
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   font-size: 11px;
   cursor: pointer;
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-ghost:hover {
+  background: var(--border-subtle);
+  transform: translateY(-1px);
+}
+
+.btn-ghost:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-ghost:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-ghost-purple {
   padding: 5px 10px;
   background: var(--purple-bg);
   border: 1px solid #DDD6FE;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   font-size: 11px;
   cursor: pointer;
   color: var(--purple);
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-ghost-purple:hover {
+  background: #EDE9FE;
+  transform: translateY(-1px);
+}
+
+.btn-ghost-purple:active {
+  transform: translateY(0) scale(0.98);
+  background: #DDD6FE;
+}
+
+.btn-ghost-purple:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-ghost-delete {
   padding: 5px 8px;
   background: var(--danger-bg);
   border: 1px solid var(--danger-border);
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   font-size: 12px;
   cursor: pointer;
   color: var(--danger);
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-ghost-delete:hover {
+  background: #FEE2E2;
+  transform: translateY(-1px);
+}
+
+.btn-ghost-delete:active {
+  transform: translateY(0) scale(0.98);
+  background: #FECACA;
+}
+
+.btn-ghost-delete:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .btn-delete-sm {
   padding: 6px 12px;
   background: var(--danger-bg);
   border: 1px solid var(--danger-border);
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   color: var(--danger);
   font-family: inherit;
+  transition: background-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
+}
+
+.btn-delete-sm:hover {
+  background: #FEE2E2;
+  transform: translateY(-1px);
+}
+
+.btn-delete-sm:active {
+  transform: translateY(0) scale(0.98);
+  background: #FECACA;
+}
+
+.btn-delete-sm:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-primary);
 }
 
 .form-card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   padding: 28px;
   max-width: 600px;
+  box-shadow: var(--shadow-sm);
 }
 
 .form-stack {
@@ -262,13 +381,13 @@
   padding: 10px 12px;
   font-size: 13px;
   border: 1.5px solid var(--border-light);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   outline: none;
   font-family: inherit;
   color: var(--text-body);
   background: var(--bg-main);
   box-sizing: border-box;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-base) var(--ease-out);
 }
 
 .form-control:focus {
@@ -315,15 +434,16 @@
   width: 100%;
   max-height: 140px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-light);
 }
 
 .editor-panel {
   background: #fff;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 20px;
   margin-bottom: 4px;
+  box-shadow: var(--shadow-sm);
 }
 
 .editor-panel-purple {
@@ -359,7 +479,7 @@
 
 .module-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   overflow: hidden;
 }
@@ -502,7 +622,7 @@
   gap: 12px;
   padding: 12px 16px;
   background: #fff;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-light);
   margin-bottom: 20px;
 }
@@ -526,7 +646,7 @@
 
 .task-item {
   background: #fff;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-light);
   padding: 14px 16px;
   display: flex;
