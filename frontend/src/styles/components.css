@@ -293,6 +293,12 @@
   color: var(--primary);
 }
 
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+}
+
 .btn-soft {
   padding: 8px 18px;
   background: #E6F1FB;

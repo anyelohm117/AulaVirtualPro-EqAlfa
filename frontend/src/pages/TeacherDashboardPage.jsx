@@ -90,7 +90,7 @@ export default function TeacherDashboardPage() {
                         <div className="lesson-main">
                           <div className="lesson-number">{li+1}</div>
                           <div className="lesson-info">
-                            <p className="lesson-title">{lec.titulo}</p>
+                            <p className="lesson-name">{lec.titulo}</p>
                             {lec.contenido&&<p className="lesson-desc">{lec.contenido}</p>}
                             <div className="lesson-meta">
                               {lec.duracion>0&&<span className="meta-chip chip-muted">⏱ {lec.duracion} min</span>}

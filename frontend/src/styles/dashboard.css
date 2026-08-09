@@ -88,11 +88,6 @@
   min-width: 0;
 }
 
-.badge-primary {
-  background: #EFF6FF;
-  color: var(--primary);
-}
-
 .badge-inactive {
   background: #FEF9C3;
   color: #854D0E;
@@ -260,12 +255,6 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.form-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
 }
 
 .form-control {
@@ -464,7 +453,7 @@
   flex: 1;
 }
 
-.lesson-title {
+.lesson-name {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-dark);

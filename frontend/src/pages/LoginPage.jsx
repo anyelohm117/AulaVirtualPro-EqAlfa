@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import "../styles/global.css";
 import "../styles/auth.css";
+import "../styles/components.css";
 export default function LoginPage() {
   const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [showPw,setShowPw]=useState(false); const [error,setError]=useState(""); const [loading,setLoading]=useState(false);
   const {login}=useAuth(); const navigate=useNavigate(); const location=useLocation(); const mensaje=location.state?.mensaje;

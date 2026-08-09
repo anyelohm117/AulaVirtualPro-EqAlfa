@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "../styles/global.css";
 import "../styles/auth.css";
+import "../styles/components.css";
 export default function RegisterPage() {
   const [f,setF]=useState({nombre:"",email:"",password:"",confirmar:""});
   const [error,setError]=useState(""); const [loading,setLoading]=useState(false); const navigate=useNavigate();
