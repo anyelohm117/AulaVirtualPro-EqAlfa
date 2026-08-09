@@ -41,6 +41,11 @@
 .stat-icon-purple { background: var(--purple-bg); }
 .stat-icon-amber { background: var(--warning-bg); }
 
+.stat-subtext-blue { color: var(--primary); }
+.stat-subtext-green { color: var(--success); }
+.stat-subtext-purple { color: var(--purple); }
+.stat-subtext-amber { color: var(--warning); }
+
 .table-card {
   background: #fff;
   border-radius: 14px;
@@ -76,6 +81,11 @@
 .cell-actions {
   display: flex;
   gap: 6px;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .badge-primary {
@@ -252,6 +262,12 @@
   gap: 6px;
 }
 
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+}
+
 .form-control {
   width: 100%;
   padding: 10px 12px;
@@ -273,6 +289,14 @@
 
 .form-textarea {
   resize: vertical;
+}
+
+.form-textarea-lg {
+  min-height: 90px;
+}
+
+.form-control-narrow {
+  width: 140px;
 }
 
 .form-actions {

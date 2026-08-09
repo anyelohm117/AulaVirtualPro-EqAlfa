@@ -213,3 +213,47 @@
   padding: 28px;
   overflow-y: auto;
 }
+
+.page-container {
+  min-height: 100vh;
+  background: var(--bg-main);
+}
+
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border-light);
+  padding: 0 28px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-light);
+}
+
+.topbar-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+  flex: 1;
+}
+
+.topbar-text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.page-content {
+  padding: 24px 28px;
+}
+
+.page-banner-alert {
+  margin: 16px 28px 0;
+}

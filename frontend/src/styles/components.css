@@ -287,3 +287,289 @@
   color: #fff;
   font-weight: 600;
 }
+
+.badge-primary {
+  background: #EFF6FF;
+  color: var(--primary);
+}
+
+.btn-soft {
+  padding: 8px 18px;
+  background: #E6F1FB;
+  color: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.loading-screen {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60%;
+}
+
+.loading-state-inner {
+  text-align: center;
+}
+
+.loading-text {
+  color: var(--text-muted);
+}
+
+.error-state {
+  color: var(--danger);
+  text-align: center;
+  padding: 3rem;
+}
+
+.alert {
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alert-success {
+  background: var(--success-bg);
+  color: #065F46;
+  border: 1px solid var(--success-border);
+}
+
+.alert-error {
+  background: var(--danger-bg);
+  color: #991B1B;
+  border: 1px solid var(--danger-border);
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.panel-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  padding: 20px;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+}
+
+.panel-empty {
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+.panel-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.section-heading-gap {
+  margin-top: 28px;
+}
+
+.section-heading-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.progress-track {
+  height: 8px;
+  background: var(--border-subtle);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s;
+}
+
+.progress-fill-primary {
+  background: linear-gradient(90deg, #185FA5, #2980D4);
+}
+
+.progress-fill-success {
+  background: linear-gradient(90deg, #059669, #10B981);
+}
+
+.progress-course-item {
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.progress-course-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.progress-course-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-body);
+}
+
+.progress-course-pct {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.stat-icon-neutral {
+  background: #F1F5F9;
+}
+
+.modal-info-card {
+  padding: 12px 16px;
+  background: var(--bg-main);
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+}
+
+.modal-info-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 2px;
+}
+
+.modal-info-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.assignment-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  padding: 16px 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  box-shadow: var(--shadow-sm);
+}
+
+.assignment-info {
+  flex: 1;
+}
+
+.assignment-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.assignment-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.assignment-course {
+  font-size: 12.5px;
+  color: var(--primary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.assignment-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.assignment-comment {
+  font-size: 12px;
+  color: var(--success);
+  font-style: italic;
+}
+
+.assignment-grade {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--purple);
+  margin-top: 4px;
+}
+
+.assignment-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.assignment-due {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-body);
+}
+
+.assignment-due-danger {
+  color: var(--danger);
+}
+
+.assignment-due-warning {
+  color: var(--warning);
+}
+
+.assignment-points {
+  font-size: 11.5px;
+  color: var(--text-light);
+}
+
+.assignment-submit-btn {
+  padding: 7px 16px;
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
