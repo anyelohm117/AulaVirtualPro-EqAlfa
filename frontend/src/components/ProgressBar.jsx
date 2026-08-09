@@ -1,60 +1,13 @@
-/**
- * ProgressBar.jsx
- * Uso: <ProgressBar value={65} />
- * Props:
- *   value       número 0-100 (porcentaje de avance)
- *   showLabel   booleano, muestra el % en texto (default: true)
- *   height      altura de la barra en px (default: 6)
- *   color       color del fill (default: "#185FA5")
- */
-export default function ProgressBar({
-  value = 0,
-  showLabel = true,
-  height = 6,
-  color = "#185FA5",
-}) {
-  const pct = Math.min(100, Math.max(0, Math.round(value)));
 
+export default function ProgressBar({ value = 0, height = 6, showLabel = false, color = 'blue' }) {
+  const pct = Math.min(100, Math.max(0, value));
+  const g = { blue:'linear-gradient(90deg,#185FA5,#2980D4)', green:'linear-gradient(90deg,#059669,#10B981)', purple:'linear-gradient(90deg,#7C3AED,#9F67F5)', amber:'linear-gradient(90deg,#D97706,#F59E0B)' };
   return (
-    <div style={styles.wrap}>
-      <div style={{ ...styles.track, height }}>
-        <div
-          style={{
-            ...styles.fill,
-            width: `${pct}%`,
-            height,
-            backgroundColor: color,
-          }}
-        />
+    <div style={{display:'flex',flexDirection:'column',gap:4}}>
+      {showLabel && <div style={{display:'flex',justifyContent:'space-between',fontSize:11,fontWeight:500,color:'#64748B'}}><span>Progreso</span><span>{pct}%</span></div>}
+      <div style={{height,background:'#E2E8F0',borderRadius:99,overflow:'hidden'}}>
+        <div style={{height:'100%',width:`${pct}%`,background:g[color]||g.blue,borderRadius:99,transition:'width .6s cubic-bezier(.4,0,.2,1)'}}/>
       </div>
-      {showLabel && (
-        <span style={{ ...styles.label, color }}>{pct}%</span>
-      )}
     </div>
   );
 }
-
-const styles = {
-  wrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  track: {
-    flex: 1,
-    backgroundColor: "#e5e7eb",
-    borderRadius: "99px",
-    overflow: "hidden",
-  },
-  fill: {
-    borderRadius: "99px",
-    transition: "width 0.4s ease",
-  },
-  label: {
-    fontSize: "11px",
-    fontWeight: "600",
-    minWidth: "30px",
-    textAlign: "right",
-    fontFamily: "Inter, sans-serif",
-  },
-};

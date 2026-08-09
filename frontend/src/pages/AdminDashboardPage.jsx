@@ -1,367 +1,53 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-
 export default function AdminDashboardPage() {
-  const { usuario, logout } = useAuth();
-  const navigate = useNavigate();
-  const [tabActiva, setTabActiva] = useState("usuarios");
-  const [usuarios, setUsuarios] = useState([]);
-  const [cursos, setCursos] = useState([]);
-  const [reporte, setReporte] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [formNuevo, setFormNuevo] = useState({ nombre: "", email: "", password: "", rol: "instructor" });
-  const [errorForm, setErrorForm] = useState("");
-  const [guardando, setGuardando] = useState(false);
-
-  useEffect(() => { cargarDatos(); }, []);
-
-  const cargarDatos = async () => {
-    setLoading(true);
-    try {
-      const [resUsuarios, resCursos, resReporte] = await Promise.all([
-        api.get("/usuarios"),
-        api.get("/cursos"),
-        api.get("/reportes/admin"),
-      ]);
-      setUsuarios(resUsuarios.data);
-      setCursos(resCursos.data);
-      setReporte(resReporte.data);
-    } catch (err) {
-      console.error("Error al cargar datos del admin:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => { logout(); navigate("/login"); };
-
-  const handleToggleEstado = async (id) => {
-    try {
-      await api.patch(`/usuarios/${id}/estado`);
-      await cargarDatos();
-    } catch { alert("Error al cambiar estado del usuario."); }
-  };
-
-  const handleEliminarUsuario = async (id) => {
-    if (!window.confirm("¿Eliminar este usuario permanentemente?")) return;
-    try {
-      await api.delete(`/usuarios/${id}`);
-      await cargarDatos();
-    } catch { alert("Error al eliminar usuario."); }
-  };
-
-  const handleEliminarCurso = async (id) => {
-    if (!window.confirm("¿Desactivar este curso?")) return;
-    try {
-      await api.delete(`/cursos/${id}`);
-      await cargarDatos();
-    } catch { alert("Error al eliminar curso."); }
-  };
-
-  const handleCrearUsuario = async (e) => {
-    e.preventDefault();
-    setErrorForm("");
-    if (!formNuevo.nombre || !formNuevo.email || !formNuevo.password) {
-      setErrorForm("Todos los campos son obligatorios.");
-      return;
-    }
-    setGuardando(true);
-    try {
-      await api.post("/usuarios", formNuevo);
-      setModalAbierto(false);
-      setFormNuevo({ nombre: "", email: "", password: "", rol: "instructor" });
-      await cargarDatos();
-    } catch (err) {
-      setErrorForm(err.response?.data?.error || "Error al crear usuario.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // Stats calculadas desde datos reales
-  const totalAlumnos = usuarios.filter(u => u.rol === "alumno").length;
-  const totalInstructores = usuarios.filter(u => u.rol === "instructor").length;
-  const cursosActivos = cursos.filter(c => c.activo).length;
-  const tasaAprobacion = reporte.length
-    ? Math.round(reporte.flatMap(a => a.calificaciones).filter(c => c.aprobado).length /
-        Math.max(reporte.flatMap(a => a.calificaciones).length, 1) * 100)
-    : 0;
-
-  return (
-    <div style={s.page}>
-      {/* Modal nuevo usuario */}
-      {modalAbierto && (
-        <div style={s.modalOverlay}>
-          <div style={s.modal}>
-            <div style={s.modalHead}>
-              <h3 style={s.modalTitle}>Nuevo usuario</h3>
-              <button style={s.closeBtn} onClick={() => setModalAbierto(false)}>✕</button>
-            </div>
-            <form onSubmit={handleCrearUsuario} style={s.modalForm}>
-              <div style={s.field}>
-                <label style={s.label}>Nombre completo</label>
-                <input style={s.input} placeholder="Nombre" value={formNuevo.nombre}
-                  onChange={e => setFormNuevo({...formNuevo, nombre: e.target.value})} />
-              </div>
-              <div style={s.field}>
-                <label style={s.label}>Email</label>
-                <input style={s.input} type="email" placeholder="correo@ejemplo.com" value={formNuevo.email}
-                  onChange={e => setFormNuevo({...formNuevo, email: e.target.value})} />
-              </div>
-              <div style={s.field}>
-                <label style={s.label}>Contraseña temporal</label>
-                <input style={s.input} type="password" placeholder="Mínimo 6 caracteres" value={formNuevo.password}
-                  onChange={e => setFormNuevo({...formNuevo, password: e.target.value})} />
-              </div>
-              <div style={s.field}>
-                <label style={s.label}>Rol</label>
-                <select style={s.input} value={formNuevo.rol}
-                  onChange={e => setFormNuevo({...formNuevo, rol: e.target.value})}>
-                  <option value="alumno">Alumno</option>
-                  <option value="instructor">Instructor</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </div>
-              {errorForm && <p style={s.errorMsg}>{errorForm}</p>}
-              <div style={s.modalActions}>
-                <button type="button" style={s.btnSec} onClick={() => setModalAbierto(false)}>Cancelar</button>
-                <button type="submit" style={s.btnPrimary} disabled={guardando}>
-                  {guardando ? "Creando..." : "Crear usuario"}
-                </button>
-              </div>
-            </form>
-          </div>
+  const {usuario,logout}=useAuth(); const navigate=useNavigate();
+  const [tab,setTab]=useState("usuarios"); const [usuarios,setUsuarios]=useState([]); const [cursos,setCursos]=useState([]); const [reporte,setReporte]=useState([]); const [loading,setLoading]=useState(true);
+  const [modal,setModal]=useState(false); const [formN,setFormN]=useState({nombre:"",email:"",password:"",rol:"instructor"}); const [errForm,setErrForm]=useState(""); const [guardando,setGuardando]=useState(false);
+  const cargar=async()=>{ const [r1,r2,r3]=await Promise.all([api.get("/usuarios"),api.get("/cursos"),api.get("/reportes/admin")]); setUsuarios(r1.data);setCursos(r2.data);setReporte(r3.data); };
+  useEffect(()=>{cargar().catch(console.error).finally(()=>setLoading(false));},[]);
+  const handleToggle=async(id)=>{try{await api.patch(`/usuarios/${id}/estado`);await cargar();}catch{alert("Error");}};
+  const handleDelU=async(id)=>{if(!window.confirm("¿Eliminar?"))return;try{await api.delete(`/usuarios/${id}`);await cargar();}catch{alert("Error");}};
+  const handleDelC=async(id)=>{if(!window.confirm("¿Desactivar?"))return;try{await api.delete(`/cursos/${id}`);await cargar();}catch{alert("Error");}};
+  const handleCrear=async(e)=>{ e.preventDefault();setErrForm(""); if(!formN.nombre||!formN.email||!formN.password){setErrForm("Todos los campos son obligatorios.");return;} setGuardando(true);
+    try{await api.post("/usuarios",formN);setModal(false);setFormN({nombre:"",email:"",password:"",rol:"instructor"});await cargar();}catch(err){setErrForm(err.response?.data?.error||"Error al crear.");}finally{setGuardando(false);} };
+  const rc=r=>({admin:{bg:'#FEF2F2',color:'#DC2626'},instructor:{bg:'#EFF6FF',color:'#185FA5'},alumno:{bg:'#F1F5F9',color:'#64748B'}}[r]||{bg:'#F1F5F9',color:'#64748B'});
+  const TH=({c})=><th style={{textAlign:'left',padding:'10px 16px',fontSize:11,fontWeight:600,color:'#64748B',background:'#F8FAFC',borderBottom:'1px solid #E2E8F0',textTransform:'uppercase',letterSpacing:'.04em'}}>{c}</th>;
+  const TD=({c,style})=><td style={{padding:'12px 16px',borderBottom:'1px solid #F1F5F9',color:'#334155',...style}}>{c}</td>;
+  return(
+    <div style={{display:'flex',minHeight:'100vh',fontFamily:"'Inter',sans-serif",background:'#F8FAFC'}}>
+      {modal&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,backdropFilter:'blur(4px)',padding:'1rem'}}>
+        <div style={{background:'#fff',borderRadius:20,width:'100%',maxWidth:440,boxShadow:'0 8px 40px rgba(0,0,0,.15)',overflow:'hidden'}}>
+          <div style={{padding:'18px 22px',borderBottom:'1px solid #F1F5F9',display:'flex',justifyContent:'space-between'}}><h3 style={{fontSize:15,fontWeight:600,color:'#0F172A'}}>Nuevo usuario</h3><button onClick={()=>setModal(false)} style={{background:'none',border:'none',fontSize:18,cursor:'pointer',color:'#94A3B8'}}>✕</button></div>
+          <form onSubmit={handleCrear} style={{padding:'22px',display:'flex',flexDirection:'column',gap:14}}>
+            {[{l:'Nombre',t:'text',k:'nombre',p:'Nombre completo'},{l:'Email',t:'email',k:'email',p:'correo@empresa.com'},{l:'Contraseña',t:'password',k:'password',p:'Mínimo 6 caracteres'}].map(f=>(<div key={f.k} style={{display:'flex',flexDirection:'column',gap:5}}><label style={{fontSize:13,fontWeight:500,color:'#475569'}}>{f.l}</label><input type={f.t} placeholder={f.p} value={formN[f.k]} onChange={e=>setFormN({...formN,[f.k]:e.target.value})} style={{padding:'10px 14px',fontSize:13,border:'1.5px solid #E2E8F0',borderRadius:10,outline:'none',fontFamily:'inherit',color:'#334155'}}/></div>))}
+            <div style={{display:'flex',flexDirection:'column',gap:5}}><label style={{fontSize:13,fontWeight:500,color:'#475569'}}>Rol</label><select value={formN.rol} onChange={e=>setFormN({...formN,rol:e.target.value})} style={{padding:'10px 14px',fontSize:13,border:'1.5px solid #E2E8F0',borderRadius:10,outline:'none',fontFamily:'inherit'}}><option value="alumno">Alumno</option><option value="instructor">Instructor</option><option value="admin">Administrador</option></select></div>
+            {errForm&&<p style={{fontSize:12.5,color:'#DC2626'}}>{errForm}</p>}
+            <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:4}}><button type="button" onClick={()=>setModal(false)} style={{padding:'9px 20px',background:'#F1F5F9',color:'#475569',border:'none',borderRadius:10,fontSize:13.5,cursor:'pointer',fontFamily:'inherit'}}>Cancelar</button><button type="submit" disabled={guardando} style={{padding:'9px 20px',background:'linear-gradient(135deg,#185FA5,#0C447C)',color:'#fff',border:'none',borderRadius:10,fontSize:13.5,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>{guardando?'Creando...':'Crear usuario'}</button></div>
+          </form>
         </div>
-      )}
-
-      <div style={s.card}>
-        {/* Topbar */}
-        <div style={s.topbar}>
-          <div style={s.topLeft}>
-            <h2 style={s.topTitle}>Panel de administración</h2>
-            <span style={s.badgeAdmin}>Admin</span>
-          </div>
-          <div style={s.topRight}>
-            <span style={s.adminName}>{usuario || "Administrador"}</span>
-            <button style={s.btnLogout} onClick={handleLogout}>Cerrar sesión</button>
-          </div>
+      </div>}
+      <aside style={{width:240,background:'#1E3A5C',display:'flex',flexDirection:'column',height:'100vh',position:'sticky',top:0}}>
+        <div style={{padding:'20px 18px 16px',borderBottom:'1px solid rgba(255,255,255,.08)',background:'linear-gradient(135deg,#1E3A5C,#0C2240)'}}><div style={{display:'flex',alignItems:'center',gap:10}}><div style={{width:36,height:36,background:'linear-gradient(135deg,#185FA5,#2980D4)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>🎓</div><div><p style={{fontSize:13,fontWeight:700,color:'#fff'}}>AulaVirtual Pro</p><p style={{fontSize:11,color:'rgba(255,255,255,.4)'}}>Administrador</p></div></div></div>
+        <nav style={{flex:1,padding:'12px 10px',display:'flex',flexDirection:'column',gap:2}}>{[['👥','Usuarios','usuarios'],['📚','Cursos','cursos'],['📊','Reportes','reportes']].map(([ico,lbl,t])=><button key={t} onClick={()=>setTab(t)} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:8,border:'none',background:tab===t?'rgba(255,255,255,.12)':'none',color:tab===t?'#fff':'rgba(255,255,255,.6)',fontSize:13.5,cursor:'pointer',fontFamily:'inherit',textAlign:'left',width:'100%',fontWeight:tab===t?500:400}}><span style={{fontSize:16,width:20,textAlign:'center'}}>{ico}</span>{lbl}</button>)}</nav>
+        <div style={{padding:'14px 10px',borderTop:'1px solid rgba(255,255,255,.08)'}}><div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'rgba(255,255,255,.06)',borderRadius:8,marginBottom:8}}><div style={{width:32,height:32,borderRadius:'50%',background:'linear-gradient(135deg,#185FA5,#2980D4)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:600,flexShrink:0}}>{usuario?.[0]?.toUpperCase()||'A'}</div><div style={{flex:1,overflow:'hidden'}}><p style={{fontSize:13,fontWeight:500,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{usuario}</p><p style={{fontSize:11,color:'rgba(255,255,255,.4)'}}>Administrador</p></div></div><button onClick={()=>{logout();navigate("/login");}} style={{width:'100%',padding:'8px',background:'rgba(220,38,38,.15)',border:'1px solid rgba(220,38,38,.3)',borderRadius:8,color:'#FCA5A5',fontSize:13,cursor:'pointer',fontFamily:'inherit'}}>Cerrar sesión</button></div>
+      </aside>
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        <div style={{padding:'0 28px',height:64,background:'#fff',borderBottom:'1px solid #E2E8F0',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}><h1 style={{fontSize:17,fontWeight:600,color:'#0F172A'}}>{tab==='usuarios'?'Gestión de usuarios':tab==='cursos'?'Gestión de cursos':'Reportes de progreso'}</h1>{tab==='usuarios'&&<button onClick={()=>setModal(true)} style={{padding:'9px 18px',background:'linear-gradient(135deg,#185FA5,#0C447C)',color:'#fff',border:'none',borderRadius:10,fontSize:13.5,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>+ Nuevo usuario</button>}</div>
+        <div style={{flex:1,overflowY:'auto',padding:'24px 28px'}}>
+          {loading?<p style={{color:'#64748B'}}>Cargando datos...</p>:(
+            <>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:28}}>{[[usuarios.filter(u=>u.rol==='alumno').length,'Alumnos','👥','#EFF6FF'],[usuarios.filter(u=>u.rol==='instructor').length,'Instructores','👨‍🏫','#E1F5EE'],[cursos.filter(c=>c.activo).length,'Cursos activos','📚','#F5F3FF'],[usuarios.length,'Usuarios total','👤','#FFFBEB']].map(([val,lbl,ico,bg])=><div key={lbl} style={{background:'#fff',borderRadius:14,border:'1px solid #E2E8F0',padding:'16px 20px',display:'flex',alignItems:'center',gap:14}}><div style={{width:42,height:42,borderRadius:12,background:bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>{ico}</div><div><p style={{fontSize:22,fontWeight:700,color:'#0F172A',lineHeight:1}}>{val}</p><p style={{fontSize:11.5,color:'#64748B',marginTop:3}}>{lbl}</p></div></div>)}</div>
+              {tab==='usuarios'&&<div style={{background:'#fff',borderRadius:14,border:'1px solid #E2E8F0',overflow:'hidden'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}><thead><tr>{['Nombre','Email','Rol','Estado','Acciones'].map(h=><TH key={h} c={h}/>)}</tr></thead><tbody>{usuarios.map(u=>{const r=rc(u.rol);return(<tr key={u._id}><TD c={<div style={{display:'flex',alignItems:'center',gap:10}}><div style={{width:30,height:30,borderRadius:'50%',background:'linear-gradient(135deg,#185FA5,#2980D4)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600,flexShrink:0}}>{u.nombre?.[0]?.toUpperCase()||'?'}</div><span style={{fontWeight:500,color:'#0F172A'}}>{u.nombre}</span></div>}/><TD c={u.email}/><TD c={<span style={{padding:'3px 10px',borderRadius:99,fontSize:11.5,fontWeight:600,background:r.bg,color:r.color,textTransform:'capitalize'}}>{u.rol}</span>}/><TD c={<span style={{padding:'3px 10px',borderRadius:99,fontSize:11.5,fontWeight:600,background:u.activo?'#E1F5EE':'#FEF9C3',color:u.activo?'#059669':'#854D0E'}}>{u.activo?'Activo':'Inactivo'}</span>}/><TD c={<div style={{display:'flex',gap:6}}><button onClick={()=>handleToggle(u._id)} style={{width:30,height:30,borderRadius:8,border:'1px solid #E2E8F0',background:'#F8FAFC',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>{u.activo?'🔒':'🔓'}</button><button onClick={()=>handleDelU(u._id)} style={{width:30,height:30,borderRadius:8,border:'1px solid #FECACA',background:'#FEF2F2',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>🗑️</button></div>}/></tr>);})}</tbody></table></div>}
+              {tab==='cursos'&&<div style={{background:'#fff',borderRadius:14,border:'1px solid #E2E8F0',overflow:'hidden'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}><thead><tr>{['Curso','Módulos','Estado','Acciones'].map(h=><TH key={h} c={h}/>)}</tr></thead><tbody>{cursos.map(c=><tr key={c._id}><TD c={c.titulo} style={{fontWeight:500,color:'#0F172A'}}/><TD c={c.modulos?.length||0}/><TD c={<span style={{padding:'3px 10px',borderRadius:99,fontSize:11.5,fontWeight:600,background:c.activo?'#E1F5EE':'#FEF2F2',color:c.activo?'#059669':'#DC2626'}}>{c.activo?'Activo':'Inactivo'}</span>}/><TD c={<button onClick={()=>handleDelC(c._id)} style={{width:30,height:30,borderRadius:8,border:'1px solid #FECACA',background:'#FEF2F2',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>🗑️</button>}/></tr>)}</tbody></table></div>}
+              {tab==='reportes'&&(reporte.length===0?<div style={{textAlign:'center',padding:'3rem',background:'#fff',borderRadius:14,border:'1px solid #E2E8F0'}}><p style={{color:'#94A3B8'}}>Sin datos de progreso aún.</p></div>:<div style={{background:'#fff',borderRadius:14,border:'1px solid #E2E8F0',overflow:'hidden'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}><thead><tr>{['Alumno','Email','Cursos','Quizzes','Aprobados'].map(h=><TH key={h} c={h}/>)}</tr></thead><tbody>{reporte.map(r=><tr key={r.alumno.id}><TD c={r.alumno.nombre} style={{fontWeight:500,color:'#0F172A'}}/><TD c={r.alumno.email}/><TD c={r.progresos.length}/><TD c={r.calificaciones.length}/><TD c={<span style={{padding:'3px 10px',borderRadius:99,fontSize:11.5,fontWeight:600,background:r.calificaciones.filter(c=>c.aprobado).length>0?'#E1F5EE':'#F1F5F9',color:r.calificaciones.filter(c=>c.aprobado).length>0?'#059669':'#64748B'}}>{r.calificaciones.filter(c=>c.aprobado).length}/{r.calificaciones.length}</span>}/></tr>)}</tbody></table></div>)}
+            </>
+          )}
         </div>
-
-        {/* Stats reales */}
-        <div style={s.statsGrid}>
-          <div style={s.statCard}>
-            <p style={s.statLabel}>Total alumnos</p>
-            <p style={s.statVal}>{totalAlumnos}</p>
-            <p style={s.statSub}>{totalInstructores} instructores</p>
-          </div>
-          <div style={s.statCard}>
-            <p style={s.statLabel}>Cursos activos</p>
-            <p style={s.statVal}>{cursosActivos}</p>
-            <p style={s.statSub}>{cursos.length - cursosActivos} inactivos</p>
-          </div>
-          <div style={s.statCard}>
-            <p style={s.statLabel}>Total usuarios</p>
-            <p style={s.statVal}>{usuarios.length}</p>
-            <p style={s.statSub}>en el sistema</p>
-          </div>
-          <div style={s.statCard}>
-            <p style={s.statLabel}>Tasa de aprobación</p>
-            <p style={s.statVal}>{tasaAprobacion}%</p>
-            <p style={s.statSub}>promedio general</p>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={s.tabs}>
-          {["usuarios","cursos","reportes"].map(tab => (
-            <button key={tab} style={{...s.tab, ...(tabActiva===tab ? s.tabActiva : {})}}
-              onClick={() => setTabActiva(tab)}>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {loading ? (
-          <p style={s.loadingMsg}>Cargando datos...</p>
-        ) : (
-          <>
-            {/* Tab Usuarios */}
-            {tabActiva === "usuarios" && (
-              <div style={s.section}>
-                <div style={s.sectionHeader}>
-                  <h3 style={s.sectionTitle}>Usuarios registrados ({usuarios.length})</h3>
-                  <button style={s.btnAdd} onClick={() => setModalAbierto(true)}>+ Nuevo usuario</button>
-                </div>
-                <table style={s.table}>
-                  <thead>
-                    <tr>
-                      <th style={s.th}>Nombre</th>
-                      <th style={s.th}>Email</th>
-                      <th style={s.th}>Rol</th>
-                      <th style={s.th}>Estado</th>
-                      <th style={s.th}>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {usuarios.map(u => (
-                      <tr key={u._id}>
-                        <td style={s.td}>{u.nombre}</td>
-                        <td style={s.td}>{u.email}</td>
-                        <td style={s.td}>
-                          <span style={{...s.badge,
-                            backgroundColor: u.rol==="admin" ? "#FAECE7" : u.rol==="instructor" ? "#E6F1FB" : "#f3f4f6",
-                            color: u.rol==="admin" ? "#712B13" : u.rol==="instructor" ? "#185FA5" : "#374151",
-                          }}>{u.rol}</span>
-                        </td>
-                        <td style={s.td}>
-                          <span style={{...s.badge,
-                            backgroundColor: u.activo ? "#dcfce7" : "#fef9c3",
-                            color: u.activo ? "#15803d" : "#854d0e",
-                          }}>{u.activo ? "Activo" : "Inactivo"}</span>
-                        </td>
-                        <td style={s.td}>
-                          <button style={s.actionBtn} title={u.activo ? "Desactivar" : "Activar"}
-                            onClick={() => handleToggleEstado(u._id)}>
-                            {u.activo ? "🔒" : "🔓"}
-                          </button>
-                          <button style={s.actionBtn} title="Eliminar"
-                            onClick={() => handleEliminarUsuario(u._id)}>🗑️</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Tab Cursos */}
-            {tabActiva === "cursos" && (
-              <div style={s.section}>
-                <div style={s.sectionHeader}>
-                  <h3 style={s.sectionTitle}>Cursos registrados ({cursos.length})</h3>
-                </div>
-                <table style={s.table}>
-                  <thead>
-                    <tr>
-                      <th style={s.th}>Título</th>
-                      <th style={s.th}>Módulos</th>
-                      <th style={s.th}>Estado</th>
-                      <th style={s.th}>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cursos.map(c => (
-                      <tr key={c._id}>
-                        <td style={s.td}>{c.titulo}</td>
-                        <td style={s.td}>{c.modulos?.length || 0}</td>
-                        <td style={s.td}>
-                          <span style={{...s.badge,
-                            backgroundColor: c.activo ? "#dcfce7" : "#fee2e2",
-                            color: c.activo ? "#15803d" : "#991b1b",
-                          }}>{c.activo ? "Activo" : "Inactivo"}</span>
-                        </td>
-                        <td style={s.td}>
-                          <button style={s.actionBtn} title="Eliminar"
-                            onClick={() => handleEliminarCurso(c._id)}>🗑️</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Tab Reportes */}
-            {tabActiva === "reportes" && (
-              <div style={s.section}>
-                <div style={s.sectionHeader}>
-                  <h3 style={s.sectionTitle}>Reporte de progreso por alumno</h3>
-                </div>
-                {reporte.length === 0 ? (
-                  <p style={s.emptyMsg}>No hay datos de progreso aún.</p>
-                ) : (
-                  <table style={s.table}>
-                    <thead>
-                      <tr>
-                        <th style={s.th}>Alumno</th>
-                        <th style={s.th}>Email</th>
-                        <th style={s.th}>Cursos en progreso</th>
-                        <th style={s.th}>Quizzes realizados</th>
-                        <th style={s.th}>Aprobados</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reporte.map(r => (
-                        <tr key={r.alumno.id}>
-                          <td style={s.td}>{r.alumno.nombre}</td>
-                          <td style={s.td}>{r.alumno.email}</td>
-                          <td style={s.td}>{r.progresos.length}</td>
-                          <td style={s.td}>{r.calificaciones.length}</td>
-                          <td style={s.td}>
-                            <span style={{...s.badge,
-                              backgroundColor: r.calificaciones.filter(c=>c.aprobado).length > 0 ? "#dcfce7" : "#f3f4f6",
-                              color: r.calificaciones.filter(c=>c.aprobado).length > 0 ? "#15803d" : "#6b7280",
-                            }}>
-                              {r.calificaciones.filter(c=>c.aprobado).length} / {r.calificaciones.length}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            )}
-          </>
-        )}
       </div>
     </div>
   );
 }
-
-const s = {
-  page: { minHeight: "100vh", backgroundColor: "#f0f4f8", fontFamily: "Inter, sans-serif", padding: "2rem" },
-  card: { backgroundColor: "#fff", borderRadius: "16px", border: "0.5px solid #e5e7eb", overflow: "hidden", maxWidth: "1000px", margin: "0 auto" },
-  topbar: { padding: "14px 20px", borderBottom: "0.5px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  topLeft: { display: "flex", alignItems: "center", gap: "10px" },
-  topTitle: { fontSize: "16px", fontWeight: "600", color: "#111827" },
-  badgeAdmin: { backgroundColor: "#E6F1FB", color: "#185FA5", fontSize: "11px", padding: "3px 10px", borderRadius: "99px", fontWeight: "600" },
-  topRight: { display: "flex", alignItems: "center", gap: "12px" },
-  adminName: { fontSize: "13px", color: "#6b7280" },
-  btnLogout: { padding: "6px 14px", backgroundColor: "#fff", color: "#dc2626", border: "0.5px solid #dc2626", borderRadius: "6px", fontSize: "12px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif" },
-  statsGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", padding: "16px 20px", borderBottom: "0.5px solid #e5e7eb" },
-  statCard: { backgroundColor: "#f9fafb", borderRadius: "8px", padding: "14px" },
-  statLabel: { fontSize: "11px", color: "#6b7280", marginBottom: "6px" },
-  statVal: { fontSize: "24px", fontWeight: "600", color: "#111827" },
-  statSub: { fontSize: "11px", color: "#6b7280", marginTop: "2px" },
-  tabs: { display: "flex", borderBottom: "0.5px solid #e5e7eb", padding: "0 20px" },
-  tab: { padding: "10px 16px", fontSize: "13px", fontWeight: "500", color: "#6b7280", background: "none", border: "none", borderBottom: "2px solid transparent", cursor: "pointer", fontFamily: "Inter, sans-serif" },
-  tabActiva: { color: "#185FA5", borderBottom: "2px solid #185FA5" },
-  section: { padding: "16px 20px" },
-  sectionHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" },
-  sectionTitle: { fontSize: "13px", fontWeight: "600", color: "#111827" },
-  btnAdd: { padding: "6px 14px", backgroundColor: "#185FA5", color: "#fff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif" },
-  table: { width: "100%", borderCollapse: "collapse", fontSize: "12px" },
-  th: { textAlign: "left", padding: "6px 8px", fontSize: "11px", fontWeight: "600", color: "#6b7280", borderBottom: "0.5px solid #e5e7eb" },
-  td: { padding: "8px", color: "#111827", borderBottom: "0.5px solid #e5e7eb" },
-  badge: { display: "inline-block", padding: "2px 8px", borderRadius: "99px", fontSize: "11px", fontWeight: "600" },
-  actionBtn: { background: "none", border: "none", cursor: "pointer", fontSize: "13px", padding: "2px 6px", borderRadius: "4px" },
-  loadingMsg: { padding: "2rem", textAlign: "center", fontSize: "13px", color: "#6b7280" },
-  emptyMsg: { fontSize: "12px", color: "#9ca3af", textAlign: "center", padding: "2rem" },
-  modalOverlay: { position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 },
-  modal: { backgroundColor: "#fff", borderRadius: "12px", width: "100%", maxWidth: "420px", padding: "0", overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.16)" },
-  modalHead: { padding: "14px 20px", borderBottom: "0.5px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  modalTitle: { fontSize: "14px", fontWeight: "600", color: "#111827" },
-  closeBtn: { background: "none", border: "none", fontSize: "16px", cursor: "pointer", color: "#6b7280" },
-  modalForm: { padding: "20px", display: "flex", flexDirection: "column", gap: "14px" },
-  field: { display: "flex", flexDirection: "column", gap: "4px" },
-  label: { fontSize: "12px", fontWeight: "500", color: "#374151" },
-  input: { padding: "9px 12px", fontSize: "13px", border: "1px solid #d1d5db", borderRadius: "8px", outline: "none", fontFamily: "Inter, sans-serif", color: "#111827", backgroundColor: "#fff" },
-  errorMsg: { fontSize: "12px", color: "#dc2626", textAlign: "center" },
-  modalActions: { display: "flex", gap: "10px", justifyContent: "flex-end" },
-  btnPrimary: { padding: "8px 18px", backgroundColor: "#185FA5", color: "#fff", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif" },
-  btnSec: { padding: "8px 18px", backgroundColor: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif" },
-};

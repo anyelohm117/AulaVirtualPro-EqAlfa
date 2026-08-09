@@ -1,177 +1,48 @@
+
 import { useState } from "react";
 import api from "../services/api";
+const detectTipo = (url) => {
+  if (!url) return null;
+  const u = url.toLowerCase();
+  if (u.includes("youtube.com")||u.includes("youtu.be")) return "youtube";
+  if (u.includes("drive.google.com")||u.includes("docs.google.com")) return "gdrive";
+  if (u.match(/\.pdf$/)) return "pdf";
+  if (u.match(/\.(mp4|webm|mov|ogg)$/)) return "video";
+  if (u.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) return "imagen";
+  return "link";
+};
+const toEmbed = (url) => { const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/); return m?`https://www.youtube.com/embed/${m[1]}?rel=0`:url; };
+const toDrive = (url) => { const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m?`https://drive.google.com/file/d/${m[1]}/preview`:url; };
 
-/**
- * LessonViewer.jsx
- * Uso: <LessonViewer leccion={leccion} cursoId={id} onCompletada={callback} />
- * Props:
- *   leccion       objeto { id, titulo, contenido, videoUrl? }
- *   cursoId       string/number del curso actual (para la llamada a la API)
- *   onCompletada  función que se llama cuando el alumno marca la lección como completada
- */
 export default function LessonViewer({ leccion, cursoId, onCompletada }) {
-  const [completada, setCompletada] = useState(leccion?.completada || false);
-  const [loading, setLoading] = useState(false);
-
+  const [completando,setCompletando]=useState(false);
+  const [completada,setCompletada]=useState(leccion?.completada||false);
   if (!leccion) return null;
-
-  const handleCompletar = async () => {
-    if (completada || loading) return;
-    setLoading(true);
-    try {
-      await api.post(`/cursos/${cursoId}/lecciones/${leccion.id}/completar`);
-      setCompletada(true);
-      if (onCompletada) onCompletada(leccion.id);
-    } catch (err) {
-      console.error("Error al marcar lección como completada:", err);
-    } finally {
-      setLoading(false);
-    }
+  const tipo=detectTipo(leccion.materialURL);
+  const handleCompletar=async()=>{
+    if(completada||completando)return;
+    setCompletando(true);
+    try{ await api.post(`/cursos/${cursoId}/lecciones/${leccion.id||leccion._id}/completar`); setCompletada(true); onCompletada&&onCompletada(leccion.id||leccion._id); }
+    catch(e){console.error(e);}finally{setCompletando(false);}
   };
-
+  const wrap={position:'relative',paddingBottom:'56.25%',height:0,borderRadius:12,overflow:'hidden',background:'#0F172A',boxShadow:'0 4px 20px rgba(0,0,0,.15)'};
+  const ifr={position:'absolute',top:0,left:0,width:'100%',height:'100%',border:'none'};
   return (
-    <div style={styles.wrap}>
-      {leccion.videoUrl ? (
-        <div style={styles.videoWrap}>
-          <iframe
-            src={leccion.videoUrl}
-            title={leccion.titulo}
-            style={styles.iframe}
-            allowFullScreen
-          />
-        </div>
-      ) : (
-        <div style={styles.videoPlaceholder}>
-          <div style={styles.playCircle}>
-            <span style={styles.playIcon}>▶</span>
-          </div>
-          <p style={styles.placeholderTxt}>Video no disponible</p>
-        </div>
-      )}
-
-      <div style={styles.body}>
-        <h3 style={styles.titulo}>{leccion.titulo}</h3>
-        <p style={styles.contenido}>{leccion.contenido}</p>
-      </div>
-
-      <div style={styles.footer}>
-        {completada ? (
-          <div style={styles.completadaBadge}>
-            <span style={styles.checkIcon}>✓</span>
-            Lección completada
-          </div>
-        ) : (
-          <button
-            style={{
-              ...styles.btnCompletar,
-              ...(loading ? styles.btnLoading : {}),
-            }}
-            onClick={handleCompletar}
-            disabled={loading}
-          >
-            {loading ? "Guardando..." : "✓ Marcar como completada"}
-          </button>
-        )}
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {leccion.contenido&&<div style={{background:'#F8FAFC',border:'1px solid #E2E8F0',borderRadius:10,padding:'14px 18px'}}><p style={{fontSize:14,color:'#475569',lineHeight:1.7}}>{leccion.contenido}</p></div>}
+      {tipo==="youtube"&&<div style={wrap}><iframe src={toEmbed(leccion.materialURL)} style={ifr} allow="accelerometer;autoplay;encrypted-media;picture-in-picture" allowFullScreen title={leccion.titulo}/></div>}
+      {tipo==="gdrive"&&<div style={{...wrap,paddingBottom:'75%',background:'#fff',border:'1px solid #E2E8F0'}}><iframe src={toDrive(leccion.materialURL)} style={ifr} title={leccion.titulo}/></div>}
+      {tipo==="video"&&<video controls style={{width:'100%',borderRadius:12,background:'#000',maxHeight:480}}><source src={leccion.materialURL}/>Tu navegador no soporta video HTML5.</video>}
+      {tipo==="pdf"&&<div style={{height:520,borderRadius:12,overflow:'hidden',border:'1px solid #E2E8F0'}}><iframe src={leccion.materialURL} style={{width:'100%',height:'100%',border:'none'}} title={leccion.titulo}/></div>}
+      {tipo==="imagen"&&<img src={leccion.materialURL} alt={leccion.titulo} style={{width:'100%',borderRadius:12,objectFit:'contain',maxHeight:480,border:'1px solid #E2E8F0'}}/>}
+      {tipo==="link"&&leccion.materialURL&&<a href={leccion.materialURL} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:14,padding:'14px 18px',background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:10}}><span style={{fontSize:22}}>🔗</span><div><p style={{fontSize:13,fontWeight:500,color:'#185FA5'}}>Material externo</p><p style={{fontSize:11,color:'#64748B'}}>{leccion.materialURL}</p></div><span style={{marginLeft:'auto',color:'#185FA5'}}>↗</span></a>}
+      {!leccion.materialURL&&<div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10,padding:'2.5rem',background:'#F8FAFC',borderRadius:10,border:'1px dashed #CBD5E1'}}><span style={{fontSize:28}}>📄</span><p style={{fontSize:13,color:'#94A3B8'}}>Esta lección no tiene material adjunto todavía.</p></div>}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:12,borderTop:'1px solid #E2E8F0'}}>
+        <span style={{fontSize:12,color:'#64748B',fontWeight:500}}>{leccion.duracion>0?`⏱ ${leccion.duracion} min`:''}</span>
+        <button onClick={handleCompletar} disabled={completada||completando} style={{padding:'9px 20px',background:completada?'#059669':'#185FA5',color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:500,cursor:completada?'default':'pointer',transition:'all .18s'}}>
+          {completando?"Guardando...":completada?"✓ Lección completada":"Marcar como completada"}
+        </button>
       </div>
     </div>
   );
 }
-
-const styles = {
-  wrap: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    fontFamily: "Inter, sans-serif",
-  },
-  videoWrap: {
-    width: "100%",
-    aspectRatio: "16/9",
-    borderRadius: "12px",
-    overflow: "hidden",
-    border: "0.5px solid #e5e7eb",
-  },
-  iframe: {
-    width: "100%",
-    height: "100%",
-    border: "none",
-  },
-  videoPlaceholder: {
-    height: "220px",
-    backgroundColor: "#f3f4f6",
-    borderRadius: "12px",
-    border: "0.5px solid #e5e7eb",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "12px",
-  },
-  playCircle: {
-    width: "56px",
-    height: "56px",
-    borderRadius: "50%",
-    backgroundColor: "#e5e7eb",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  playIcon: {
-    fontSize: "20px",
-    color: "#9ca3af",
-    marginLeft: "4px",
-  },
-  placeholderTxt: {
-    fontSize: "13px",
-    color: "#9ca3af",
-  },
-  body: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  titulo: {
-    fontSize: "15px",
-    fontWeight: "600",
-    color: "#111827",
-    lineHeight: "1.4",
-  },
-  contenido: {
-    fontSize: "14px",
-    color: "#374151",
-    lineHeight: "1.75",
-  },
-  footer: {
-    paddingTop: "4px",
-  },
-  btnCompletar: {
-    padding: "10px 20px",
-    backgroundColor: "#185FA5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
-    transition: "opacity 0.15s",
-  },
-  btnLoading: {
-    opacity: 0.6,
-    cursor: "not-allowed",
-  },
-  completadaBadge: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    padding: "8px 16px",
-    backgroundColor: "#dcfce7",
-    color: "#15803d",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: "600",
-  },
-  checkIcon: {
-    fontSize: "14px",
-  },
-};

@@ -1,5 +1,8 @@
 const Inscripcion = require('../models/Inscripcion');
 const Course      = require('../models/Course');
+const User        = require('../models/User'); // Importado aquí por buenas prácticas
+const transporter = require('../config/mailer');
+const { inscripcionTemplate } = require('../utils/emailTemplates');
 
 /**
  * @desc    Inscribe al alumno autenticado en un curso
@@ -25,6 +28,16 @@ const inscribirse = async (req, res) => {
       alumnoId: req.user.id,
       cursoId:  req.params.cursoId,
     });
+
+    // Obtener datos del alumno para el email
+    const alumno = await User.findById(req.user.id).select('nombre email');
+
+    // Enviar correo de notificación de forma asíncrona (sin detener la respuesta)
+    transporter.sendMail({
+      from: `"AulaVirtual Pro" <${process.env.MAIL_USER}>`,
+      to: alumno.email,
+      ...inscripcionTemplate(alumno.nombre, curso.titulo),
+    }).catch(err => console.error('Error al enviar email de inscripción:', err.message));
 
     return res.status(201).json({ message: 'Inscripción exitosa', inscripcion });
   } catch (error) {
@@ -131,4 +144,10 @@ const getAlumnosPorCurso = async (req, res) => {
   }
 };
 
-module.exports = { inscribirse, getMisCursos, getCursosDisponibles, inscribirAlumno, getAlumnosPorCurso };
+module.exports = { 
+  inscribirse, 
+  getMisCursos, 
+  getCursosDisponibles, 
+  inscribirAlumno, 
+  getAlumnosPorCurso 
+};

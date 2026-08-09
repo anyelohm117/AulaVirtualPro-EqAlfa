@@ -1,195 +1,47 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-
 export default function SearchPage() {
-  const navigate = useNavigate();
-  const [cursos, setCursos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [busqueda, setBusqueda] = useState("");
-  const [inscribiendo, setInscribiendo] = useState(null);
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
-  useEffect(() => {
-    cargarDisponibles();
-  }, []);
-
-  const cargarDisponibles = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/inscripciones/disponibles");
-      setCursos(res.data);
-    } catch (err) {
-      console.error("Error al cargar cursos:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInscribirse = async (cursoId) => {
-    setInscribiendo(cursoId);
-    setMensaje({ texto: "", tipo: "" });
-    try {
-      await api.post(`/inscripciones/${cursoId}`);
-      setCursos(prev =>
-        prev.map(c => c._id === cursoId ? { ...c, yaInscrito: true } : c)
-      );
-      setMensaje({ texto: "¡Te inscribiste correctamente! Ya puedes verlo en Mis Cursos.", tipo: "ok" });
-    } catch (err) {
-      const msg = err.response?.data?.error || "Error al inscribirse.";
-      setMensaje({ texto: msg, tipo: "error" });
-    } finally {
-      setInscribiendo(null);
-    }
-  };
-
-  const cursosFiltrados = cursos.filter(c =>
-    c.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-    c.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+  const navigate=useNavigate();
+  const [cursos,setCursos]=useState([]); const [loading,setLoading]=useState(true); const [busqueda,setBusqueda]=useState(""); const [inscribiendo,setInscribiendo]=useState(null); const [msg,setMsg]=useState({texto:"",tipo:""});
+  useEffect(()=>{ api.get("/inscripciones/disponibles").then(r=>setCursos(r.data)).catch(()=>{}).finally(()=>setLoading(false)); },[]);
+  const handleInscribirse=async(cid)=>{ setInscribiendo(cid); setMsg({texto:"",tipo:""});
+    try{ await api.post(`/inscripciones/${cid}`); setCursos(p=>p.map(c=>c._id===cid?{...c,yaInscrito:true}:c)); setMsg({texto:"¡Inscripción exitosa! Ya puedes verlo en Mis cursos.",tipo:"ok"}); }
+    catch(err){ setMsg({texto:err.response?.data?.error||"Error al inscribirse.",tipo:"error"}); }finally{setInscribiendo(null);} };
+  const filtrados=cursos.filter(c=>c.titulo.toLowerCase().includes(busqueda.toLowerCase())||c.descripcion?.toLowerCase().includes(busqueda.toLowerCase()));
+  const disponibles=filtrados.filter(c=>!c.yaInscrito); const inscritos=filtrados.filter(c=>c.yaInscrito);
+  const CourseCard=({curso,inscrito})=>(
+    <div style={{background:'#fff',borderRadius:14,border:`1px solid ${inscrito?'#A7F3D0':'#E2E8F0'}`,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,.05)',opacity:inscrito?.85:1}}>
+      <div style={{height:120,background:curso.imagen?`url(${curso.imagen}) center/cover`:`linear-gradient(135deg,${inscrito?'#059669,#10B981':'#1E3A5C,#185FA5'})`,position:'relative'}}>{!curso.imagen&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:40,opacity:.3}}>📚</div>}</div>
+      <div style={{padding:'14px'}}>
+        <h3 style={{fontSize:14,fontWeight:600,color:'#0F172A',marginBottom:4,lineHeight:1.3}}>{curso.titulo}</h3>
+        <p style={{fontSize:12,color:'#64748B',marginBottom:10,lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{curso.descripcion||'Sin descripción'}</p>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <span style={{fontSize:11,color:'#94A3B8'}}>{curso.modulos?.length||0} módulos</span>
+          {inscrito?<button onClick={()=>navigate(`/course/${curso._id}`)} style={{padding:'7px 14px',background:'#E1F5EE',color:'#059669',border:'1px solid #A7F3D0',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>✓ Ir al curso</button>
+          :<button onClick={()=>handleInscribirse(curso._id)} disabled={inscribiendo===curso._id} style={{padding:'7px 14px',background:inscribiendo===curso._id?'#E2E8F0':'linear-gradient(135deg,#185FA5,#0C447C)',color:inscribiendo===curso._id?'#94A3B8':'#fff',border:'none',borderRadius:8,fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>{inscribiendo===curso._id?'...':'Inscribirme'}</button>}
+        </div>
+      </div>
+    </div>
   );
-
-  const disponibles = cursosFiltrados.filter(c => !c.yaInscrito);
-  const inscritos   = cursosFiltrados.filter(c => c.yaInscrito);
-
-  return (
-    <div style={s.page}>
-      <div style={s.topbar}>
-        <button style={s.backBtn} onClick={() => navigate("/catalog")}>← Mis cursos</button>
-        <h2 style={s.title}>Explorar cursos</h2>
+  return(
+    <div style={{minHeight:'100vh',background:'#F8FAFC',fontFamily:"'Inter',sans-serif"}}>
+      <div style={{background:'#fff',borderBottom:'1px solid #E2E8F0',padding:'0 28px',height:64,display:'flex',alignItems:'center',gap:16,position:'sticky',top:0,zIndex:10}}>
+        <button onClick={()=>navigate("/catalog")} style={{background:'none',border:'none',color:'#185FA5',fontSize:13.5,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>← Mis cursos</button>
+        <div style={{width:1,height:20,background:'#E2E8F0'}}/><h1 style={{fontSize:16,fontWeight:600,color:'#0F172A',flex:1}}>Explorar cursos</h1>
+        <div style={{position:'relative'}}><span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',fontSize:14,pointerEvents:'none'}}>🔍</span><input type="text" placeholder="Buscar cursos..." value={busqueda} onChange={e=>setBusqueda(e.target.value)} style={{padding:'8px 14px 8px 36px',fontSize:13,border:'1.5px solid #E2E8F0',borderRadius:10,outline:'none',width:240,fontFamily:'inherit'}}/></div>
       </div>
-
-      <div style={s.searchWrap}>
-        <input
-          type="text"
-          placeholder="Buscar por nombre o descripción..."
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-          style={s.searchInput}
-        />
+      {msg.texto&&<div style={{margin:'16px 28px 0',padding:'11px 16px',borderRadius:10,fontSize:13,display:'flex',justifyContent:'space-between',background:msg.tipo==='ok'?'#E1F5EE':'#FEF2F2',color:msg.tipo==='ok'?'#065F46':'#991B1B',border:`1px solid ${msg.tipo==='ok'?'#A7F3D0':'#FECACA'}`}}><span>{msg.texto}</span><button onClick={()=>setMsg({texto:"",tipo:""})} style={{background:'none',border:'none',cursor:'pointer',color:'inherit'}}>✕</button></div>}
+      <div style={{padding:'24px 28px'}}>
+        {loading?<div style={{textAlign:'center',padding:'3rem',color:'#64748B'}}>Cargando cursos disponibles...</div>:(
+          <>
+            {disponibles.length>0&&<><div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}><h2 style={{fontSize:15,fontWeight:600,color:'#0F172A'}}>Disponibles</h2><span style={{padding:'3px 10px',background:'#EFF6FF',color:'#185FA5',borderRadius:99,fontSize:12,fontWeight:600}}>{disponibles.length}</span></div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:18,marginBottom:28}}>{disponibles.map(c=><CourseCard key={c._id} curso={c} inscrito={false}/>)}</div></>}
+            {inscritos.length>0&&<><div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}><h2 style={{fontSize:15,fontWeight:600,color:'#0F172A'}}>Ya inscrito</h2><span style={{padding:'3px 10px',background:'#E1F5EE',color:'#059669',borderRadius:99,fontSize:12,fontWeight:600}}>{inscritos.length}</span></div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:18}}>{inscritos.map(c=><CourseCard key={c._id} curso={c} inscrito={true}/>)}</div></>}
+            {disponibles.length===0&&inscritos.length===0&&<div style={{textAlign:'center',padding:'4rem'}}><div style={{fontSize:48,marginBottom:14,opacity:.6}}>🔍</div><p style={{color:'#64748B',fontSize:14}}>{busqueda?`Sin resultados para "${busqueda}"`:'No hay cursos disponibles.'}</p></div>}
+          </>
+        )}
       </div>
-
-      {mensaje.texto && (
-        <div style={{ ...s.banner, ...(mensaje.tipo === "ok" ? s.bannerOk : s.bannerErr) }}>
-          {mensaje.texto}
-          <button style={s.bannerClose} onClick={() => setMensaje({ texto: "", tipo: "" })}>✕</button>
-        </div>
-      )}
-
-      {loading ? (
-        <p style={s.empty}>Cargando cursos disponibles...</p>
-      ) : (
-        <div style={s.content}>
-          {/* Cursos disponibles para inscribirse */}
-          <div style={s.section}>
-            <h3 style={s.sectionTitle}>
-              Disponibles para inscribirse
-              <span style={s.count}>{disponibles.length}</span>
-            </h3>
-            {disponibles.length === 0 ? (
-              <p style={s.empty}>
-                {busqueda ? "No se encontraron cursos con ese término." : "Ya estás inscrito en todos los cursos disponibles."}
-              </p>
-            ) : (
-              <div style={s.grid}>
-                {disponibles.map(curso => (
-                  <div key={curso._id} style={s.card}>
-                    <div style={s.thumb}>
-                      {curso.imagen
-                        ? <img src={curso.imagen} alt={curso.titulo} style={s.thumbImg} onError={e => e.target.style.display="none"} />
-                        : <span style={{ fontSize: "32px" }}>📚</span>
-                      }
-                    </div>
-                    <div style={s.cardBody}>
-                      <p style={s.cardTitle}>{curso.titulo}</p>
-                      <p style={s.cardDesc}>{curso.descripcion || "Sin descripción"}</p>
-                      <div style={s.cardMeta}>
-                        <span style={s.metaBadge}>
-                          {curso.modulos?.length || 0} módulos
-                        </span>
-                        <span style={s.metaBadge}>
-                          {curso.modulos?.reduce((acc, m) => acc + (m.lecciones?.length || 0), 0) || 0} lecciones
-                        </span>
-                      </div>
-                      <button
-                        style={{
-                          ...s.btnInscribir,
-                          ...(inscribiendo === curso._id ? s.btnDisabled : {}),
-                        }}
-                        onClick={() => handleInscribirse(curso._id)}
-                        disabled={inscribiendo === curso._id}
-                      >
-                        {inscribiendo === curso._id ? "Inscribiendo..." : "Inscribirme"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Cursos ya inscritos */}
-          {inscritos.length > 0 && (
-            <div style={s.section}>
-              <h3 style={s.sectionTitle}>
-                Ya inscrito
-                <span style={{ ...s.count, backgroundColor: "#dcfce7", color: "#15803d" }}>{inscritos.length}</span>
-              </h3>
-              <div style={s.grid}>
-                {inscritos.map(curso => (
-                  <div key={curso._id} style={{ ...s.card, opacity: 0.7 }}>
-                    <div style={s.thumb}>
-                      {curso.imagen
-                        ? <img src={curso.imagen} alt={curso.titulo} style={s.thumbImg} onError={e => e.target.style.display="none"} />
-                        : <span style={{ fontSize: "32px" }}>📚</span>
-                      }
-                    </div>
-                    <div style={s.cardBody}>
-                      <p style={s.cardTitle}>{curso.titulo}</p>
-                      <p style={s.cardDesc}>{curso.descripcion || "Sin descripción"}</p>
-                      <button
-                        style={s.btnYaInscrito}
-                        onClick={() => navigate(`/course/${curso._id}`)}
-                      >
-                        ✓ Inscrito — Ir al curso
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
-
-const s = {
-  page: { minHeight: "100vh", backgroundColor: "#f0f4f8", fontFamily: "Inter, sans-serif" },
-  topbar: { padding: "14px 20px", backgroundColor: "#fff", borderBottom: "0.5px solid #e5e7eb", display: "flex", alignItems: "center", gap: "14px" },
-  backBtn: { background: "none", border: "none", color: "#185FA5", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", padding: 0 },
-  title: { fontSize: "16px", fontWeight: "600", color: "#111827" },
-  searchWrap: { padding: "12px 20px", backgroundColor: "#fff", borderBottom: "0.5px solid #e5e7eb" },
-  searchInput: { width: "100%", maxWidth: "480px", padding: "8px 12px", fontSize: "13px", border: "0.5px solid #d1d5db", borderRadius: "8px", outline: "none", fontFamily: "Inter, sans-serif", boxSizing: "border-box" },
-  banner: { margin: "16px 20px 0", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  bannerOk: { backgroundColor: "#dcfce7", color: "#15803d" },
-  bannerErr: { backgroundColor: "#fee2e2", color: "#991b1b" },
-  bannerClose: { background: "none", border: "none", cursor: "pointer", fontSize: "14px", color: "inherit", padding: "0 4px" },
-  content: { padding: "16px 20px" },
-  section: { marginBottom: "28px" },
-  sectionTitle: { fontSize: "13px", fontWeight: "600", color: "#111827", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" },
-  count: { fontSize: "11px", fontWeight: "600", padding: "2px 8px", borderRadius: "99px", backgroundColor: "#E6F1FB", color: "#185FA5" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px" },
-  card: { backgroundColor: "#fff", borderRadius: "12px", border: "0.5px solid #e5e7eb", overflow: "hidden" },
-  thumb: { height: "100px", backgroundColor: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" },
-  thumbImg: { width: "100%", height: "100%", objectFit: "cover" },
-  cardBody: { padding: "12px", display: "flex", flexDirection: "column", gap: "6px" },
-  cardTitle: { fontSize: "13px", fontWeight: "600", color: "#111827", lineHeight: "1.3" },
-  cardDesc: { fontSize: "11px", color: "#6b7280", lineHeight: "1.4", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" },
-  cardMeta: { display: "flex", gap: "6px", flexWrap: "wrap" },
-  metaBadge: { fontSize: "10px", padding: "2px 7px", borderRadius: "99px", backgroundColor: "#f3f4f6", color: "#374151" },
-  btnInscribir: { width: "100%", padding: "8px", backgroundColor: "#185FA5", color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: "4px" },
-  btnDisabled: { backgroundColor: "#e5e7eb", color: "#9ca3af", cursor: "not-allowed" },
-  btnYaInscrito: { width: "100%", padding: "8px", backgroundColor: "#f0fdf4", color: "#15803d", border: "0.5px solid #86efac", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: "4px" },
-  empty: { fontSize: "13px", color: "#9ca3af", textAlign: "center", padding: "2rem 0" },
-};

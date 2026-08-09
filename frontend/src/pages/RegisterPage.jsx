@@ -1,140 +1,53 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-
 export default function RegisterPage() {
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmar, setConfirmar] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (!nombre || !email || !password || !confirmar) {
-      setError("Todos los campos son obligatorios.");
-      return;
-    }
-    if (password !== confirmar) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
+  const [f,setF]=useState({nombre:"",email:"",password:"",confirmar:""});
+  const [error,setError]=useState(""); const [loading,setLoading]=useState(false); const navigate=useNavigate();
+  const handleSubmit=async(e)=>{ e.preventDefault(); setError("");
+    if(!f.nombre||!f.email||!f.password||!f.confirmar){setError("Completa todos los campos.");return;}
+    if(f.password!==f.confirmar){setError("Las contraseñas no coinciden.");return;}
+    if(f.password.length<6){setError("La contraseña debe tener al menos 6 caracteres.");return;}
     setLoading(true);
-    try {
-      await api.post("/auth/register", { nombre, email, password });
-      navigate("/login", { state: { mensaje: "Cuenta creada. Ya puedes iniciar sesión." } });
-    } catch (err) {
-      const msg = err.response?.data?.error || "Error al registrar. Intenta de nuevo.";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    try{ await api.post("/auth/register",{nombre:f.nombre,email:f.email,password:f.password}); navigate("/login",{state:{mensaje:"Cuenta creada. Ya puedes iniciar sesión."}}); }
+    catch(err){setError(err.response?.data?.error||"Error al registrar.");}finally{setLoading(false);} };
+  const inp={width:'100%',padding:'11px 14px 11px 40px',fontSize:14,border:'1.5px solid #E2E8F0',borderRadius:10,outline:'none',color:'#0F172A',background:'#F8FAFC',fontFamily:'inherit'};
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.left}>
-          <div style={styles.logoCircle}><span style={{ fontSize: "32px" }}>🎓</span></div>
-          <h1 style={styles.appName}>AulaVirtual Pro</h1>
-          <p style={styles.appSub}>LMS para capacitación empresarial</p>
-          <div style={styles.beneficios}>
-            <p style={styles.beneficio}>✓ Accede a todos los cursos</p>
-            <p style={styles.beneficio}>✓ Sigue tu progreso</p>
-            <p style={styles.beneficio}>✓ Evaluaciones automáticas</p>
+    <div style={{display:'flex',minHeight:'100vh',fontFamily:"'Inter',sans-serif"}}>
+      <div style={{flex:1,background:'linear-gradient(135deg,#1E3A5C 0%,#0C2240 100%)',display:'flex',alignItems:'center',justifyContent:'center',padding:'3rem 2rem'}}>
+        <div style={{maxWidth:380,textAlign:'center'}}>
+          <div style={{width:60,height:60,background:'linear-gradient(135deg,#185FA5,#2980D4)',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,margin:'0 auto 24px',boxShadow:'0 4px 20px rgba(24,95,165,.5)'}}>🎓</div>
+          <h2 style={{fontSize:28,fontWeight:800,color:'#fff',marginBottom:14}}>AulaVirtual Pro</h2>
+          <p style={{fontSize:15,color:'rgba(255,255,255,.6)',lineHeight:1.7,marginBottom:32}}>Únete a la plataforma de capacitación empresarial de CapacitaTec S.A.</p>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            {[['📚','Cursos'],['📝','Evaluaciones'],['📊','Progreso'],['🏆','Certificados']].map(([ico,txt])=>(
+              <div key={txt} style={{padding:'14px 10px',background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',borderRadius:12,textAlign:'center'}}>
+                <div style={{fontSize:24,marginBottom:6}}>{ico}</div><div style={{fontSize:12.5,color:'rgba(255,255,255,.65)',fontWeight:500}}>{txt}</div>
+              </div>
+            ))}
           </div>
         </div>
-        <div style={styles.divider} />
-        <div style={styles.right}>
-          <h2 style={styles.title}>Crear cuenta</h2>
-          <p style={styles.subtitle}>Regístrate para empezar a aprender</p>
-
-          <form onSubmit={handleRegister} noValidate>
-            <div style={styles.field}>
-              <label style={styles.label}>Nombre completo *</label>
-              <input
-                type="text"
-                placeholder="Ej. María López"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Correo electrónico *</label>
-              <input
-                type="email"
-                placeholder="usuario@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Contraseña *</label>
-              <input
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Confirmar contraseña *</label>
-              <input
-                type="password"
-                placeholder="Repite tu contraseña"
-                value={confirmar}
-                onChange={(e) => setConfirmar(e.target.value)}
-                style={styles.input}
-              />
-            </div>
-
-            {error && <p style={styles.error}>{error}</p>}
-
-            <button type="submit" style={styles.btn} disabled={loading}>
-              {loading ? "Creando cuenta..." : "CREAR CUENTA"}
+      </div>
+      <div style={{width:500,display:'flex',alignItems:'center',justifyContent:'center',padding:'2rem',background:'#F8FAFC'}}>
+        <div style={{width:'100%',maxWidth:420,background:'#fff',borderRadius:20,padding:'2.5rem',boxShadow:'0 8px 40px rgba(0,0,0,.1)'}}>
+          <h1 style={{fontSize:22,fontWeight:700,color:'#0F172A',marginBottom:4}}>Crear cuenta</h1>
+          <p style={{fontSize:13.5,color:'#64748B',marginBottom:24}}>Regístrate como alumno y empieza a aprender hoy</p>
+          {error&&<div style={{padding:'10px 14px',background:'#FEF2F2',color:'#991B1B',borderRadius:8,fontSize:13,marginBottom:16,border:'1px solid #FECACA'}}>⚠️ {error}</div>}
+          <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:14}} noValidate>
+            {[{label:'Nombre completo',type:'text',key:'nombre',ph:'Ej. María López',icon:'👤'},{label:'Correo electrónico',type:'email',key:'email',ph:'usuario@empresa.com',icon:'✉️'},{label:'Contraseña',type:'password',key:'password',ph:'Mínimo 6 caracteres',icon:'🔒'},{label:'Confirmar contraseña',type:'password',key:'confirmar',ph:'Repite tu contraseña',icon:'🔒'}].map(({label,type,key,ph,icon})=>(
+              <div key={key} style={{display:'flex',flexDirection:'column',gap:5}}>
+                <label style={{fontSize:13,fontWeight:500,color:'#475569'}}>{label} *</label>
+                <div style={{position:'relative'}}><span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',fontSize:15,pointerEvents:'none'}}>{icon}</span><input type={type} placeholder={ph} value={f[key]} onChange={e=>setF({...f,[key]:e.target.value})} style={inp}/></div>
+              </div>
+            ))}
+            <button type="submit" disabled={loading} style={{width:'100%',padding:'12px',background:'linear-gradient(135deg,#185FA5,#0C447C)',color:'#fff',border:'none',borderRadius:10,fontSize:15,fontWeight:600,cursor:'pointer',marginTop:4,display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+              {loading?'Creando cuenta...':'Crear cuenta →'}
             </button>
-
-            <p style={styles.loginLink}>
-              ¿Ya tienes cuenta?{" "}
-              <span style={styles.link} onClick={() => navigate("/login")}>
-                Iniciar sesión
-              </span>
-            </p>
           </form>
+          <p style={{fontSize:13,color:'#64748B',textAlign:'center',marginTop:18}}>¿Ya tienes cuenta? <span style={{color:'#185FA5',fontWeight:600,cursor:'pointer'}} onClick={()=>navigate("/login")}>Iniciar sesión</span></p>
         </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f0f4f8", fontFamily: "Inter, sans-serif", padding: "2rem 0" },
-  card: { display: "flex", borderRadius: "16px", overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", width: "100%", maxWidth: "780px", backgroundColor: "#fff" },
-  left: { flex: 1, backgroundColor: "#1a3a5c", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2.5rem 2rem", gap: "14px" },
-  logoCircle: { width: "72px", height: "72px", borderRadius: "50%", backgroundColor: "#2a5a8c", display: "flex", alignItems: "center", justifyContent: "center" },
-  appName: { color: "#fff", fontSize: "20px", fontWeight: "600", textAlign: "center" },
-  appSub: { color: "#85B7EB", fontSize: "13px", textAlign: "center" },
-  beneficios: { marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" },
-  beneficio: { color: "#A7F3D0", fontSize: "12px" },
-  divider: { width: "1px", backgroundColor: "#e5e7eb" },
-  right: { flex: 1.2, padding: "2.5rem 2rem", display: "flex", flexDirection: "column", justifyContent: "center" },
-  title: { fontSize: "18px", fontWeight: "600", color: "#111827", marginBottom: "4px" },
-  subtitle: { fontSize: "12px", color: "#6b7280", marginBottom: "1.5rem" },
-  field: { marginBottom: "1rem" },
-  label: { display: "block", fontSize: "12px", fontWeight: "500", color: "#6b7280", marginBottom: "4px" },
-  input: { width: "100%", padding: "9px 12px", fontSize: "14px", border: "1px solid #d1d5db", borderRadius: "8px", outline: "none", fontFamily: "Inter, sans-serif", color: "#111827", backgroundColor: "#fff", boxSizing: "border-box" },
-  btn: { width: "100%", padding: "10px", backgroundColor: "#185FA5", color: "#fff", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: "4px" },
-  error: { textAlign: "center", fontSize: "12px", color: "#DC2626", marginBottom: "8px" },
-  loginLink: { textAlign: "center", fontSize: "12px", color: "#6b7280", marginTop: "12px" },
-  link: { color: "#185FA5", cursor: "pointer", fontWeight: "600" },
-};
