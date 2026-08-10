@@ -1,490 +1,141 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { GraduationCap, BookOpen, ClipboardList, Pencil, Trash2, Package, Layers, FileText, ChevronUp, ChevronDown, Timer, Paperclip, Calendar } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-
+import "../styles/global.css";
+import "../styles/layout.css";
+import "../styles/dashboard.css";
+import "../styles/components.css";
 export default function TeacherDashboardPage() {
-  const { usuario, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const [cursos, setCursos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [vista, setVista] = useState("lista"); // "lista" | "crear" | "editar"
-  const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
-  const [guardando, setGuardando] = useState(false);
-  const [exito, setExito] = useState("");
-
-  // Formulario de curso
-  const [form, setForm] = useState({ titulo: "", descripcion: "", imagen: "" });
-
-  useEffect(() => {
-    cargarCursos();
-  }, []);
-
-  const cargarCursos = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/cursos");
-      setCursos(res.data);
-    } catch {
-      setError("No se pudieron cargar los cursos.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const abrirCrear = () => {
-    setForm({ titulo: "", descripcion: "", imagen: "" });
-    setCursoSeleccionado(null);
-    setExito("");
-    setError("");
-    setVista("crear");
-  };
-
-  const abrirEditar = (curso) => {
-    setForm({ titulo: curso.titulo, descripcion: curso.descripcion || "", imagen: curso.imagen || "" });
-    setCursoSeleccionado(curso);
-    setExito("");
-    setError("");
-    setVista("editar");
-  };
-
-  const handleGuardar = async (e) => {
-    e.preventDefault();
-    if (!form.titulo.trim()) {
-      setError("El título es obligatorio.");
-      return;
-    }
-    setGuardando(true);
-    setError("");
-    try {
-      if (vista === "crear") {
-        await api.post("/cursos", form);
-        setExito("Curso creado correctamente ✅");
-      } else {
-        await api.put(`/cursos/${cursoSeleccionado._id}`, form);
-        setExito("Curso actualizado correctamente ✅");
-      }
-      await cargarCursos();
-      setTimeout(() => {
-        setExito("");
-        setVista("lista");
-      }, 1500);
-    } catch (err) {
-      setError(err.response?.data?.error || "Error al guardar el curso.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  const handleCancelar = () => {
-    setVista("lista");
-    setError("");
-    setExito("");
-  };
-
-  const handleEliminar = async (curso) => {
-    const confirmar = window.confirm(`¿Eliminar el curso "${curso.titulo}"? Esta acción lo desactivará.`);
-    if (!confirmar) return;
-    try {
-      await api.delete(`/cursos/${curso._id}`);
-      await cargarCursos();
-    } catch (err) {
-      alert("Error al eliminar el curso.");
-    }
-  };
-
-  return (
-    <div style={s.page}>
-      {/* Sidebar */}
-      <aside style={s.sidebar}>
-        <div style={s.sidebarTop}>
-          <div style={s.logoCircle}>🎓</div>
-          <span style={s.logoText}>AulaVirtual Pro</span>
-        </div>
-        <nav style={s.nav}>
-          <button style={{ ...s.navItem, ...(vista === "lista" ? s.navActive : {}) }} onClick={() => setVista("lista")}>
-            📚 Mis Cursos
-          </button>
-          <button style={s.navItem} onClick={abrirCrear}>
-            ➕ Nuevo Curso
-          </button>
-        </nav>
-        <div style={s.sidebarBottom}>
-          <div style={s.userInfo}>
-            <div style={s.avatar}>{usuario ? usuario[0].toUpperCase() : "P"}</div>
-            <div>
-              <p style={s.userName}>{usuario || "Profesor"}</p>
-              <p style={s.userRole}>Instructor</p>
-            </div>
-          </div>
-          <button style={s.logoutBtn} onClick={handleLogout}>Cerrar sesión</button>
-        </div>
+  const {usuario,logout}=useAuth(); const navigate=useNavigate();
+  const [cursos,setCursos]=useState([]); const [loading,setLoading]=useState(true); const [vista,setVista]=useState("lista"); const [cursoSel,setCursoSel]=useState(null); const [guardando,setGuardando]=useState(false); const [error,setError]=useState(""); const [exito,setExito]=useState(""); const [form,setForm]=useState({titulo:"",descripcion:"",imagen:""});
+  const [tabActiva,setTabActiva]=useState("cursos"); const [tareas,setTareas]=useState([]); const [cursoTarea,setCursoTarea]=useState(""); const [formT,setFormT]=useState({titulo:"",descripcion:"",fechaEntrega:"",puntos:100}); const [vistaT,setVistaT]=useState("lista"); const [errT,setErrT]=useState(""); const [exitoT,setExitoT]=useState("");
+  const [cursoDetalle,setCursoDetalle]=useState(null); const [modOpen,setModOpen]=useState(null); const [formMod,setFormMod]=useState({titulo:""}); const [formLec,setFormLec]=useState({titulo:"",contenido:"",materialURL:"",duracion:0}); const [vistaM,setVistaM]=useState(null); const [lecEdit,setLecEdit]=useState(null); const [errM,setErrM]=useState(""); const [guardM,setGuardM]=useState(false);
+  useEffect(()=>{cargarCursos();},[]);
+  const cargarCursos=async()=>{ setLoading(true); try{const r=await api.get("/cursos");setCursos(r.data);}catch{setError("Error al cargar.");}finally{setLoading(false);} };
+  const cargarTareas=async(cid)=>{ if(!cid)return; try{const r=await api.get(`/tareas/curso/${cid}`);setTareas(r.data);}catch{setTareas([]);} };
+  const recargarDetalle=async()=>{ if(!cursoDetalle)return; const r=await api.get(`/cursos/${cursoDetalle._id}`); setCursoDetalle(r.data); };
+  const abrirEditar=(c)=>{ setForm({titulo:c.titulo,descripcion:c.descripcion||"",imagen:c.imagen||""}); setCursoSel(c); setError(""); setExito(""); setVista("editar"); };
+  const abrirModulos=async(c)=>{ const r=await api.get(`/cursos/${c._id}`); setCursoDetalle(r.data); setVista("modulos"); setVistaM(null); setModOpen(null); setErrM(""); };
+  const handleGuardar=async(e)=>{ e.preventDefault(); if(!form.titulo.trim()){setError("Título obligatorio.");return;} setGuardando(true); setError(""); try{ if(vista==="crear"){await api.post("/cursos",form);setExito("Curso creado");}else{await api.put(`/cursos/${cursoSel._id}`,form);setExito("Curso actualizado");} await cargarCursos(); setTimeout(()=>{setExito("");setVista("lista");},1500); }catch(err){setError(err.response?.data?.error||"Error.");}finally{setGuardando(false);} };
+  const handleEliminar=async(c)=>{ if(!window.confirm(`¿Eliminar "${c.titulo}"?`))return; try{await api.delete(`/cursos/${c._id}`);await cargarCursos();}catch{alert("Error.");} };
+  const handleAddMod=async(e)=>{ e.preventDefault(); if(!formMod.titulo){setErrM("Título obligatorio.");return;} setGuardM(true); setErrM(""); try{await api.post(`/cursos/${cursoDetalle._id}/modulos`,{titulo:formMod.titulo,orden:cursoDetalle.modulos.length+1});setFormMod({titulo:""});setVistaM(null);await recargarDetalle();}catch(err){setErrM(err.response?.data?.error||"Error.");}finally{setGuardM(false);} };
+  const handleDelMod=async(mid)=>{ if(!window.confirm("¿Eliminar módulo y sus lecciones?"))return; try{await api.delete(`/cursos/${cursoDetalle._id}/modulos/${mid}`);if(modOpen===mid)setModOpen(null);await recargarDetalle();}catch{alert("Error.");} };
+  const handleAddLec=async(e)=>{ e.preventDefault(); if(!formLec.titulo){setErrM("Título obligatorio.");return;} setGuardM(true); setErrM(""); try{await api.post(`/cursos/${cursoDetalle._id}/modulos/${modOpen}/lecciones`,formLec);setFormLec({titulo:"",contenido:"",materialURL:"",duracion:0});setVistaM(null);await recargarDetalle();}catch(err){setErrM(err.response?.data?.error||"Error.");}finally{setGuardM(false);} };
+  const handleUpdLec=async(e)=>{ e.preventDefault(); if(!formLec.titulo){setErrM("Título obligatorio.");return;} setGuardM(true); setErrM(""); try{await api.put(`/cursos/${cursoDetalle._id}/modulos/${modOpen}/lecciones/${lecEdit._id}`,formLec);setVistaM(null);setLecEdit(null);await recargarDetalle();}catch(err){setErrM(err.response?.data?.error||"Error.");}finally{setGuardM(false);} };
+  const handleDelLec=async(mid,lid)=>{ if(!window.confirm("¿Eliminar lección?"))return; try{await api.delete(`/cursos/${cursoDetalle._id}/modulos/${mid}/lecciones/${lid}`);await recargarDetalle();}catch{alert("Error.");} };
+  const abrirEditLec=(mod,lec)=>{ setModOpen(mod._id); setLecEdit(lec); setFormLec({titulo:lec.titulo,contenido:lec.contenido||"",materialURL:lec.materialURL||"",duracion:lec.duracion||0}); setVistaM("editLec"); setErrM(""); };
+  const handleCrearTarea=async(e)=>{ e.preventDefault(); if(!formT.titulo||!formT.fechaEntrega||!cursoTarea){setErrT("Completa todos los campos.");return;} try{await api.post("/tareas",{...formT,cursoId:cursoTarea});setExitoT("Tarea creada");setFormT({titulo:"",descripcion:"",fechaEntrega:"",puntos:100});await cargarTareas(cursoTarea);setTimeout(()=>{setExitoT("");setVistaT("lista");},1500);}catch(err){setErrT(err.response?.data?.error||"Error.");} };
+  const handleDelTarea=async(id)=>{ if(!window.confirm("¿Eliminar tarea?"))return; try{await api.delete(`/tareas/${id}`);await cargarTareas(cursoTarea);}catch{alert("Error.");} };
+  const cambiarTab=(t)=>{ setTabActiva(t); setVista("lista"); if(t==="tareas"&&cursos.length>0){const cid=cursos[0]._id;setCursoTarea(cid);cargarTareas(cid);} };
+  const totalModulos=cursos.reduce((a,c)=>a+(c.modulos?.length||0),0);
+  const totalLecciones=cursos.reduce((a,c)=>a+(c.modulos?.reduce((x,m)=>x+(m.lecciones?.length||0),0)||0),0);
+  return(
+    <div className="app-layout">
+      <aside className="sidebar">
+        <div className="sidebar-header"><div className="sidebar-brand"><div className="sidebar-logo"><GraduationCap size={18} color="#fff"/></div><div><p className="sidebar-title">AulaVirtual Pro</p><p className="sidebar-role">Instructor</p></div></div></div>
+        <nav className="sidebar-nav">{[[BookOpen,'Mis Cursos','cursos'],[ClipboardList,'Tareas','tareas']].map(([Icon,lbl,t])=><button key={t} onClick={()=>cambiarTab(t)} className={`nav-item ${tabActiva===t?'active':''}`}><span className="nav-icon"><Icon size={16}/></span>{lbl}</button>)}</nav>
+        <div className="sidebar-footer"><div className="user-profile-badge"><div className="user-avatar">{usuario?.[0]?.toUpperCase()||'P'}</div><div><p className="user-name">{usuario||'Profesor'}</p><p className="sidebar-role">Instructor</p></div></div><button onClick={()=>{logout();navigate("/login");}} className="btn-logout">Cerrar sesión</button></div>
       </aside>
-
-      {/* Contenido principal */}
-      <main style={s.main}>
-        {/* Header */}
-        <div style={s.header}>
-          <div>
-            <h1 style={s.headerTitle}>
-              {vista === "lista" && "Mis Cursos"}
-              {vista === "crear" && "Crear Nuevo Curso"}
-              {vista === "editar" && "Editar Curso"}
-            </h1>
-            <p style={s.headerSub}>
-              {vista === "lista" && `${cursos.length} curso(s) disponibles`}
-              {vista === "crear" && "Completa los datos del nuevo curso"}
-              {vista === "editar" && `Editando: ${cursoSeleccionado?.titulo}`}
-            </p>
-          </div>
-          {vista === "lista" && (
-            <button style={s.btnPrimary} onClick={abrirCrear}>+ Nuevo Curso</button>
-          )}
-        </div>
-
-        {/* Vista: Lista de cursos */}
-        {vista === "lista" && (
+      <main className="dashboard-main">
+        {tabActiva==="cursos"&&(
           <>
-            {loading && <p style={s.info}>Cargando cursos...</p>}
-            {error && <p style={s.errorMsg}>{error}</p>}
-            {!loading && cursos.length === 0 && (
-              <div style={s.emptyState}>
-                <p style={s.emptyIcon}>📖</p>
-                <p style={s.emptyText}>Aún no hay cursos. ¡Crea el primero!</p>
-                <button style={s.btnPrimary} onClick={abrirCrear}>Crear Curso</button>
+            <div className="section-header">
+              <div><h1 className="section-title">{vista==='lista'?'Mis Cursos':vista==='crear'?'Crear Curso':vista==='editar'?'Editar Curso':<span style={{display:'inline-flex',alignItems:'center',gap:8}}><BookOpen size={20}/>{cursoDetalle?.titulo}</span>}</h1><p className="section-subtitle">{vista==='lista'?`${cursos.length} curso(s)`:vista==='modulos'?`${cursoDetalle?.modulos?.length||0} módulos · ${cursoDetalle?.modulos?.reduce((a,m)=>a+m.lecciones.length,0)||0} lecciones`:''}</p></div>
+              <div className="section-actions">
+                {vista==='lista'&&<button onClick={()=>{setForm({titulo:"",descripcion:"",imagen:""});setCursoSel(null);setError("");setExito("");setVista("crear");}} className="btn-action-primary">+ Nuevo Curso</button>}
+                {vista==='modulos'&&<><button onClick={()=>{setVista("lista");setCursoDetalle(null);}} className="btn-secondary">← Volver</button><button onClick={()=>{setVistaM("addMod");setErrM("");}} className="btn-accent">+ Módulo</button></>}
+                {(vista==='crear'||vista==='editar')&&<button onClick={()=>{setVista("lista");setError("");setExito("");}} className="btn-secondary">Cancelar</button>}
+              </div>
+            </div>
+            {vista==='lista'&&(
+              <>
+                {loading&&<p className="loading-text">Cargando cursos...</p>}
+                {error&&<p className="form-error">{error}</p>}
+                {!loading&&cursos.length===0&&<div className="empty-state"><div className="empty-state-icon"><BookOpen size={48}/></div><p className="empty-state-desc">Aún no has creado cursos</p><button onClick={()=>{setForm({titulo:"",descripcion:"",imagen:""});setCursoSel(null);setVista("crear");}} className="btn-action-primary">Crear primer curso</button></div>}
+                {!loading&&cursos.length>0&&<div className="teacher-summary">
+                  {[[BookOpen,cursos.length,'Cursos'],[Layers,totalModulos,'Módulos'],[FileText,totalLecciones,'Lecciones']].map(([Icon,val,lbl])=><div key={lbl} className="summary-card"><div className="summary-icon-box"><Icon size={18} color="var(--primary)"/></div><div><p className="summary-value">{val}</p><p className="summary-label">{lbl}</p></div></div>)}
+                </div>}
+                <div className="teacher-course-grid">
+                  {cursos.map(c=>(
+                    <div key={c._id} className="teacher-course-card">
+                      <div className="teacher-course-banner" style={c.imagen?{backgroundImage:`url(${c.imagen})`,backgroundSize:'cover',backgroundPosition:'center'}:undefined}>{!c.imagen&&<span className="teacher-course-banner-icon"><BookOpen size={22}/></span>}<div className="teacher-course-status"><span className={`badge ${c.activo?'badge-success':'badge-danger'}`}>{c.activo?'Activo':'Inactivo'}</span></div></div>
+                      <div className="teacher-course-body">
+                        <h3 className="teacher-course-title">{c.titulo}</h3>
+                        <p className="teacher-course-desc">{c.descripcion||'Sin descripción'}</p>
+                        <div className="teacher-course-actions"><button onClick={()=>abrirEditar(c)} className="btn-card-edit"><Pencil size={14}/> Editar</button><button onClick={()=>abrirModulos(c)} className="btn-card-modules"><BookOpen size={14}/> Módulos</button><button onClick={()=>handleEliminar(c)} className="btn-card-delete"><Trash2 size={14}/></button></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {(vista==='crear'||vista==='editar')&&(
+              <div className="form-card">
+                <form onSubmit={handleGuardar} className="form-stack">
+                  {[{label:'Título del curso *',key:'titulo',ph:'Ej. Excel para Negocios'},{label:'Descripción',key:'descripcion',ph:'Describe el contenido del curso...',area:true},{label:'URL de imagen de portada',key:'imagen',ph:'https://ejemplo.com/imagen.jpg',type:'url'}].map(f=>(<div key={f.key} className="form-field"><label className="form-label">{f.label}</label>{f.area?<textarea placeholder={f.ph} value={form[f.key]} onChange={e=>setForm({...form,[f.key]:e.target.value})} className="form-control form-textarea form-textarea-lg"/>:<input type={f.type||'text'} placeholder={f.ph} value={form[f.key]} onChange={e=>setForm({...form,[f.key]:e.target.value})} className="form-control"/>}{f.key==='imagen'&&form.imagen&&<img src={form.imagen} alt="preview" className="image-preview" onError={e=>e.target.style.display='none'}/>}</div>))}
+                  {error&&<p className="form-error">{error}</p>}{exito&&<p className="form-success">{exito}</p>}
+                  <div className="form-actions"><button type="button" onClick={()=>{setVista("lista");setError("");setExito("");}} className="btn-secondary">Cancelar</button><button type="submit" disabled={guardando} className="btn-action-primary">{guardando?'Guardando...':vista==='crear'?'Crear Curso':'Guardar Cambios'}</button></div>
+                </form>
               </div>
             )}
-            <div style={s.grid}>
-              {cursos.map((curso) => (
-                <div key={curso._id} style={s.card}>
-                  <div style={s.cardImgWrap}>
-                    {curso.imagen
-                      ? <img src={curso.imagen} alt={curso.titulo} style={s.cardImg} onError={(e) => { e.target.style.display = "none"; }} />
-                      : <div style={s.cardImgPlaceholder}>📚</div>
-                    }
-                  </div>
-                  <div style={s.cardBody}>
-                    <h3 style={s.cardTitle}>{curso.titulo}</h3>
-                    <p style={s.cardDesc}>{curso.descripcion || "Sin descripción"}</p>
-                    <div style={s.cardMeta}>
-                      <span style={s.badge}>{curso.modulos?.length || 0} módulos</span>
-                      <span style={{ ...s.badge, backgroundColor: curso.activo ? "#dcfce7" : "#fee2e2", color: curso.activo ? "#166534" : "#991b1b" }}>
-                        {curso.activo ? "Activo" : "Inactivo"}
-                      </span>
+            {vista==='modulos'&&cursoDetalle&&(
+              <div className="module-list">
+                {vistaM==='addMod'&&<div className="editor-panel editor-panel-purple"><h3 className="editor-panel-title">Nuevo módulo</h3><form onSubmit={handleAddMod} className="editor-form-inline"><div className="field-grow"><label className="form-label">Título *</label><input className="form-control" placeholder="Ej. Fundamentos básicos" value={formMod.titulo} onChange={e=>setFormMod({titulo:e.target.value})}/></div><button type="submit" disabled={guardM} className="btn-accent">{guardM?'Guardando...':'Agregar'}</button><button type="button" onClick={()=>setVistaM(null)} className="btn-secondary">Cancelar</button></form>{errM&&<p className="form-error">{errM}</p>}</div>}
+                {(vistaM==='addLec'||vistaM==='editLec')&&<div className="editor-panel editor-panel-primary"><h3 className="editor-panel-title">{vistaM==='addLec'?'Nueva lección':`Editando: ${lecEdit?.titulo}`}</h3><form onSubmit={vistaM==='addLec'?handleAddLec:handleUpdLec} className="form-stack">{[{label:'Título *',key:'titulo',ph:'Ej. Introducción al tema'},{label:'Contenido/descripción',key:'contenido',ph:'Describe de qué trata esta lección...',area:true},{label:'URL del material (YouTube, Drive, PDF...)',key:'materialURL',ph:'https://youtube.com/watch?v=... o https://drive.google.com/...'}].map(f=><div key={f.key} className="form-field"><label className="form-label">{f.label}</label>{f.area?<textarea placeholder={f.ph} value={formLec[f.key]} onChange={e=>setFormLec({...formLec,[f.key]:e.target.value})} className="form-control form-textarea"/>:<input type="text" placeholder={f.ph} value={formLec[f.key]} onChange={e=>setFormLec({...formLec,[f.key]:e.target.value})} className="form-control"/>}</div>)}<div className="form-field"><label className="form-label">Duración (minutos)</label><input type="number" min={0} value={formLec.duracion} onChange={e=>setFormLec({...formLec,duracion:Number(e.target.value)})} className="form-control form-control-narrow"/></div>{errM&&<p className="form-error">{errM}</p>}<div className="form-actions"><button type="button" onClick={()=>{setVistaM(null);setLecEdit(null);setErrM("");}} className="btn-secondary">Cancelar</button><button type="submit" disabled={guardM} className="btn-action-primary">{guardM?'Guardando...':vistaM==='addLec'?'Agregar lección':'Guardar cambios'}</button></div></form></div>}
+                {cursoDetalle.modulos.length===0?<div className="empty-state"><div className="empty-state-icon"><Package size={48}/></div><p className="empty-state-desc">Sin módulos todavía</p><button onClick={()=>setVistaM("addMod")} className="btn-accent">+ Crear primer módulo</button></div>
+                :cursoDetalle.modulos.sort((a,b)=>a.orden-b.orden).map((mod,mi)=>(
+                  <div key={mod._id} className="module-card">
+                    <div className="module-header">
+                      <div className="module-heading"><div className="module-number">{mi+1}</div><div><p className="module-title">{mod.titulo}</p><p className="module-count">{mod.lecciones.length} lección(es)</p></div></div>
+                      <div className="module-actions"><button onClick={()=>{setModOpen(modOpen===mod._id?null:mod._id);setVistaM(null);}} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5}}>{modOpen===mod._id?<><ChevronUp size={14}/> Ocultar</>:<><ChevronDown size={14}/> Ver lecciones</>}</button><button onClick={()=>{setModOpen(mod._id);setFormLec({titulo:"",contenido:"",materialURL:"",duracion:0});setVistaM("addLec");setErrM("");}} className="btn-ghost-purple">+ Lección</button><button onClick={()=>handleDelMod(mod._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
                     </div>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <button style={s.btnEdit} onClick={() => abrirEditar(curso)}>✏️ Editar</button>
-                      <button style={{ ...s.btnEdit, backgroundColor: "#fff", color: "#dc2626", border: "1px solid #dc2626" }} onClick={() => handleEliminar(curso)}>🗑️ Eliminar</button>
-                    </div>
+                    {modOpen===mod._id&&(mod.lecciones.length===0?<p className="editor-note">Sin lecciones. Haz clic en "+ Lección" para agregar.</p>:mod.lecciones.map((lec,li)=>(
+                      <div key={lec._id} className="lesson-row">
+                        <div className="lesson-main">
+                          <div className="lesson-number">{li+1}</div>
+                          <div className="lesson-info">
+                            <p className="lesson-name">{lec.titulo}</p>
+                            {lec.contenido&&<p className="lesson-desc">{lec.contenido}</p>}
+                            <div className="lesson-meta">
+                              {lec.duracion>0&&<span className="meta-chip chip-muted" style={{display:'inline-flex',alignItems:'center',gap:4}}><Timer size={12}/> {lec.duracion} min</span>}
+                              {lec.materialURL&&<a href={lec.materialURL} target="_blank" rel="noreferrer" className="meta-chip chip-link" style={{display:'inline-flex',alignItems:'center',gap:4}}><Paperclip size={12}/> Ver material</a>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="lesson-actions"><button onClick={()=>abrirEditLec(mod,lec)} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5}}><Pencil size={14}/> Editar</button><button onClick={()=>handleDelLec(mod._id,lec._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
+                      </div>
+                    )))}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </>
         )}
-
-        {/* Vista: Crear / Editar */}
-        {(vista === "crear" || vista === "editar") && (
-          <div style={s.formWrap}>
-            <form onSubmit={handleGuardar} style={s.form}>
-              <div style={s.formField}>
-                <label style={s.formLabel}>Título del curso *</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Introducción a React"
-                  value={form.titulo}
-                  onChange={(e) => setForm({ ...form, titulo: e.target.value })}
-                  style={s.formInput}
-                />
-              </div>
-              <div style={s.formField}>
-                <label style={s.formLabel}>Descripción</label>
-                <textarea
-                  placeholder="Describe el contenido del curso..."
-                  value={form.descripcion}
-                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                  style={{ ...s.formInput, minHeight: "100px", resize: "vertical" }}
-                />
-              </div>
-              <div style={s.formField}>
-                <label style={s.formLabel}>URL de imagen de portada</label>
-                <input
-                  type="url"
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  value={form.imagen}
-                  onChange={(e) => setForm({ ...form, imagen: e.target.value })}
-                  style={s.formInput}
-                />
-                {form.imagen && (
-                  <img src={form.imagen} alt="preview" style={s.imgPreview}
-                    onError={(e) => e.target.style.display = "none"} />
-                )}
-              </div>
-
-              {error && <p style={s.errorMsg}>{error}</p>}
-              {exito && <p style={s.successMsg}>{exito}</p>}
-
-              <div style={s.formActions}>
-                <button type="button" style={s.btnSecondary} onClick={handleCancelar}>
-                  Cancelar
-                </button>
-                <button type="submit" style={s.btnPrimary} disabled={guardando}>
-                  {guardando ? "Guardando..." : vista === "crear" ? "Crear Curso" : "Guardar Cambios"}
-                </button>
-              </div>
-            </form>
-          </div>
+        {tabActiva==="tareas"&&(
+          <>
+            <div className="section-header">
+              <div><h1 className="section-title">Gestión de Tareas</h1><p className="section-subtitle">Crea y administra tareas para tus cursos</p></div>
+              {vistaT==='lista'&&<button onClick={()=>{setVistaT("crear");setErrT("");setExitoT("");}} className="btn-accent">+ Nueva Tarea</button>}
+            </div>
+            <div className="selector-bar"><label className="selector-label">Curso:</label><select className="form-control" value={cursoTarea} onChange={e=>{setCursoTarea(e.target.value);cargarTareas(e.target.value);setVistaT("lista");}}><option value="">Selecciona un curso</option>{cursos.map(c=><option key={c._id} value={c._id}>{c.titulo}</option>)}</select></div>
+            {vistaT==='crear'&&<div className="editor-panel editor-panel-purple">
+              <h3 className="editor-panel-title">Nueva tarea</h3>
+              <form onSubmit={handleCrearTarea} className="form-stack">
+                <div className="form-field"><label className="form-label">Título *</label><input placeholder="Ej. Tarea 1 — Análisis de datos" value={formT.titulo} onChange={e=>setFormT({...formT,titulo:e.target.value})} className="form-control"/></div>
+                <div className="form-field"><label className="form-label">Descripción</label><textarea placeholder="Instrucciones para el alumno..." rows={3} value={formT.descripcion} onChange={e=>setFormT({...formT,descripcion:e.target.value})} className="form-control form-textarea"/></div>
+                <div className="form-grid-2"><div className="form-field"><label className="form-label">Fecha de entrega *</label><input type="date" value={formT.fechaEntrega} onChange={e=>setFormT({...formT,fechaEntrega:e.target.value})} className="form-control"/></div><div className="form-field"><label className="form-label">Puntos</label><input type="number" min={1} max={1000} value={formT.puntos} onChange={e=>setFormT({...formT,puntos:Number(e.target.value)})} className="form-control"/></div></div>
+                {errT&&<p className="form-error">{errT}</p>}{exitoT&&<p className="form-success">{exitoT}</p>}
+                <div className="form-actions"><button type="button" onClick={()=>{setVistaT("lista");setErrT("");}} className="btn-secondary">Cancelar</button><button type="submit" className="btn-accent">Crear Tarea</button></div>
+              </form>
+            </div>}
+            {vistaT==='lista'&&(!cursoTarea?<div className="empty-state"><p className="panel-empty">Selecciona un curso para ver sus tareas</p></div>
+            :tareas.length===0?<div className="empty-state"><div className="empty-state-icon"><ClipboardList size={48}/></div><p className="empty-state-desc">Sin tareas en este curso</p><button onClick={()=>setVistaT("crear")} className="btn-accent">+ Crear primera tarea</button></div>
+            :<div className="task-list">{tareas.map(t=><div key={t._id} className="task-item"><div className="task-info"><p className="task-title">{t.titulo}</p>{t.descripcion&&<p className="task-desc">{t.descripcion}</p>}<div className="task-meta"><span className="task-meta-item" style={{display:'inline-flex',alignItems:'center',gap:4}}><Calendar size={12}/> {new Date(t.fechaEntrega).toLocaleDateString('es-MX')}</span><span className="task-meta-points">{t.puntos} pts</span></div></div><button onClick={()=>handleDelTarea(t._id)} className="btn-delete-sm" style={{display:'inline-flex',alignItems:'center',gap:4}}><Trash2 size={14}/> Eliminar</button></div>)}</div>)}
+          </>
         )}
       </main>
-    </div>
+    </div> 
   );
 }
-
-const s = {
-  page: {
-    display: "flex",
-    minHeight: "100vh",
-    fontFamily: "Inter, sans-serif",
-    backgroundColor: "#f0f4f8",
-  },
-  sidebar: {
-    width: "240px",
-    backgroundColor: "#1a3a5c",
-    display: "flex",
-    flexDirection: "column",
-    padding: "0",
-    flexShrink: 0,
-  },
-  sidebarTop: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "24px 20px 20px",
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
-  },
-  logoCircle: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "50%",
-    backgroundColor: "#2a5a8c",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "18px",
-  },
-  logoText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  nav: {
-    display: "flex",
-    flexDirection: "column",
-    padding: "16px 12px",
-    gap: "4px",
-    flex: 1,
-  },
-  navItem: {
-    background: "none",
-    border: "none",
-    color: "#93c5fd",
-    textAlign: "left",
-    padding: "10px 14px",
-    borderRadius: "8px",
-    fontSize: "14px",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
-  },
-  navActive: {
-    backgroundColor: "rgba(255,255,255,0.12)",
-    color: "#fff",
-    fontWeight: "600",
-  },
-  sidebarBottom: {
-    padding: "16px 12px",
-    borderTop: "1px solid rgba(255,255,255,0.1)",
-  },
-  userInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "12px",
-  },
-  avatar: {
-    width: "34px",
-    height: "34px",
-    borderRadius: "50%",
-    backgroundColor: "#185FA5",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "700",
-    fontSize: "14px",
-    flexShrink: 0,
-  },
-  userName: { color: "#fff", fontSize: "13px", fontWeight: "600", margin: 0 },
-  userRole: { color: "#93c5fd", fontSize: "11px", margin: 0 },
-  logoutBtn: {
-    width: "100%",
-    padding: "8px",
-    backgroundColor: "transparent",
-    border: "1px solid rgba(255,255,255,0.2)",
-    borderRadius: "8px",
-    color: "#93c5fd",
-    fontSize: "13px",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
-  },
-  main: {
-    flex: 1,
-    padding: "32px",
-    overflowY: "auto",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "28px",
-  },
-  headerTitle: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "#111827",
-    margin: 0,
-  },
-  headerSub: {
-    fontSize: "13px",
-    color: "#6b7280",
-    marginTop: "4px",
-    marginBottom: 0,
-  },
-  btnPrimary: {
-    padding: "10px 20px",
-    backgroundColor: "#185FA5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
-  },
-  btnSecondary: {
-    padding: "10px 20px",
-    backgroundColor: "#fff",
-    color: "#374151",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "Inter, sans-serif",
-  },
-  btnEdit: {
-    marginTop: "12px",
-    flex: 1,
-    padding: "8px",
-    backgroundColor: "#f0f4f8",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    color: "#374151",
-    fontFamily: "Inter, sans-serif",
-  },
-  info: { color: "#6b7280", fontSize: "14px" },
-  errorMsg: { color: "#DC2626", fontSize: "13px", marginBottom: "12px" },
-  successMsg: { color: "#16a34a", fontSize: "13px", marginBottom: "12px" },
-  emptyState: {
-    textAlign: "center",
-    padding: "60px 20px",
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  },
-  emptyIcon: { fontSize: "48px", margin: "0 0 12px" },
-  emptyText: { color: "#6b7280", fontSize: "15px", marginBottom: "20px" },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "20px",
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-  },
-  cardImgWrap: {
-    height: "140px",
-    backgroundColor: "#e0e7ef",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  cardImg: { width: "100%", height: "100%", objectFit: "cover" },
-  cardImgPlaceholder: { fontSize: "48px" },
-  cardBody: { padding: "16px", display: "flex", flexDirection: "column" },
-  cardTitle: { fontSize: "15px", fontWeight: "700", color: "#111827", margin: "0 0 6px" },
-  cardDesc: {
-    fontSize: "13px",
-    color: "#6b7280",
-    margin: "0 0 10px",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-  },
-  cardMeta: { display: "flex", gap: "6px", flexWrap: "wrap" },
-  badge: {
-    fontSize: "11px",
-    fontWeight: "600",
-    padding: "3px 8px",
-    borderRadius: "20px",
-    backgroundColor: "#e0e7ef",
-    color: "#374151",
-  },
-  formWrap: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    padding: "32px",
-    maxWidth: "600px",
-  },
-  form: { display: "flex", flexDirection: "column", gap: "20px" },
-  formField: { display: "flex", flexDirection: "column", gap: "6px" },
-  formLabel: { fontSize: "13px", fontWeight: "600", color: "#374151" },
-  formInput: {
-    padding: "10px 12px",
-    fontSize: "14px",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    outline: "none",
-    fontFamily: "Inter, sans-serif",
-    color: "#111827",
-    backgroundColor: "#fff",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  imgPreview: {
-    marginTop: "8px",
-    width: "100%",
-    maxHeight: "160px",
-    objectFit: "cover",
-    borderRadius: "8px",
-    border: "1px solid #e5e7eb",
-  },
-  formActions: { display: "flex", gap: "12px", justifyContent: "flex-end" },
-};

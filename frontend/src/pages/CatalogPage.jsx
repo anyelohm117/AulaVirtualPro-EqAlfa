@@ -1,176 +1,74 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Home, BookOpen, ClipboardList, Search, GraduationCap } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import ProgressBar from "../components/ProgressBar";
 import api from "../services/api";
-
-const NAV_ITEMS = [
-  { icon: "🏠", label: "Inicio",        path: "/catalog" },
-  { icon: "📚", label: "Mi progreso",   path: "/progress" },
-  { icon: "📋", label: "Tareas",        path: "/assignments" },
-  { icon: "🔍", label: "+ Cursos",      path: "/search" },
-];
-
+import "../styles/global.css";
+import "../styles/layout.css";
+import "../styles/courses.css";
+import "../styles/components.css";
+const NAV=[{icon:Home,label:'Mis cursos',path:'/catalog'},{icon:BookOpen,label:'Mi progreso',path:'/progress'},{icon:ClipboardList,label:'Tareas',path:'/assignments'},{icon:Search,label:'Explorar',path:'/search'}];
 export default function CatalogPage() {
-  const [busqueda, setBusqueda] = useState("");
-  const [sidebarAbierto, setSidebarAbierto] = useState(false);
-  const [cursos, setCursos] = useState([]);
-  const [progresoPorCurso, setProgresoPorCurso] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const { usuario, logout } = useAuth();
-  const navigate = useNavigate();
-
- useEffect(() => {
-  const cargarCursos = async () => {
-    try {
-      const res = await api.get("/cursos");
-      setCursos(res.data);
-
-      const resProgreso = await api.get("/progreso");
-      const mapa = {};
-      resProgreso.data.forEach((p) => {
-        mapa[p.cursoId?._id] = p.porcentaje;
-      });
-      setProgresoPorCurso(mapa);
-    } catch (err) {
-      setError("No se pudieron cargar los cursos.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  cargarCursos();
-}, []);
-
-  const cursosFiltrados = cursos.filter((c) =>
-    c.titulo.toLowerCase().includes(busqueda.toLowerCase())
-  );
-
-  return (
-    <div style={styles.page}>
-      {sidebarAbierto && (
-        <div style={styles.overlay} onClick={() => setSidebarAbierto(false)} />
-      )}
-
-      <div style={{ ...styles.sidebar, width: sidebarAbierto ? "220px" : "56px" }}>
-        <button
-          style={styles.hamburger}
-          onClick={() => setSidebarAbierto((v) => !v)}
-          title={sidebarAbierto ? "Cerrar menú" : "Abrir menú"}
-        >
-          <span style={styles.hLine} />
-          <span style={styles.hLine} />
-          <span style={styles.hLine} />
-        </button>
-
-        <nav style={styles.nav}>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.path}
-              style={styles.navItem}
-              onClick={() => { navigate(item.path); setSidebarAbierto(false); }}
-              title={item.label}
-            >
-              <span style={styles.navIcon}>{item.icon}</span>
-              {sidebarAbierto && <span style={styles.navLabel}>{item.label}</span>}
-            </button>
-          ))}
-        </nav>
-
-        <div style={{ marginTop: "auto" }}>
-          <button
-            style={styles.navItem}
-            onClick={() => { logout(); navigate("/login"); }}
-            title="Cerrar sesión"
-          >
-            <span style={styles.navIcon}>🚪</span>
-            {sidebarAbierto && (
-              <span style={{ ...styles.navLabel, color: "#f87171" }}>Cerrar sesión</span>
-            )}
-          </button>
+  const [busqueda,setBusqueda]=useState(""); const [cursos,setCursos]=useState([]); const [prog,setProg]=useState({}); const [loading,setLoading]=useState(true); const [error,setError]=useState("");
+  const {usuario,logout}=useAuth(); const navigate=useNavigate();
+  useEffect(()=>{(async()=>{ try{ const [r1,r2]=await Promise.all([api.get("/inscripciones/mis-cursos"),api.get("/progreso")]); setCursos(r1.data); const m={}; r2.data.forEach(p=>{m[p.cursoId?._id]=p.porcentaje;}); setProg(m); }catch{setError("No se pudieron cargar tus cursos.");}finally{setLoading(false);} })();},[]);
+  const filtrados=cursos.filter(c=>c.titulo.toLowerCase().includes(busqueda.toLowerCase()));
+  const sidebar=(
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <div className="sidebar-brand">
+          <div className="sidebar-logo"><GraduationCap size={18} color="#fff"/></div>
+          <div><p className="sidebar-title">AulaVirtual Pro</p><p className="sidebar-role">Alumno</p></div>
         </div>
       </div>
-
-      <div style={styles.main}>
-        <div style={styles.topbar}>
-          <h2 style={styles.topTitle}>Mis cursos</h2>
-          <div style={styles.userInfo}>
-            <div style={styles.avatar}>
-              {usuario ? usuario.charAt(0).toUpperCase() : "U"}
-            </div>
-            <span style={styles.userName}>Hola, {usuario || "Usuario"}</span>
-          </div>
+      <nav className="sidebar-nav">
+        {NAV.map(item=><button key={item.path} onClick={()=>navigate(item.path)} className={`nav-item ${location.pathname===item.path?'active':''}`}><span className="nav-icon"><item.icon size={16}/></span>{item.label}</button>)}
+      </nav>
+      <div className="sidebar-footer">
+        <div className="user-profile-badge">
+          <div className="user-avatar">{usuario?.[0]?.toUpperCase()||'U'}</div>
+          <p className="user-name">{usuario||'Alumno'}</p>
         </div>
-
-        <div style={styles.searchWrap}>
-          <input
-            type="text"
-            placeholder="Buscar curso..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            style={styles.searchInput}
-          />
-        </div>
-
-        {loading ? (
-          <p style={styles.empty}>Cargando cursos...</p>
-        ) : error ? (
-          <p style={{ ...styles.empty, color: "#dc2626" }}>{error}</p>
-        ) : (
-          <div style={styles.grid}>
-            {cursosFiltrados.length === 0 ? (
-              <p style={styles.empty}>No se encontraron cursos.</p>
-            ) : (
-              cursosFiltrados.map((curso) => (
-                <div key={curso._id} style={styles.card}>
-                  <div style={styles.thumb}>
-                    <span style={{ fontSize: "28px" }}>🖼️</span>
+        <button onClick={()=>{logout();navigate("/login");}} className="btn-logout">Cerrar sesión</button>
+      </div>
+    </aside>
+  );
+  return (
+    <div className="app-layout">
+      {sidebar}
+      <div className="main-content">
+        <header className="page-header">
+          <div><h1 className="page-title">Mis cursos</h1><p className="page-subtitle">{cursos.length} curso{cursos.length!==1?'s':''} inscrito{cursos.length!==1?'s':''}</p></div>
+          <div className="search-input-wrapper"><span className="search-icon"><Search size={16} color="#fff"/></span><input type="text" placeholder="Buscar..." value={busqueda} onChange={e=>setBusqueda(e.target.value)} className="search-input"/></div>
+        </header>
+        <div className="page-body">
+          {loading?<div className="loading-state"><div className="loading-state-inner"><div className="spinner-large"/><p className="loading-text">Cargando tus cursos...</p></div></div>
+          :error?<p className="error-state">{error}</p>
+          :cursos.length===0?<div className="empty-state"><div className="empty-state-icon"><BookOpen size={48}/></div><h2 className="empty-state-title">Aún no tienes cursos</h2><p className="empty-state-desc">Explora el catálogo y únete a los cursos disponibles.</p><button onClick={()=>navigate("/search")} className="btn-action-primary">Explorar cursos →</button></div>
+          :filtrados.length===0?<div className="empty-state"><p className="empty-state-desc">Sin resultados para "{busqueda}"</p><button onClick={()=>setBusqueda("")} className="btn-soft">Ver todos</button></div>
+          :<div className="courses-grid">
+            {filtrados.map(curso=>{
+              const pct=prog[curso._id]||0;
+              return (
+                <div key={curso._id} onClick={()=>navigate(`/course/${curso._id}`)} className="course-card">
+                  <div className={`course-card-banner ${curso.imagen?'':'course-card-banner-default'}`} style={curso.imagen?{backgroundImage:`url(${curso.imagen})`,backgroundSize:'cover',backgroundPosition:'center'}:undefined}>
+                    {!curso.imagen&&<div className="course-card-banner-icon"><BookOpen size={28}/></div>}
+                    <div className="course-card-overlay"/>
+                    <div className="course-card-progress-overlay">
+                      <div className="progress-bar-thin-wrapper"><div className="progress-bar-thin-bg"><div className="progress-bar-thin-fill" style={{width:`${pct}%`}}/></div><span className="progress-bar-text">{pct}%</span></div>
+                    </div>
                   </div>
-                  <div style={styles.cardBody}>
-                    <p style={styles.cardTitle}>{curso.titulo}</p>
-                    <p style={styles.cardInstructor}>{curso.descripcion}</p>
-                    <ProgressBar value={progresoPorCurso[curso._id] || 0} height={4} />
-                    <button
-                      style={styles.btnContinuar}
-                      onClick={() => navigate(`/course/${curso._id}`)}
-                    >
-                      Continuar
-                    </button>
+                  <div className="course-card-content">
+                    <h3 className="course-card-title">{curso.titulo}</h3>
+                    <p className="course-card-desc">{curso.descripcion}</p>
+                    <div className="course-card-footer"><span className="course-card-modules-count">{curso.modulos?.length||0} módulos</span><button className="btn-start-course">{pct>0?'Continuar →':'Comenzar →'}</button></div>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-        )}
+              );
+            })}
+          </div>}
+        </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: { display: "flex", minHeight: "100vh", fontFamily: "Inter, sans-serif", backgroundColor: "#f0f4f8", position: "relative" },
-  overlay: { position: "fixed", inset: 0, zIndex: 10, backgroundColor: "rgba(0,0,0,0.25)" },
-  sidebar: { backgroundColor: "#1a3a5c", display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "12px 0", gap: "4px", transition: "width 0.22s ease", overflow: "hidden", flexShrink: 0, position: "relative", zIndex: 20 },
-  hamburger: { display: "flex", flexDirection: "column", gap: "5px", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", width: "56px", flexShrink: 0 },
-  hLine: { display: "block", width: "20px", height: "2px", backgroundColor: "#85B7EB", borderRadius: "2px" },
-  nav: { display: "flex", flexDirection: "column", width: "100%", gap: "2px", padding: "4px 0" },
-  navItem: { display: "flex", alignItems: "center", gap: "12px", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left", whiteSpace: "nowrap" },
-  navIcon: { fontSize: "18px", width: "24px", textAlign: "center", flexShrink: 0 },
-  navLabel: { fontSize: "13px", fontWeight: "500", color: "#d1e8fa", fontFamily: "Inter, sans-serif" },
-  main: { flex: 1, display: "flex", flexDirection: "column", backgroundColor: "#fff", minWidth: 0 },
-  topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "0.5px solid #e5e7eb" },
-  topTitle: { fontSize: "16px", fontWeight: "600", color: "#111827" },
-  userInfo: { display: "flex", alignItems: "center", gap: "8px" },
-  avatar: { width: "30px", height: "30px", borderRadius: "50%", backgroundColor: "#E6F1FB", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "600", color: "#185FA5" },
-  userName: { fontSize: "13px", color: "#6b7280" },
-  searchWrap: { padding: "12px 20px", borderBottom: "0.5px solid #e5e7eb" },
-  searchInput: { width: "100%", padding: "8px 12px", fontSize: "13px", border: "0.5px solid #d1d5db", borderRadius: "8px", backgroundColor: "#f9fafb", color: "#111827", outline: "none", fontFamily: "Inter, sans-serif", boxSizing: "border-box" },
-  grid: { padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" },
-  card: { border: "0.5px solid #e5e7eb", borderRadius: "12px", overflow: "hidden", backgroundColor: "#fff", cursor: "pointer" },
-  thumb: { height: "80px", backgroundColor: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" },
-  cardBody: { padding: "10px 12px", display: "flex", flexDirection: "column", gap: "6px" },
-  cardTitle: { fontSize: "12px", fontWeight: "600", color: "#111827", lineHeight: "1.4" },
-  cardInstructor: { fontSize: "11px", color: "#6b7280" },
-  btnContinuar: { width: "100%", padding: "6px", backgroundColor: "#185FA5", color: "#fff", border: "none", borderRadius: "6px", fontSize: "11px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: "2px" },
-  empty: { fontSize: "13px", color: "#6b7280", textAlign: "center", padding: "2rem 0" },
-};

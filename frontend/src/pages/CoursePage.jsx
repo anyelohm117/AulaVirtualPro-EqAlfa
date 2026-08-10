@@ -1,184 +1,73 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ChevronUp, ChevronDown, Check, ArrowLeft } from "lucide-react";
 import LessonViewer from "../components/LessonViewer";
 import MaterialDownload from "../components/MaterialDownload";
-import ProgressBar from "../components/ProgressBar";
 import api from "../services/api";
-
+import "../styles/global.css";
+import "../styles/courses.css";
+import "../styles/components.css";
 export default function CoursePage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [curso, setCurso] = useState(null);
-  const [progreso, setProgreso] = useState({ leccionesCompletadas: [], porcentaje: 0 });
-  const [loading, setLoading] = useState(true);
-  const [modulosAbiertos, setModulosAbiertos] = useState({});
-  const [leccionActiva, setLeccionActiva] = useState(null);
-
-  useEffect(() => {
-    const cargar = async () => {
-      try {
-        const resCurso = await api.get(`/cursos/${id}`);
-        setCurso(resCurso.data);
-
-        if (resCurso.data.modulos?.length > 0) {
-          setModulosAbiertos({ [resCurso.data.modulos[0]._id]: true });
-          setLeccionActiva(resCurso.data.modulos[0].lecciones[0]);
-        }
-
-        try {
-          const resProgreso = await api.get(`/progreso/${id}`);
-          setProgreso(resProgreso.data);
-        } catch {
-          setProgreso({ leccionesCompletadas: [], porcentaje: 0 });
-        }
-      } catch (err) {
-        console.error("Error al cargar curso:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargar();
-  }, [id]);
-
-  if (loading) return <p style={{ padding: "2rem", fontFamily: "Inter, sans-serif" }}>Cargando curso...</p>;
-  if (!curso) return <p style={{ padding: "2rem", fontFamily: "Inter, sans-serif" }}>Curso no encontrado.</p>;
-
-  const todasLecciones = curso.modulos.flatMap((m) => m.lecciones);
-  const indexActual = todasLecciones.findIndex((l) => l._id === leccionActiva?._id);
-  const totalLecciones = todasLecciones.length;
-
-  const estaCompletada = (leccionId) =>
-    progreso.leccionesCompletadas?.includes(leccionId);
-
-  const toggleModulo = (moduloId) => {
-    setModulosAbiertos((prev) => ({ ...prev, [moduloId]: !prev[moduloId] }));
-  };
-
-  const irAnterior = () => {
-    if (indexActual > 0) setLeccionActiva(todasLecciones[indexActual - 1]);
-  };
-
-  const irSiguiente = () => {
-    if (indexActual < totalLecciones - 1) {
-      setLeccionActiva(todasLecciones[indexActual + 1]);
-    } else {
-      navigate(`/quiz/${id}`);
-    }
-  };
-
-  const handleLeccionCompletada = (leccionId) => {
-    setProgreso((prev) => ({
-      ...prev,
-      leccionesCompletadas: [...(prev.leccionesCompletadas || []), leccionId],
-    }));
-  };
-
-  const pctProgreso = Math.round(
-    ((progreso.leccionesCompletadas?.length || 0) / totalLecciones) * 100
-  );
-
+  const {id}=useParams(); const navigate=useNavigate();
+  const [curso,setCurso]=useState(null); const [progreso,setProgreso]=useState({leccionesCompletadas:[],porcentaje:0}); const [loading,setLoading]=useState(true);
+  const [modulosAbiertos,setModulosAbiertos]=useState({}); const [leccionActiva,setLeccionActiva]=useState(null);
+  useEffect(()=>{(async()=>{ try{
+    const r=await api.get(`/cursos/${id}`); setCurso(r.data);
+    if(r.data.modulos?.length>0){ const pm=r.data.modulos[0]; setModulosAbiertos({[pm._id]:true}); if(pm.lecciones?.length>0)setLeccionActiva(pm.lecciones[0]); }
+    try{const rp=await api.get(`/progreso/${id}`);setProgreso(rp.data);}catch{}
+  }catch{console.error("Error cargando curso");}finally{setLoading(false);} })();},[id]);
+  if(loading)return(<div className="loading-screen"><div className="spinner-large"/></div>);
+  if(!curso)return(<div className="error-state">Curso no encontrado.</div>);
+  const todasLecciones=curso.modulos.flatMap(m=>m.lecciones);
+  const indexActual=todasLecciones.findIndex(l=>l._id===leccionActiva?._id);
+  const totalLecciones=todasLecciones.length;
+  const estaCompletada=(lid)=>progreso.leccionesCompletadas?.some(id=>id?.toString()===lid?.toString());
+  const pct=Math.round(((progreso.leccionesCompletadas?.length||0)/Math.max(totalLecciones,1))*100);
+  const handleCompletada=(lid)=>setProgreso(p=>({...p,leccionesCompletadas:[...(p.leccionesCompletadas||[]),lid]}));
   return (
-    <div style={styles.page}>
-      <div style={styles.sidebar}>
-        <div style={styles.sideHeader}>
-          <button
-            onClick={() => navigate("/catalog")}
-            style={{ fontSize: "11px", color: "#185FA5", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0, fontFamily: "Inter, sans-serif", fontWeight: "600" }}
-          >
-            ← Volver al catálogo
-          </button>
-          <h3 style={styles.sideTitle}>{curso.titulo}</h3>
+    <div className="course-viewer-container">
+      <aside className="course-sidebar">
+        <div className="course-sidebar-header">
+          <button onClick={()=>navigate("/catalog")} className="btn-back-link">← Mis cursos</button>
+          <h2 className="course-sidebar-title">{curso.titulo}</h2>
+          <div className="course-sidebar-progress">
+            <div className="course-sidebar-progress-head"><span>Tu progreso</span><span className="course-sidebar-progress-pct">{pct}%</span></div>
+            <div className="course-sidebar-progress-track"><div className="course-sidebar-progress-fill" style={{width:`${pct}%`}}/></div>
+            <p className="course-sidebar-progress-note">{progreso.leccionesCompletadas?.length||0} de {totalLecciones} lecciones</p>
+          </div>
         </div>
-
-        <div style={styles.sideProgress}>
-          <ProgressBar value={pctProgreso} height={4} showLabel={false} />
-          <span style={styles.progTxt}>
-            {progreso.leccionesCompletadas?.length || 0} / {totalLecciones} lecciones · {pctProgreso}%
-          </span>
-        </div>
-
-        {curso.modulos.map((modulo) => (
-          <div key={modulo._id} style={styles.modulo}>
-            <div style={styles.moduloHeader} onClick={() => toggleModulo(modulo._id)}>
-              <span>{modulo.titulo}</span>
-              <span style={styles.chevron}>{modulosAbiertos[modulo._id] ? "▾" : "▸"}</span>
+        <div className="course-sidebar-body">
+          {curso.modulos.map((modulo,mi)=>(
+            <div key={modulo._id}>
+              <button onClick={()=>setModulosAbiertos(p=>({...p,[modulo._id]:!p[modulo._id]}))} className="module-accordion-item">
+                <div className="module-accordion-head"><div className="module-accordion-badge">{mi+1}</div><span className="module-accordion-title">{modulo.titulo}</span></div>
+                <span className="module-accordion-arrow">{modulosAbiertos[modulo._id]?<ChevronUp size={16}/>:<ChevronDown size={16}/>}</span>
+              </button>
+              {modulosAbiertos[modulo._id]&&modulo.lecciones.map((lec,li)=>{
+                const activa=leccionActiva?._id===lec._id; const done=estaCompletada(lec._id);
+                return(<button key={lec._id} onClick={()=>setLeccionActiva(lec)} className={`lesson-item-btn ${activa?'active':''}`}>
+                  <div className={`lesson-status-icon ${done?'lesson-status-done':activa?'lesson-status-active':'lesson-status-pending'}`}>{done?<Check size={14}/>:li+1}</div>
+                  <span className={`lesson-title ${activa?'lesson-title-active':done?'lesson-title-done':''}`}>{lec.titulo}</span>
+                  {lec.duracion>0&&<span className="lesson-duration">{lec.duracion}m</span>}
+                </button>);
+              })}
             </div>
-
-            {modulosAbiertos[modulo._id] &&
-              modulo.lecciones.map((leccion) => (
-                <div
-                  key={leccion._id}
-                  style={{
-                    ...styles.leccion,
-                    ...(leccionActiva?._id === leccion._id ? styles.leccionActiva : {}),
-                  }}
-                  onClick={() => setLeccionActiva(leccion)}
-                >
-                  <span style={{
-                    ...styles.playIcon,
-                    color: estaCompletada(leccion._id) ? "#15803d" : (leccionActiva?._id === leccion._id ? "#185FA5" : "#9ca3af"),
-                  }}>
-                    {estaCompletada(leccion._id) ? "✓" : "▶"}
-                  </span>
-                  {leccion.titulo}
-                </div>
-              ))}
-          </div>
-        ))}
-      </div>
-
-      <div style={styles.main}>
-        <div style={styles.topbar}>
-          <h2 style={styles.topTitle}>{leccionActiva?.titulo}</h2>
-          <span style={styles.topCount}>{indexActual + 1} / {totalLecciones}</span>
+          ))}
         </div>
-
-        <div style={styles.content}>
-          <LessonViewer
-            key={leccionActiva?._id}
-            leccion={{ ...leccionActiva, id: leccionActiva?._id, completada: estaCompletada(leccionActiva?._id) }}
-            cursoId={id}
-            onCompletada={handleLeccionCompletada}
-          />
-          <div style={styles.materialesWrap}>
-            <MaterialDownload leccionId={leccionActiva?._id} cursoId={id} />
+      </aside>
+      <div className="course-viewer-main">
+        <header className="course-viewer-header">
+          <div><h1 className="course-viewer-title">{leccionActiva?.titulo||'Selecciona una lección'}</h1><p className="course-viewer-subtitle">Lección {Math.max(indexActual+1,1)} de {totalLecciones}</p></div>
+          <div className="course-viewer-nav">
+            <button onClick={()=>{if(indexActual>0)setLeccionActiva(todasLecciones[indexActual-1]);}} disabled={indexActual<=0} className="btn-prev">← Anterior</button>
+            <button onClick={()=>{if(indexActual<totalLecciones-1)setLeccionActiva(todasLecciones[indexActual+1]);else navigate(`/quiz/${id}`);}} className="btn-next">{indexActual===totalLecciones-1?'Ir al quiz →':'Siguiente →'}</button>
           </div>
-        </div>
-
-        <div style={styles.footer}>
-          <button style={{ ...styles.btnNav, ...styles.btnPrev }} onClick={irAnterior} disabled={indexActual === 0}>
-            ← Anterior
-          </button>
-          <button style={{ ...styles.btnNav, ...styles.btnNext }} onClick={irSiguiente}>
-            {indexActual === totalLecciones - 1 ? "Ir al quiz →" : "Siguiente →"}
-          </button>
+        </header>
+        <div className="course-viewer-body">
+          {leccionActiva?(<><LessonViewer key={leccionActiva._id} leccion={{...leccionActiva,id:leccionActiva._id,completada:estaCompletada(leccionActiva._id)}} cursoId={id} onCompletada={handleCompletada}/><div className="course-viewer-material"><MaterialDownload leccionId={leccionActiva._id} cursoId={id}/></div></>)
+          :(<div className="lesson-select-empty"><div><div className="lesson-select-empty-icon"><ArrowLeft size={32}/></div><p className="lesson-select-empty-text">Selecciona una lección del panel izquierdo</p></div></div>)}
         </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: { display: "flex", minHeight: "100vh", fontFamily: "Inter, sans-serif", backgroundColor: "#fff" },
-  sidebar: { width: "240px", borderRight: "0.5px solid #e5e7eb", display: "flex", flexDirection: "column", backgroundColor: "#fff", flexShrink: 0 },
-  sideHeader: { padding: "14px 16px", borderBottom: "0.5px solid #e5e7eb" },
-  sideTitle: { fontSize: "13px", fontWeight: "600", color: "#111827", lineHeight: "1.4" },
-  sideProgress: { padding: "10px 16px", borderBottom: "0.5px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "6px" },
-  progTxt: { fontSize: "11px", color: "#185FA5" },
-  modulo: { borderBottom: "0.5px solid #e5e7eb" },
-  moduloHeader: { padding: "10px 16px", fontSize: "12px", fontWeight: "600", color: "#111827", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", userSelect: "none" },
-  chevron: { fontSize: "10px", color: "#6b7280" },
-  leccion: { padding: "8px 16px 8px 28px", fontSize: "11px", color: "#6b7280", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", lineHeight: "1.4" },
-  leccionActiva: { color: "#185FA5", backgroundColor: "#E6F1FB" },
-  playIcon: { fontSize: "9px", flexShrink: 0 },
-  main: { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
-  topbar: { padding: "14px 20px", borderBottom: "0.5px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  topTitle: { fontSize: "15px", fontWeight: "600", color: "#111827" },
-  topCount: { fontSize: "12px", color: "#6b7280" },
-  content: { flex: 1, padding: "20px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" },
-  materialesWrap: { marginTop: "4px" },
-  footer: { padding: "14px 20px", borderTop: "0.5px solid #e5e7eb", display: "flex", justifyContent: "space-between" },
-  btnNav: { padding: "8px 20px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif" },
-  btnPrev: { backgroundColor: "#fff", color: "#185FA5", border: "0.5px solid #185FA5" },
-  btnNext: { backgroundColor: "#185FA5", color: "#fff", border: "none" },
-};

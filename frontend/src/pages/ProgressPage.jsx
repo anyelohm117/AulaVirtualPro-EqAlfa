@@ -1,155 +1,58 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Home, BookOpen, ClipboardList, Search, GraduationCap, Trophy, FileText, Star } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-
+import "../styles/global.css";
+import "../styles/layout.css";
+import "../styles/dashboard.css";
+import "../styles/components.css";
+const NAV=[{icon:Home,label:'Mis cursos',path:'/catalog'},{icon:BookOpen,label:'Mi progreso',path:'/progress'},{icon:ClipboardList,label:'Tareas',path:'/assignments'},{icon:Search,label:'Explorar',path:'/search'}];
 export default function ProgressPage() {
-  const { usuario } = useAuth();
-  const navigate = useNavigate();
-  const [progresos, setProgresos] = useState([]);
-  const [resultados, setResultados] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const cargar = async () => {
-      try {
-        const [resProgreso, resResultados] = await Promise.all([
-          api.get("/progreso"),
-          api.get("/quiz/resultados/mios"),
-        ]);
-        setProgresos(resProgreso.data);
-        setResultados(resResultados.data);
-      } catch (err) {
-        console.error("Error al cargar progreso:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargar();
-  }, []);
-
-  const cursosCompletados = progresos.filter((p) => p.porcentaje === 100).length;
-  const quizzesAprobados = resultados.filter((r) => r.aprobado).length;
-  const promedio = resultados.length
-    ? Math.round(resultados.reduce((acc, r) => acc + r.calificacion, 0) / resultados.length * 10)
-    : 0;
-
-  if (loading) {
-    return <div style={styles.page}><p>Cargando progreso...</p></div>;
-  }
-
-  return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.topbar}>
-          <h2 style={styles.topTitle}>Mi progreso</h2>
-          <div style={styles.userInfo}>
-            <div style={styles.avatar}>{usuario ? usuario.charAt(0).toUpperCase() : "U"}</div>
-            <span style={styles.userName}>{usuario || "Usuario"}</span>
-          </div>
+  const {usuario,logout}=useAuth(); const navigate=useNavigate();
+  const [progresos,setProgresos]=useState([]); const [resultados,setResultados]=useState([]); const [loading,setLoading]=useState(true);
+  useEffect(()=>{ Promise.all([api.get("/progreso"),api.get("/quiz/resultados/mios")]).then(([r1,r2])=>{setProgresos(r1.data);setResultados(r2.data);}).catch(console.error).finally(()=>setLoading(false)); },[]);
+  const cursosComp=progresos.filter(p=>p.porcentaje===100).length;
+  const quizAprobados=resultados.filter(r=>r.aprobado).length;
+  const promedio=resultados.length?(resultados.reduce((a,r)=>a+r.calificacion,0)/resultados.length).toFixed(1):0;
+  const stats=[{ico:BookOpen,val:progresos.length,lbl:'Cursos inscritos',sub:`${cursosComp} completados`},{ico:Trophy,val:cursosComp,lbl:'Completados',sub:'al 100%'},{ico:FileText,val:resultados.length,lbl:'Quizzes realizados',sub:`${quizAprobados} aprobados`},{ico:Star,val:promedio,lbl:'Promedio',sub:'sobre 10'}];
+  const iconCls=['stat-icon-blue','stat-icon-green','stat-icon-purple','stat-icon-amber'];
+  const subCls=['stat-subtext-blue','stat-subtext-green','stat-subtext-purple','stat-subtext-amber'];
+  return(
+    <div className="app-layout">
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <div className="sidebar-brand"><div className="sidebar-logo"><GraduationCap size={18} color="#fff"/></div><p className="sidebar-title">AulaVirtual Pro</p></div>
         </div>
-
-        <div style={styles.statsGrid}>
-          <div style={styles.statCard}>
-            <p style={styles.statLabel}>Cursos completados</p>
-            <p style={styles.statVal}>{cursosCompletados}</p>
-            <p style={styles.statSub}>de {progresos.length} inscritos</p>
+        <nav className="sidebar-nav">{NAV.map(item=><button key={item.path} onClick={()=>navigate(item.path)} className={`nav-item ${item.path==='/progress'?'active':''}`}><span className="nav-icon"><item.icon size={16}/></span>{item.label}</button>)}</nav>
+        <div className="sidebar-footer">
+          <div className="user-profile-badge">
+            <div className="user-avatar">{usuario?.[0]?.toUpperCase()||'U'}</div>
+            <p className="user-name">{usuario}</p>
           </div>
-          <div style={styles.statCard}>
-            <p style={styles.statLabel}>Quizzes aprobados</p>
-            <p style={styles.statVal}>{quizzesAprobados}</p>
-            <p style={styles.statSub}>de {resultados.length} realizados</p>
-          </div>
-          <div style={styles.statCard}>
-            <p style={styles.statLabel}>Calificación promedio</p>
-            <p style={styles.statVal}>{promedio}</p>
-            <p style={styles.statSub}>sobre 100</p>
-          </div>
+          <button onClick={()=>{logout();navigate("/login");}} className="btn-logout">Cerrar sesión</button>
         </div>
-
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Avance por curso</h3>
-          {progresos.length === 0 ? (
-            <p style={{ fontSize: "12px", color: "#9ca3af" }}>Aún no has iniciado ningún curso.</p>
-          ) : (
-            progresos.map((p) => (
-              <div key={p._id} style={styles.cursoRow} onClick={() => navigate(`/course/${p.cursoId?._id}`)}>
-                <span style={styles.cursoNombre}>{p.cursoId?.titulo}</span>
-                <div style={styles.barWrap}>
-                  <div style={{ ...styles.barFill, width: `${p.porcentaje}%` }} />
+      </aside>
+      <div className="main-content">
+        <header className="page-header"><div><h1 className="page-title">Mi progreso</h1><p className="page-subtitle">Hola, {usuario}</p></div></header>
+        <div className="page-body">
+          {loading?<p className="loading-text">Cargando...</p>:(
+            <>
+              <div className="dashboard-stats">{stats.map((st,i)=><div key={st.lbl} className="stat-card"><div className={`stat-icon-box ${iconCls[i]}`}><st.ico size={20}/></div><div><p className="stat-value">{st.val}</p><p className="stat-label">{st.lbl}</p><p className={`stat-subtext ${subCls[i]}`}>{st.sub}</p></div></div>)}</div>
+              <div className="panel-grid-2">
+                <div className="panel-card">
+                  <h3 className="panel-title">Avance por curso</h3>
+                  {progresos.length===0?<p className="panel-empty">Aún no has iniciado ningún curso.</p>:progresos.map(p=><div key={p._id} className="progress-course-item" onClick={()=>navigate(`/course/${p.cursoId?._id}`)}><div className="progress-course-head"><span className="progress-course-name">{p.cursoId?.titulo}</span><span className="progress-course-pct">{p.porcentaje}%</span></div><div className="progress-track"><div className={`progress-fill ${p.porcentaje===100?'progress-fill-success':'progress-fill-primary'}`} style={{width:`${p.porcentaje}%`}}/></div></div>)}
                 </div>
-                <span style={styles.barPct}>{p.porcentaje}%</span>
+                <div className="panel-card">
+                  <h3 className="panel-title">Historial de evaluaciones</h3>
+                  {resultados.length===0?<p className="panel-empty">Aún no has realizado ningún quiz.</p>:<table className="data-table"><thead><tr>{['Quiz','Calificación','Estado'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{resultados.map(r=><tr key={r._id}><td>{r.quizId?.titulo}</td><td className="table-strong">{r.calificacion}/10</td><td><span className={`badge ${r.aprobado?'badge-success':'badge-danger'}`}>{r.aprobado?'Aprobado':'Reprobado'}</span></td></tr>)}</tbody></table>}
+                </div>
               </div>
-            ))
+            </>
           )}
-        </div>
-
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Historial de quizzes</h3>
-          {resultados.length === 0 ? (
-            <p style={{ fontSize: "12px", color: "#9ca3af" }}>Aún no has realizado ningún quiz.</p>
-          ) : (
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Quiz</th>
-                  <th style={styles.th}>Puntaje</th>
-                  <th style={styles.th}>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resultados.map((r) => (
-                  <tr key={r._id}>
-                    <td style={styles.td}>{r.quizId?.titulo}</td>
-                    <td style={styles.td}>{r.calificacion}/10</td>
-                    <td style={styles.td}>
-                      <span style={{
-                        ...styles.badge,
-                        backgroundColor: r.aprobado ? "#dcfce7" : "#fee2e2",
-                        color: r.aprobado ? "#15803d" : "#dc2626",
-                      }}>
-                        {r.aprobado ? "Aprobado" : "Reprobado"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        <div style={styles.footer}>
-          <button style={styles.btnVolver} onClick={() => navigate("/catalog")}>← Volver al catálogo</button>
         </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: { minHeight: "100vh", backgroundColor: "#f0f4f8", fontFamily: "Inter, sans-serif", padding: "2rem" },
-  card: { backgroundColor: "#fff", borderRadius: "16px", border: "0.5px solid #e5e7eb", overflow: "hidden", maxWidth: "900px", margin: "0 auto" },
-  topbar: { padding: "14px 20px", borderBottom: "0.5px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  topTitle: { fontSize: "16px", fontWeight: "600", color: "#111827" },
-  userInfo: { display: "flex", alignItems: "center", gap: "8px" },
-  avatar: { width: "30px", height: "30px", borderRadius: "50%", backgroundColor: "#E6F1FB", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "600", color: "#185FA5" },
-  userName: { fontSize: "13px", color: "#6b7280" },
-  statsGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", padding: "16px 20px", borderBottom: "0.5px solid #e5e7eb" },
-  statCard: { backgroundColor: "#f9fafb", borderRadius: "8px", padding: "14px" },
-  statLabel: { fontSize: "11px", color: "#6b7280", marginBottom: "6px" },
-  statVal: { fontSize: "24px", fontWeight: "600", color: "#111827" },
-  statSub: { fontSize: "11px", color: "#6b7280", marginTop: "2px" },
-  section: { padding: "16px 20px", borderBottom: "0.5px solid #e5e7eb" },
-  sectionTitle: { fontSize: "13px", fontWeight: "600", color: "#111827", marginBottom: "12px" },
-  cursoRow: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px", cursor: "pointer" },
-  cursoNombre: { fontSize: "12px", color: "#111827", width: "200px", flexShrink: 0 },
-  barWrap: { flex: 1, height: "6px", backgroundColor: "#e5e7eb", borderRadius: "3px" },
-  barFill: { height: "100%", borderRadius: "3px", backgroundColor: "#185FA5" },
-  barPct: { fontSize: "11px", color: "#185FA5", width: "36px", textAlign: "right", flexShrink: 0 },
-  table: { width: "100%", borderCollapse: "collapse", fontSize: "12px" },
-  th: { textAlign: "left", padding: "6px 8px", fontSize: "11px", fontWeight: "600", color: "#6b7280", borderBottom: "0.5px solid #e5e7eb" },
-  td: { padding: "8px", color: "#111827", borderBottom: "0.5px solid #e5e7eb" },
-  badge: { display: "inline-block", padding: "2px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: "600" },
-  footer: { padding: "14px 20px", display: "flex", justifyContent: "flex-start" },
-  btnVolver: { padding: "9px 20px", backgroundColor: "#fff", color: "#185FA5", border: "0.5px solid #185FA5", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "Inter, sans-serif" },
-};

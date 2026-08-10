@@ -4,11 +4,11 @@ const { submitQuiz, getResultado, getQuizById, getQuizzesByCurso, getMisResultad
 const verifyToken = require('../middleware/verifyToken');
 const checkRole   = require('../middleware/checkRole');
 
-// Rutas para el manejo de Quizzes (Acceso exclusivo para alumnos)
-router.get('/resultados/mios', verifyToken, checkRole('alumno'), getMisResultados);
-router.get('/:id',            verifyToken, checkRole('alumno'), getQuizById);
-router.post('/:id/submit',    verifyToken, checkRole('alumno'), submitQuiz);
-router.get('/:id/resultado',  verifyToken, checkRole('alumno'), getResultado);
-router.get('/curso/:cursoId', verifyToken, getQuizzesByCurso);
+// ⚠️ Las rutas estáticas SIEMPRE antes que las dinámicas (:id)
+router.get('/resultados/mios',  verifyToken, checkRole('alumno'), getMisResultados);
+router.get('/curso/:cursoId',   verifyToken, getQuizzesByCurso);
+router.get('/:id',              verifyToken, checkRole('alumno'), getQuizById);
+router.post('/:id/submit',      verifyToken, checkRole('alumno'), submitQuiz);
+router.get('/:id/resultado',    verifyToken, checkRole('alumno'), getResultado);
 
 module.exports = router;

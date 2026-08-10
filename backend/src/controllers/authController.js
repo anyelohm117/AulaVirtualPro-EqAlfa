@@ -1,6 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const User   = require('../models/User');
+const transporter = require('../config/mailer');
+const { bienvenidaTemplate } = require('../utils/emailTemplates');
+
+
 
 /**
  * @desc    Registra un nuevo usuario en el sistema
@@ -29,11 +33,17 @@ const register = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
+    // Enviar email de bienvenida (sin await para no bloquear la respuesta)
+    transporter.sendMail({
+      from: `"AulaVirtual Pro" <${process.env.MAIL_USER}>`,
+      to: usuario.email,
+      ...bienvenidaTemplate(usuario.nombre),
+    }).catch(err => console.error('Error al enviar email de bienvenida:', err.message));
+
     return res.status(201).json({
       token,
       usuario: { id: usuario._id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol }
     });
-
   } catch (error) {
     return res.status(500).json({ error: 'Error interno del servidor', detalle: error.message });
   }

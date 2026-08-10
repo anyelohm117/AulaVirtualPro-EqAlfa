@@ -1,194 +1,65 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { GraduationCap, Check, CheckCircle2, AlertTriangle, Mail, Lock, Eye, EyeOff, Shield, Presentation } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-
+import "../styles/global.css";
+import "../styles/auth.css";
+import "../styles/components.css";
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (!email || !password) {
-      setError("Ingresa tu correo y contraseña.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      const { token, usuario } = res.data;
-      login(token, usuario);
-
-      // Redirección según rol
-      if (usuario.rol === "admin") {
-        navigate("/admin");
-      } else if (usuario.rol === "instructor") {
-        navigate("/teacher");
-      } else {
-        navigate("/catalog");
-      }
-    } catch (err) {
-      const msg = err.response?.data?.error || "Credenciales inválidas";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [showPw,setShowPw]=useState(false); const [error,setError]=useState(""); const [loading,setLoading]=useState(false);
+  const {login}=useAuth(); const navigate=useNavigate(); const location=useLocation(); const mensaje=location.state?.mensaje;
+  const handleSubmit=async(e)=>{ e.preventDefault(); setError(""); if(!email||!password){setError("Completa todos los campos.");return;} setLoading(true);
+    try{ const res=await api.post("/auth/login",{email,password}); login(res.data.token,res.data.usuario); const r=res.data.usuario.rol; navigate(r==="admin"?"/admin":r==="instructor"?"/teacher":"/catalog"); }
+    catch(err){setError(err.response?.data?.error||"Credenciales incorrectas.");}finally{setLoading(false);} };
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.left}>
-          <div style={styles.logoCircle}>
-            <span style={styles.logoIcon}>🎓</span>
+    <div className="auth-container">
+      <div className="auth-hero">
+        <div className="auth-hero-content">
+          <div className="auth-brand">
+            <div className="auth-logo-badge"><GraduationCap size={22} color="#fff"/></div>
+            <span className="auth-brand-name">AulaVirtual Pro</span>
           </div>
-          <h1 style={styles.appName}>AulaVirtual Pro</h1>
-          <p style={styles.appSub}>LMS para capacitación empresarial</p>
+          <h2 className="auth-hero-title">Capacita a tu equipo.<br/>Impulsa resultados.</h2>
+          <p className="auth-hero-desc">La plataforma LMS diseñada para empresas que quieren crecer.</p>
+          {["Cursos organizados por módulos","Evaluaciones con calificación automática","Seguimiento de progreso en tiempo real","Panel de reportes para administradores"].map(f=>(
+            <div key={f} className="auth-feature-item">
+              <div className="auth-feature-check"><Check size={12}/></div>
+              <span className="auth-feature-text">{f}</span>
+            </div>
+          ))}
         </div>
-
-        <div style={styles.divider} />
-
-        <div style={styles.right}>
-          <h2 style={styles.title}>Iniciar sesión</h2>
-
-          <form onSubmit={handleLogin} noValidate>
-            <div style={styles.field}>
-              <label style={styles.label}>Correo electrónico</label>
-              <input
-                type="email"
-                placeholder="usuario@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={styles.input}
-              />
+      </div>
+      <div className="auth-form-side">
+        <div className="auth-card">
+          <h1 className="auth-title">Bienvenido de regreso</h1>
+          <p className="auth-subtitle">Ingresa tus credenciales para continuar</p>
+          {mensaje&&<div className="auth-alert-success" style={{display:'flex',alignItems:'center',gap:6}}><CheckCircle2 size={15}/> {mensaje}</div>}
+          {error&&<div className="auth-alert-error" style={{display:'flex',alignItems:'center',gap:6}}><AlertTriangle size={15}/> {error}</div>}
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
+            <div className="form-group">
+              <label className="form-label">Correo electrónico</label>
+              <div className="input-icon-wrapper"><span className="input-icon" style={{display:'flex',alignItems:'center'}}><Mail size={16}/></span><input type="email" placeholder="usuario@empresa.com" value={email} onChange={e=>setEmail(e.target.value)} className="auth-input"/></div>
             </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Contraseña</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={styles.input}
-              />
+            <div className="form-group">
+              <label className="form-label">Contraseña</label>
+              <div className="input-icon-wrapper"><span className="input-icon" style={{display:'flex',alignItems:'center'}}><Lock size={16}/></span><input type={showPw?"text":"password"} placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} className="auth-input auth-input-toggle"/><button type="button" onClick={()=>setShowPw(v=>!v)} className="password-toggle">{showPw?<EyeOff size={16}/>:<Eye size={16}/>}</button></div>
             </div>
-
-            <span style={styles.forgot}>¿Olvidaste tu contraseña?</span>
-
-            {error && <p style={styles.error}>{error}</p>}
-
-            <button type="submit" style={styles.btn} disabled={loading}>
-              {loading ? "Ingresando..." : "INGRESAR"}
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading?<><span className="spinner"/>Ingresando...</>:'Iniciar sesión →'}
             </button>
-
-            <p style={{ textAlign: "center", fontSize: "12px", color: "#6b7280", marginTop: "12px" }}>
-              ¿No tienes cuenta?{" "}
-              <span
-                style={{ color: "#185FA5", cursor: "pointer", fontWeight: "600" }}
-                onClick={() => navigate("/register")}
-              >
-                Regístrate
-              </span>
-            </p>
           </form>
+          <p className="auth-footer">¿No tienes cuenta? <span className="auth-link" onClick={()=>navigate("/register")}>Regístrate aquí</span></p>
+          <div className="auth-divider">Accesos de prueba</div>
+          <div className="demo-login-list">
+            {[[Shield,"Admin","admin@aulavirtual.com"],[Presentation,"Instructor","carlos@aulavirtual.com"],[GraduationCap,"Alumno","maria@aulavirtual.com"]].map(([Icon,rol,em])=>(
+              <button key={rol} onClick={()=>{setEmail(em);setPassword("password123");}} className="demo-btn">
+                <span className="demo-btn-role" style={{display:'inline-flex',alignItems:'center',gap:4}}><Icon size={12}/> {rol}</span><span className="demo-btn-email">{em}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f0f4f8",
-    fontFamily: "Inter, sans-serif",
-    padding: "2rem 0",
-  },
-  card: {
-    display: "flex",
-    borderRadius: "16px",
-    overflow: "hidden",
-    boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-    width: "100%",
-    maxWidth: "780px",
-    backgroundColor: "#fff",
-  },
-  left: {
-    flex: 1,
-    backgroundColor: "#1a3a5c",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "2.5rem 2rem",
-    gap: "16px",
-  },
-  logoCircle: {
-    width: "72px",
-    height: "72px",
-    borderRadius: "50%",
-    backgroundColor: "#2a5a8c",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoIcon: { fontSize: "32px" },
-  appName: { color: "#fff", fontSize: "20px", fontWeight: "600", textAlign: "center" },
-  appSub: { color: "#85B7EB", fontSize: "13px", textAlign: "center" },
-  divider: { width: "1px", backgroundColor: "#e5e7eb" },
-  right: {
-    flex: 1.2,
-    padding: "2.5rem 2rem",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    overflowY: "auto",
-  },
-  title: { fontSize: "18px", fontWeight: "600", color: "#111827", marginBottom: "1.5rem" },
-  field: { marginBottom: "0.75rem" },
-  label: { display: "block", fontSize: "12px", fontWeight: "500", color: "#6b7280", marginBottom: "4px" },
-  input: {
-    width: "100%",
-    padding: "9px 12px",
-    fontSize: "14px",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    outline: "none",
-    fontFamily: "Inter, sans-serif",
-    color: "#111827",
-    backgroundColor: "#fff",
-    boxSizing: "border-box",
-  },
-  forgot: {
-    display: "block",
-    textAlign: "right",
-    fontSize: "12px",
-    color: "#185FA5",
-    cursor: "pointer",
-    marginBottom: "1rem",
-  },
-  btn: {
-    width: "100%",
-    padding: "10px",
-    backgroundColor: "#185FA5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    letterSpacing: "0.5px",
-    fontFamily: "Inter, sans-serif",
-    marginTop: "4px",
-  },
-  error: { textAlign: "center", fontSize: "12px", color: "#DC2626", marginBottom: "8px" },
-};
