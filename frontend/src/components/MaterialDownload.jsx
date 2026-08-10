@@ -16,7 +16,7 @@ export default function MaterialDownload({ leccionId, cursoId }) {
           <div key={mat.id} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',background:'#fff',border:'1px solid #E2E8F0',borderRadius:8}}>
             <span style={{fontSize:20,width:32,textAlign:'center',flexShrink:0}}>{iconos[mat.tipo]||'📎'}</span>
             <div style={{flex:1}}><p style={{fontSize:13,fontWeight:500,color:'#334155'}}>{mat.nombre}</p><p style={{fontSize:11,color:'#94A3B8',marginTop:2}}>{labels[mat.tipo]||'Archivo'}</p></div>
-            {['pdf','zip','imagen'].includes(mat.tipo)
+            {['pdf','zip','imagen','video'].includes(mat.tipo)
               ?<a href={mat.url} download target="_blank" rel="noreferrer" style={{padding:'6px 14px',background:'#185FA5',color:'#fff',borderRadius:7,fontSize:12,fontWeight:500,textDecoration:'none',whiteSpace:'nowrap'}}>⬇ Descargar</a>
               :<a href={mat.url} target="_blank" rel="noreferrer" style={{padding:'6px 14px',background:'#EFF6FF',color:'#185FA5',border:'1px solid #BFDBFE',borderRadius:7,fontSize:12,fontWeight:500,textDecoration:'none',whiteSpace:'nowrap'}}>Abrir ↗</a>}
           </div>

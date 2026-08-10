@@ -226,7 +226,7 @@
 
 .search-input:focus {
   border-color: var(--primary);
-  background: #fff;
+  background: #000000;
   width: 260px;
 }
 

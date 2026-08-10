@@ -1,5 +1,16 @@
 const Course = require('../models/Course');
 
+const detectTipoMaterial = (url) => {
+  if (!url) return null;
+  const u = String(url).toLowerCase();
+  if (u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+  if (u.includes('drive.google.com') || u.includes('docs.google.com')) return 'gdrive';
+  if (/\.pdf$/.test(u)) return 'pdf';
+  if (/\.(mp4|webm|mov|ogg)$/.test(u)) return 'video';
+  if (/\.(jpg|jpeg|png|gif|webp|svg)$/.test(u)) return 'imagen';
+  return 'link';
+};
+
 /**
  * @desc    Obtiene todos los cursos activos
  * @route   GET /api/v1/cursos
@@ -114,8 +125,10 @@ const getMaterialesLeccion = async (req, res) => {
       return res.status(404).json({ error: 'Lección no encontrada' });
     }
 
+    const tipo = detectTipoMaterial(leccionEncontrada.materialURL);
+
     const materiales = leccionEncontrada.materialURL
-      ? [{ id: leccionEncontrada._id, nombre: leccionEncontrada.titulo, tipo: 'pdf', url: leccionEncontrada.materialURL }]
+      ? [{ id: leccionEncontrada._id, nombre: leccionEncontrada.titulo, tipo, url: leccionEncontrada.materialURL }]
       : [];
 
     return res.status(200).json(materiales);

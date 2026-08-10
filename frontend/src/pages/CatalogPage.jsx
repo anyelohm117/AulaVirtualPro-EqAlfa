@@ -39,7 +39,7 @@ export default function CatalogPage() {
       <div className="main-content">
         <header className="page-header">
           <div><h1 className="page-title">Mis cursos</h1><p className="page-subtitle">{cursos.length} curso{cursos.length!==1?'s':''} inscrito{cursos.length!==1?'s':''}</p></div>
-          <div className="search-input-wrapper"><span className="search-icon"><Search size={16}/></span><input type="text" placeholder="Buscar..." value={busqueda} onChange={e=>setBusqueda(e.target.value)} className="search-input"/></div>
+          <div className="search-input-wrapper"><span className="search-icon"><Search size={16} color="#fff"/></span><input type="text" placeholder="Buscar..." value={busqueda} onChange={e=>setBusqueda(e.target.value)} className="search-input"/></div>
         </header>
         <div className="page-body">
           {loading?<div className="loading-state"><div className="loading-state-inner"><div className="spinner-large"/><p className="loading-text">Cargando tus cursos...</p></div></div>
