@@ -33,9 +33,9 @@ export default function QuizPage() {
   const pregunta=quiz.preguntas[actual]; const total=quiz.preguntas.length;
   const handleSiguiente=async()=>{
     const nuevas=[...respuestas,seleccionada];
+    setRespuestas(nuevas);
     if(actual+1>=total){ setEnviando(true); try{const r=await api.post(`/quiz/${quiz._id}/submit`,{respuestas:nuevas});setResultado(r.data);}catch(e){setError(e.response?.data?.error||"Error al enviar.");}finally{setEnviando(false);} }
     else{setActual(a=>a+1);setSeleccionada(null);}
-    if(actual+1<total) {};
   };
   return(
     <div className="quiz-container">

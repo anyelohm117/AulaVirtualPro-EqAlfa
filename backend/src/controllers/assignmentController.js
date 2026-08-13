@@ -93,6 +93,15 @@ const getMisTareas = async (req, res) => {
  */
 const getTareasPorCurso = async (req, res) => {
   try {
+    if (req.user.rol === 'instructor') {
+      const curso = await Course.findById(req.params.cursoId);
+      if (!curso) {
+        return res.status(404).json({ error: 'Curso no encontrado' });
+      }
+      if (curso.instructorId.toString() !== req.user.id) {
+        return res.status(403).json({ error: 'No tienes permiso para ver tareas de este curso' });
+      }
+    }
     const tareas = await Assignment.find({
       cursoId: req.params.cursoId,
       activo: true,

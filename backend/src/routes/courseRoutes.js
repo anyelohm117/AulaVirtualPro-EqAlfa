@@ -19,8 +19,8 @@ const verifyToken  = require('../middleware/verifyToken');
 const checkRole    = require('../middleware/checkRole');
 
 // Cursos base
-router.get('/',     getCursos);
-router.get('/:id',  getCursoById);
+router.get('/',     verifyToken, getCursos);
+router.get('/:id',  verifyToken, getCursoById);
 router.post('/',    verifyToken, checkRole('admin', 'instructor'), crearCurso);
 router.put('/:id',   verifyToken, checkRole('admin', 'instructor'), actualizarCurso);
 router.patch('/:id', verifyToken, checkRole('admin', 'instructor'), actualizarCurso);

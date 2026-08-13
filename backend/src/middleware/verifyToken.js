@@ -25,7 +25,7 @@ const verifyToken = async (req, res, next) => {
       return res.status(401).json({ error: 'Tu cuenta está desactivada. Contacta al administrador.' });
     }
 
-    req.user = { id: usuario._id, rol: usuario.rol };
+    req.user = { id: usuario._id.toString(), rol: usuario.rol };
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Token inválido o expirado' });

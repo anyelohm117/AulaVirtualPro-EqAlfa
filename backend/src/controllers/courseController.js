@@ -1,4 +1,10 @@
 const Course = require('../models/Course');
+const Quiz   = require('../models/Quiz');
+const QuizResult = require('../models/QuizResult');
+const Assignment = require('../models/Assignment');
+const Submission = require('../models/Submission');
+const Inscripcion = require('../models/Inscripcion');
+const Progress = require('../models/Progress');
 
 const detectTipoMaterial = (url) => {
   if (!url) return null;
@@ -12,13 +18,20 @@ const detectTipoMaterial = (url) => {
 };
 
 /**
- * @desc    Obtiene todos los cursos activos
+ * @desc    Obtiene los cursos según el rol:
+ *          instructor → solo sus propios cursos | admin → todos | resto → solo activos
  * @route   GET /api/v1/cursos
- * @access  Public
+ * @access  Private
  */
 const getCursos = async (req, res) => {
   try {
-    const cursos = await Course.find({ activo: true }).select('-modulos');
+    let filter = { activo: true };
+    if (req.user?.rol === 'instructor') {
+      filter = { instructorId: req.user.id };
+    } else if (req.user?.rol === 'admin') {
+      filter = {};
+    }
+    const cursos = await Course.find(filter).select('-modulos');
     return res.status(200).json(cursos);
   } catch (error) {
     return res.status(500).json({ error: 'Error al obtener cursos', detalle: error.message });
@@ -28,13 +41,16 @@ const getCursos = async (req, res) => {
 /**
  * @desc    Obtiene el detalle de un curso con sus módulos y lecciones
  * @route   GET /api/v1/cursos/:id
- * @access  Public
+ * @access  Private (instructor solo sus cursos)
  */
 const getCursoById = async (req, res) => {
   try {
     const curso = await Course.findById(req.params.id);
     if (!curso) {
       return res.status(404).json({ error: 'Curso no encontrado' });
+    }
+    if (req.user?.rol === 'instructor' && curso.instructorId.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'No tienes permiso sobre este curso' });
     }
     return res.status(200).json(curso);
   } catch (error) {
@@ -73,10 +89,16 @@ const crearCurso = async (req, res) => {
  */
 const actualizarCurso = async (req, res) => {
   try {
-    const curso = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const curso = await Course.findById(req.params.id);
     if (!curso) {
       return res.status(404).json({ error: 'Curso no encontrado' });
     }
+    if (req.user.rol === 'instructor' && curso.instructorId.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'No tienes permiso sobre este curso' });
+    }
+
+    Object.assign(curso, req.body);
+    await curso.save();
     return res.status(200).json(curso);
   } catch (error) {
     return res.status(500).json({ error: 'Error al actualizar el curso', detalle: error.message });
@@ -84,16 +106,42 @@ const actualizarCurso = async (req, res) => {
 };
 
 /**
- * @desc    Elimina (desactiva) un curso
+ * @desc    Elimina un curso
+ *          instructor → borrado completo (curso + quizzes, tareas, inscripciones, progreso)
+ *          admin → solo lo desactiva (el panel de admin usa "Desactivar")
  * @route   DELETE /api/v1/cursos/:id
- * @access  Private (admin)
+ * @access  Private (instructor solo sus cursos, admin todos)
  */
 const eliminarCurso = async (req, res) => {
   try {
-    const curso = await Course.findByIdAndUpdate(req.params.id, { activo: false }, { new: true });
+    const curso = await Course.findById(req.params.id);
     if (!curso) {
       return res.status(404).json({ error: 'Curso no encontrado' });
     }
+    if (req.user.rol === 'instructor' && curso.instructorId.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'No tienes permiso sobre este curso' });
+    }
+
+    if (req.user.rol === 'instructor') {
+      const quizzes = await Quiz.find({ cursoId: curso._id }).select('_id');
+      const quizIds = quizzes.map(q => q._id);
+      const tareas  = await Assignment.find({ cursoId: curso._id }).select('_id');
+      const tareaIds = tareas.map(t => t._id);
+
+      await Promise.all([
+        Course.findByIdAndDelete(curso._id),
+        quizIds.length ? QuizResult.deleteMany({ quizId: { $in: quizIds } }) : Promise.resolve(),
+        Quiz.deleteMany({ cursoId: curso._id }),
+        tareaIds.length ? Submission.deleteMany({ assignmentId: { $in: tareaIds } }) : Promise.resolve(),
+        Assignment.deleteMany({ cursoId: curso._id }),
+        Inscripcion.deleteMany({ cursoId: curso._id }),
+        Progress.deleteMany({ cursoId: curso._id }),
+      ]);
+      return res.status(204).send();
+    }
+
+    curso.activo = false;
+    await curso.save();
     return res.status(204).send();
   } catch (error) {
     return res.status(500).json({ error: 'Error al eliminar el curso', detalle: error.message });
