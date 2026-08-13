@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, BookOpen, ClipboardList, Pencil, Trash2, Package, Layers, FileText, ChevronUp, ChevronDown, Timer, Paperclip, Calendar } from "lucide-react";
+import { GraduationCap, BookOpen, ClipboardList, Pencil, Trash2, Package, Layers, FileText, ChevronUp, ChevronDown, Timer, Paperclip, Calendar, Users, X, MessageSquare, Star } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import "../styles/global.css";
@@ -12,6 +12,7 @@ export default function TeacherDashboardPage() {
   const [cursos,setCursos]=useState([]); const [loading,setLoading]=useState(true); const [vista,setVista]=useState("lista"); const [cursoSel,setCursoSel]=useState(null); const [guardando,setGuardando]=useState(false); const [error,setError]=useState(""); const [exito,setExito]=useState(""); const [form,setForm]=useState({titulo:"",descripcion:"",imagen:""});
   const [tabActiva,setTabActiva]=useState("cursos"); const [tareas,setTareas]=useState([]); const [cursoTarea,setCursoTarea]=useState(""); const [formT,setFormT]=useState({titulo:"",descripcion:"",fechaEntrega:"",puntos:100}); const [vistaT,setVistaT]=useState("lista"); const [errT,setErrT]=useState(""); const [exitoT,setExitoT]=useState("");
   const [cursoDetalle,setCursoDetalle]=useState(null); const [modOpen,setModOpen]=useState(null); const [formMod,setFormMod]=useState({titulo:""}); const [formLec,setFormLec]=useState({titulo:"",contenido:"",materialURL:"",duracion:0}); const [vistaM,setVistaM]=useState(null); const [lecEdit,setLecEdit]=useState(null); const [errM,setErrM]=useState(""); const [guardM,setGuardM]=useState(false);
+  const [entregas,setEntregas]=useState([]); const [tareaEntregas,setTareaEntregas]=useState(null); const [cargandoEnt,setCargandoEnt]=useState(false); const [errEnt,setErrEnt]=useState("");
   useEffect(()=>{cargarCursos();},[]);
   const cargarCursos=async()=>{ setLoading(true); try{const r=await api.get("/cursos");setCursos(r.data);}catch{setError("Error al cargar.");}finally{setLoading(false);} };
   const cargarTareas=async(cid)=>{ if(!cid)return; try{const r=await api.get(`/tareas/curso/${cid}`);setTareas(r.data);}catch{setTareas([]);} };
@@ -28,6 +29,7 @@ export default function TeacherDashboardPage() {
   const abrirEditLec=(mod,lec)=>{ setModOpen(mod._id); setLecEdit(lec); setFormLec({titulo:lec.titulo,contenido:lec.contenido||"",materialURL:lec.materialURL||"",duracion:lec.duracion||0}); setVistaM("editLec"); setErrM(""); };
   const handleCrearTarea=async(e)=>{ e.preventDefault(); if(!formT.titulo||!formT.fechaEntrega||!cursoTarea){setErrT("Completa todos los campos.");return;} try{await api.post("/tareas",{...formT,cursoId:cursoTarea});setExitoT("Tarea creada");setFormT({titulo:"",descripcion:"",fechaEntrega:"",puntos:100});await cargarTareas(cursoTarea);setTimeout(()=>{setExitoT("");setVistaT("lista");},1500);}catch(err){setErrT(err.response?.data?.error||"Error.");} };
   const handleDelTarea=async(id)=>{ if(!window.confirm("¿Eliminar tarea?"))return; try{await api.delete(`/tareas/${id}`);await cargarTareas(cursoTarea);}catch{alert("Error.");} };
+  const verEntregas=async(t)=>{ setTareaEntregas(t); setCargandoEnt(true); setErrEnt(""); try{const r=await api.get(`/tareas/${t._id}/entregas`);setEntregas(r.data);}catch(err){setErrEnt(err.response?.data?.error||"Error al cargar entregas.");setEntregas([]);}finally{setCargandoEnt(false);} };
   const cambiarTab=(t)=>{ setTabActiva(t); setVista("lista"); if(t==="tareas"&&cursos.length>0){const cid=cursos[0]._id;setCursoTarea(cid);cargarTareas(cid);} };
   const totalModulos=cursos.reduce((a,c)=>a+(c.modulos?.length||0),0);
   const totalLecciones=cursos.reduce((a,c)=>a+(c.modulos?.reduce((x,m)=>x+(m.lecciones?.length||0),0)||0),0);
@@ -89,7 +91,7 @@ export default function TeacherDashboardPage() {
                   <div key={mod._id} className="module-card">
                     <div className="module-header">
                       <div className="module-heading"><div className="module-number">{mi+1}</div><div><p className="module-title">{mod.titulo}</p><p className="module-count">{mod.lecciones.length} lección(es)</p></div></div>
-                      <div className="module-actions"><button onClick={()=>{setModOpen(modOpen===mod._id?null:mod._id);setVistaM(null);}} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5}}>{modOpen===mod._id?<><ChevronUp size={14}/> Ocultar</>:<><ChevronDown size={14}/> Ver lecciones</>}</button><button onClick={()=>{setModOpen(mod._id);setFormLec({titulo:"",contenido:"",materialURL:"",duracion:0});setVistaM("addLec");setErrM("");}} className="btn-ghost-purple">+ Lección</button><button onClick={()=>handleDelMod(mod._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
+                      <div className="module-actions"><button onClick={()=>{setModOpen(modOpen===mod._id?null:mod._id);setVistaM(null);}} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5,backgroundColor:'#000',color:'#fff'}}>{modOpen===mod._id?<><ChevronUp size={14}/> Ocultar</>:<><ChevronDown size={14}/> Ver lecciones</>}</button><button onClick={()=>{setModOpen(mod._id);setFormLec({titulo:"",contenido:"",materialURL:"",duracion:0});setVistaM("addLec");setErrM("");}} className="btn-ghost-purple">+ Lección</button><button onClick={()=>handleDelMod(mod._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
                     </div>
                     {modOpen===mod._id&&(mod.lecciones.length===0?<p className="editor-note">Sin lecciones. Haz clic en "+ Lección" para agregar.</p>:mod.lecciones.map((lec,li)=>(
                       <div key={lec._id} className="lesson-row">
@@ -104,7 +106,7 @@ export default function TeacherDashboardPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="lesson-actions"><button onClick={()=>abrirEditLec(mod,lec)} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5}}><Pencil size={14}/> Editar</button><button onClick={()=>handleDelLec(mod._id,lec._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
+                        <div className="lesson-actions"><button onClick={()=>abrirEditLec(mod,lec)} className="btn-ghost" style={{display:'inline-flex',alignItems:'center',gap:5,backgroundColor:'#000',color:'#fff'}}><Pencil size={14}/> Editar</button><button onClick={()=>handleDelLec(mod._id,lec._id)} className="btn-ghost-delete"><Trash2 size={14}/></button></div>
                       </div>
                     )))}
                   </div>
@@ -132,10 +134,31 @@ export default function TeacherDashboardPage() {
             </div>}
             {vistaT==='lista'&&(!cursoTarea?<div className="empty-state"><p className="panel-empty">Selecciona un curso para ver sus tareas</p></div>
             :tareas.length===0?<div className="empty-state"><div className="empty-state-icon"><ClipboardList size={48}/></div><p className="empty-state-desc">Sin tareas en este curso</p><button onClick={()=>setVistaT("crear")} className="btn-accent">+ Crear primera tarea</button></div>
-            :<div className="task-list">{tareas.map(t=><div key={t._id} className="task-item"><div className="task-info"><p className="task-title">{t.titulo}</p>{t.descripcion&&<p className="task-desc">{t.descripcion}</p>}<div className="task-meta"><span className="task-meta-item" style={{display:'inline-flex',alignItems:'center',gap:4}}><Calendar size={12}/> {new Date(t.fechaEntrega).toLocaleDateString('es-MX')}</span><span className="task-meta-points">{t.puntos} pts</span></div></div><button onClick={()=>handleDelTarea(t._id)} className="btn-delete-sm" style={{display:'inline-flex',alignItems:'center',gap:4}}><Trash2 size={14}/> Eliminar</button></div>)}</div>)}
+            :<div className="task-list">{tareas.map(t=><div key={t._id} className="task-item"><div className="task-info"><p className="task-title">{t.titulo}</p>{t.descripcion&&<p className="task-desc">{t.descripcion}</p>}<div className="task-meta"><span className="task-meta-item" style={{display:'inline-flex',alignItems:'center',gap:4}}><Calendar size={12}/> {new Date(t.fechaEntrega).toLocaleDateString('es-MX')}</span><span className="task-meta-points">{t.puntos} pts</span></div></div><div style={{display:'flex',alignItems:'center',gap:8}}><button onClick={()=>verEntregas(t)} className="btn-secondary" style={{display:'inline-flex',alignItems:'center',gap:5,padding:'7px 12px',fontSize:12}}><Users size={14}/> Ver entregas</button><button onClick={()=>handleDelTarea(t._id)} className="btn-delete-sm" style={{display:'inline-flex',alignItems:'center',gap:4}}><Trash2 size={14}/> Eliminar</button></div></div>)}</div>)}
           </>
         )}
       </main>
+      {tareaEntregas&&<div className="modal-backdrop">
+        <div className="modal-card" style={{maxWidth:640}}>
+          <div className="modal-header"><h3 className="modal-title">Entregas — {tareaEntregas.titulo}</h3><button onClick={()=>setTareaEntregas(null)} className="modal-close-btn"><X size={16}/></button></div>
+          <div className="modal-body">
+            {errEnt&&<p className="form-error">{errEnt}</p>}
+            {cargandoEnt?<p className="loading-text">Cargando entregas...</p>
+            :entregas.length===0?<p className="panel-empty">Este curso no tiene alumnos inscritos.</p>
+            :entregas.map(en=>(
+              <div key={en.alumno.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,padding:'12px 14px',border:'1px solid var(--border-light)',borderRadius:'var(--radius-md)',background:'#fff'}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}><p style={{fontSize:13,fontWeight:600,color:'var(--text-dark)'}}>{en.alumno.nombre}</p><span className={`badge ${en.estado==='entregada'?'badge-success':en.estado==='calificada'?'badge-purple':'badge-warning'}`}>{en.estado}</span></div>
+                  <p style={{fontSize:11,color:'var(--text-muted)'}}>{en.alumno.email}</p>
+                  {en.entrega?.comentario&&<p style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'var(--text-body)',marginTop:6}}><MessageSquare size={13}/> "{en.entrega.comentario}"</p>}
+                  {en.entrega?.fechaEntrega&&<p style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:'var(--text-muted)',marginTop:4}}><Calendar size={11}/> Entregada: {new Date(en.entrega.fechaEntrega).toLocaleString('es-MX')}</p>}
+                  {en.entrega?.calificacion!=null&&<p style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'var(--purple)',fontWeight:600,marginTop:4}}><Star size={13}/> {en.entrega.calificacion}/{tareaEntregas.puntos} pts</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>}
     </div> 
   );
 }

@@ -63,7 +63,82 @@ export default function AdminDashboardPage() {
                 <div className="stat-card"><div className="stat-icon-box stat-icon-green"><Presentation size={20} color="var(--success)"/></div><div><p className="stat-value">{totalInstructores}</p><p className="stat-label">Instructores</p><p className="stat-subtext stat-subtext-green">{pctInstructores}% del total</p></div></div>
                 <div className="stat-card"><div className="stat-icon-box stat-icon-neutral"><User size={20} color="var(--text-muted)"/></div><div><p className="stat-value">{totalUsuarios}</p><p className="stat-label">Usuarios total</p></div></div>
               </div>
-              {tab==='usuarios'&&<div className="panel-block"><div className="panel-block-head"><div><h2 className="panel-block-title">Usuarios</h2><p className="panel-block-sub">{totalUsuarios} registros en el sistema</p></div></div><div className="table-card"><table className="data-table"><thead><tr>{['Nombre','Email','Rol','Estado','Acciones'].map(h=><TH key={h} c={h}/>)}</tr></thead><tbody>{usuarios.map(u=>{const rc=rcCls(u.rol);return(<tr key={u._id}><TD c={<div className="cell-user"><div className="table-avatar">{u.nombre?.[0]?.toUpperCase()||'?'}</div><span className="table-strong">{u.nombre}</span></div>}/><TD c={u.email}/><TD c={<span className={`badge ${rc}`}>{u.rol}</span>}/><TD c={<span className={`badge ${u.activo?'badge-success':'badge-inactive'}`}>{u.activo?'Activo':'Inactivo'}</span>}/><TD c={<div className="cell-actions"><button onClick={()=>handleToggle(u._id)} className="icon-btn">{u.activo?<Lock size={14}/>:<Unlock size={14}/>}</button><button onClick={()=>handleDelU(u._id)} className="icon-btn icon-btn-danger"><Trash2 size={14}/></button></div>}/></tr>);})}</tbody></table></div></div>}
+              {tab === 'usuarios' && (
+                <div className="panel-block">
+                  <div className="panel-block-head">
+                    <div>
+                      <h2 className="panel-block-title">Usuarios</h2>
+                      <p className="panel-block-sub">{totalUsuarios} registros en el sistema</p>
+                    </div>
+                  </div>
+                  <div className="table-card">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          {['Nombre', 'Email', 'Rol', 'Estado', 'Acciones'].map((h) => (
+                            <TH key={h} c={h} />
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {usuarios.map((u) => {
+                          const rc = rcCls(u.rol);
+                          return (
+                            <tr key={u._id}>
+                              <TD
+                                c={
+                                  <div className="cell-user">
+                                    <div className="table-avatar">
+                                      {u.nombre?.[0]?.toUpperCase() || '?'}
+                                    </div>
+                                    <span className="table-strong">{u.nombre}</span>
+                                  </div>
+                                }
+                              />
+                              <TD c={u.email} />
+                              <TD c={<span className={`badge ${rc}`}>{u.rol}</span>} />
+                              <TD
+                                c={
+                                  <span
+                                    className={`badge ${
+                                      u.activo ? 'badge-success' : 'badge-inactive'
+                                    }`}
+                                  >
+                                    {u.activo ? 'Activo' : 'Inactivo'}
+                                  </span>
+                                }
+                              />
+                              <TD
+                                c={
+                                  <div className="cell-actions">
+                                    <button
+                                      onClick={() => handleToggle(u._id)}
+                                      className="icon-btn"
+                                    >
+                                      {/* Íconos en color negro aquí */}
+                                      {u.activo ? (
+                                        <Lock size={14} color="black" />
+                                      ) : (
+                                        <Unlock size={14} color="black" />
+                                      )}
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelU(u._id)}
+                                      className="icon-btn icon-btn-danger"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                }
+                              />
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
               {tab==='cursos'&&<div className="panel-block"><div className="panel-block-head"><div><h2 className="panel-block-title">Cursos</h2><p className="panel-block-sub">{totalCursos} cursos · {cursosActivos} activos</p></div></div><div className="table-card"><table className="data-table"><thead><tr>{['Curso','Módulos','Estado','Acciones'].map(h=><TH key={h} c={h}/>)}</tr></thead><tbody>{cursos.map(c=><tr key={c._id}><TD c={c.titulo} strong/><TD c={c.modulos?.length||0}/><TD c={<span className={`badge ${c.activo?'badge-success':'badge-danger'}`}>{c.activo?'Activo':'Inactivo'}</span>}/><TD c={<div className="cell-actions"><button onClick={()=>handleDelC(c._id)} className="icon-btn icon-btn-danger"><Trash2 size={14}/></button></div>}/></tr>)}</tbody></table></div></div>}
               {tab==='reportes'&&(reporte.length===0?<div className="empty-state"><p className="panel-empty">Sin datos de progreso aún.</p></div>:(
               <div className="panel-block">
