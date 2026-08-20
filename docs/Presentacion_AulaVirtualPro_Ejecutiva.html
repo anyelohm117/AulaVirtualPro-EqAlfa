@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AulaVirtual Pro — Presentación Ejecutiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+    :root {
+        --bg: #070B14;
+        --panel: #0D1424;
+        --panel-2: #111A2E;
+        --line: rgba(148, 163, 184, 0.14);
+        --text: #E6EBF5;
+        --muted: #8B98B4;
+        --primary: #4F7CFF;
+        --teal: #33D6C6;
+        --violet: #A78BFA;
+        --amber: #F6B257;
+        --red: #F46B6B;
+        --grad: linear-gradient(135deg, #4F7CFF 0%, #33D6C6 100%);
+        --font-head: 'Sora', sans-serif;
+        --font-body: 'Inter', sans-serif;
+        --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        overflow: hidden;
+    }
+
+    .slide-deck {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+    @media (min-width: 769px) {
+        .slide-deck {
+            max-width: calc(100vh * 16 / 9);
+            max-height: calc(100vw * 9 / 16);
+            margin: auto;
+            position: absolute;
+            inset: 0;
+        }
+    }
+
+    .slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(28px, 5vw, 64px) clamp(32px, 6vw, 88px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.45s ease;
+        overflow: hidden;
+    }
+    .slide.active { opacity: 1; visibility: visible; }
+
+    .slide-content {
+        width: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(14px, 2.2vh, 26px);
+        text-align: center;
+    }
+
+    .grid-bg::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+        background-size: 44px 44px;
+        -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 25%, transparent 78%);
+        mask-image: radial-gradient(ellipse at 50% 40%, black 25%, transparent 78%);
+        pointer-events: none;
+    }
+
+    .glow {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .glow-1 {
+        width: clamp(380px, 44vw, 640px);
+        height: clamp(380px, 44vw, 640px);
+        background: radial-gradient(circle, rgba(79, 124, 255, 0.16), transparent 65%);
+        top: -22%;
+        left: -12%;
+    }
+    .glow-2 {
+        width: clamp(340px, 38vw, 560px);
+        height: clamp(340px, 38vw, 560px);
+        background: radial-gradient(circle, rgba(51, 214, 198, 0.12), transparent 65%);
+        bottom: -20%;
+        right: -10%;
+    }
+
+    h1, h2, h3 { font-family: var(--font-head); }
+    .slide-content > * { position: relative; z-index: 1; }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--teal);
+    }
+    .eyebrow::before {
+        content: '';
+        width: 34px;
+        height: 1px;
+        background: var(--grad);
+    }
+    .eyebrow::after {
+        content: '';
+        width: 34px;
+        height: 1px;
+        background: var(--grad);
+    }
+
+    .title {
+        font-size: clamp(26px, 3.4vw, 50px);
+        font-weight: 700;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        max-width: 24ch;
+    }
+    .title b, .title .accent {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    .sub {
+        color: var(--muted);
+        font-size: clamp(13px, 1.35vw, 17px);
+        line-height: 1.55;
+        max-width: 62ch;
+    }
+
+    .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+    .slide.active .reveal { opacity: 1; transform: none; }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+    .d5 { transition-delay: 0.40s; }
+    .d6 { transition-delay: 0.48s; }
+    .d7 { transition-delay: 0.56s; }
+    .d8 { transition-delay: 0.64s; }
+
+    .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+        border: 1px solid var(--line);
+        border-radius: 14px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--muted);
+        font-size: clamp(11px, 1vw, 13px);
+        font-weight: 500;
+        letter-spacing: 0.04em;
+    }
+    .chip b { color: var(--text); font-weight: 600; }
+
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: var(--grad);
+        transition: width 0.35s ease;
+        z-index: 1000;
+    }
+
+    .nav-controls {
+        position: fixed;
+        bottom: clamp(14px, 2.5vh, 28px);
+        right: clamp(16px, 3vw, 40px);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1001;
+    }
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: rgba(13, 20, 36, 0.7);
+        backdrop-filter: blur(6px);
+        color: var(--text);
+        font-size: 17px;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .nav-btn:hover { border-color: var(--primary); background: rgba(79, 124, 255, 0.15); }
+    .slide-counter { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .fs-btn { font-size: 16px; line-height: 1; }
+
+    .cover-chip {
+        display: inline-flex;
+        gap: 10px;
+        padding: 9px 20px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1vw, 13px);
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .cover-title {
+        font-size: clamp(52px, 9vw, 120px);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+    }
+    .cover-tagline {
+        font-family: var(--font-head);
+        font-size: clamp(15px, 1.9vw, 24px);
+        font-weight: 500;
+        color: var(--muted);
+    }
+    .cover-divider {
+        width: 64px;
+        height: 2px;
+        background: var(--grad);
+        border-radius: 2px;
+    }
+    .cover-footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+    .cover-footer .chip b { color: var(--teal); }
+
+    .agenda {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: min(100%, 740px);
+    }
+    .agenda-item {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: clamp(11px, 1.8vh, 16px) clamp(16px, 2vw, 24px);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        text-align: left;
+    }
+    .agenda-num {
+        font-family: var(--font-head);
+        font-weight: 800;
+        font-size: clamp(14px, 1.5vw, 18px);
+        min-width: 40px;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .agenda-item span:last-child {
+        color: var(--text);
+        font-size: clamp(13px, 1.4vw, 17px);
+        font-weight: 500;
+    }
+    .agenda-item small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: clamp(10px, 1.05vw, 13px);
+        white-space: nowrap;
+    }
+
+    .scope-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+        align-items: stretch;
+    }
+    .scope-card { padding: clamp(18px, 3vh, 28px) clamp(16px, 2vw, 24px); text-align: left; }
+    .scope-card h3 {
+        font-size: clamp(13px, 1.4vw, 18px);
+        font-weight: 700;
+        margin-bottom: clamp(8px, 1.4vh, 12px);
+    }
+    .scope-card p { color: var(--muted); font-size: clamp(12px, 1.15vw, 15px); line-height: 1.55; }
+    .scope-card ul { list-style: none; }
+    .scope-card li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 6px 0;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.5;
+    }
+    .scope-card .mk { font-weight: 700; }
+    .scope-card.goal .mk { color: var(--primary); }
+    .scope-card.in .mk { color: var(--teal); }
+    .scope-card.out .mk { color: var(--muted); }
+    .scope-card.goal h3 { color: var(--primary); }
+    .scope-card.in h3 { color: var(--teal); }
+    .scope-card.out h3 { color: var(--muted); }
+    .scope-card.highlight {
+        border-color: rgba(79, 124, 255, 0.45);
+        background: linear-gradient(180deg, rgba(79, 124, 255, 0.08), rgba(79, 124, 255, 0.02));
+    }
+    .num-tag {
+        font-family: var(--font-head);
+        font-size: clamp(22px, 2.6vw, 34px);
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+
+    .pain-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(12px, 1.6vw, 20px);
+        width: min(100%, 1000px);
+    }
+    .pain-card { padding: clamp(14px, 2.2vh, 22px) clamp(16px, 2vw, 26px); text-align: left; }
+    .pain-num {
+        font-family: var(--font-head);
+        font-size: clamp(18px, 1.8vw, 26px);
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 0.02em;
+    }
+    .risk .pain-num {
+        background: linear-gradient(135deg, #F6B257, #F57E4E);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .pain-title {
+        font-family: var(--font-head);
+        font-size: clamp(14px, 1.45vw, 19px);
+        font-weight: 600;
+        margin-top: 6px;
+    }
+    .pain-desc {
+        color: var(--muted);
+        font-size: clamp(12px, 1.18vw, 15px);
+        line-height: 1.5;
+        margin-top: 6px;
+    }
+
+    .callout {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: clamp(10px, 1.6vh, 16px) clamp(16px, 2vw, 26px);
+        border: 1px solid rgba(79, 124, 255, 0.35);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(79, 124, 255, 0.10), rgba(51, 214, 198, 0.06));
+        font-size: clamp(12px, 1.25vw, 16px);
+        color: var(--text);
+        max-width: min(100%, 1080px);
+        text-align: left;
+        line-height: 1.5;
+    }
+    .callout b { color: var(--teal); font-weight: 600; }
+
+    .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(16px, 2.4vw, 32px);
+        width: min(100%, 1100px);
+        align-items: stretch;
+    }
+    .split-panel { padding: clamp(18px, 3vh, 30px) clamp(18px, 2.4vw, 30px); text-align: left; }
+    .split-panel h3 {
+        font-size: clamp(15px, 1.6vw, 21px);
+        font-weight: 700;
+        margin-bottom: clamp(10px, 1.6vh, 16px);
+    }
+    .split-panel.before { border-color: rgba(246, 178, 87, 0.28); }
+    .split-panel.before h3 { color: var(--amber); }
+    .split-panel.after { border-color: rgba(51, 214, 198, 0.35); }
+    .split-panel.after h3 { color: var(--teal); }
+    .split-panel ul { list-style: none; }
+    .split-panel li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 8px 0;
+        color: var(--muted);
+        font-size: clamp(12px, 1.22vw, 16px);
+        line-height: 1.45;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+    .split-panel li:last-child { border-bottom: none; }
+    .mk { font-weight: 700; margin-top: 1px; }
+    .before .mk { color: var(--amber); }
+    .after .mk { color: var(--teal); }
+    .split-panel.good .mk { color: var(--teal); }
+    .split-panel.hard .mk { color: var(--amber); }
+    .split-panel.good h3 { color: var(--teal); }
+    .split-panel.hard h3 { color: var(--amber); }
+    .split-panel.good { border-color: rgba(51, 214, 198, 0.3); }
+    .split-panel.hard { border-color: rgba(246, 178, 87, 0.28); }
+
+    .bridge {
+        font-family: var(--font-head);
+        font-size: clamp(13px, 1.5vw, 19px);
+        font-weight: 600;
+        color: var(--text);
+        max-width: 66ch;
+        line-height: 1.5;
+    }
+    .bridge .em {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(12px, 1.6vw, 20px);
+        width: min(100%, 1100px);
+    }
+    .team-card { padding: clamp(16px, 2.6vh, 26px) clamp(14px, 1.8vw, 22px); text-align: left; }
+    .avatar {
+        width: clamp(40px, 4.2vw, 54px);
+        height: clamp(40px, 4.2vw, 54px);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(13px, 1.4vw, 17px);
+        letter-spacing: 0.03em;
+        margin-bottom: clamp(10px, 1.4vh, 14px);
+    }
+    .av-1 { background: linear-gradient(135deg, #4F7CFF, #7A5CFF); }
+    .av-2 { background: linear-gradient(135deg, #33D6C6, #2EB4F0); }
+    .av-3 { background: linear-gradient(135deg, #F6B257, #F57E4E); }
+    .av-4 { background: linear-gradient(135deg, #A78BFA, #D66BFA); }
+    .team-name {
+        font-family: var(--font-head);
+        font-size: clamp(13px, 1.3vw, 17px);
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .team-role {
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1.05vw, 13px);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--teal);
+        margin: 5px 0 8px;
+    }
+    .team-desc { color: var(--muted); font-size: clamp(11px, 1.1vw, 14px); line-height: 1.5; }
+
+    .stack-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    .tech {
+        padding: 7px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.035);
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .method-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(10px, 1.5vw, 20px);
+        width: min(100%, 1100px);
+        padding: clamp(12px, 2vh, 18px) clamp(18px, 2.4vw, 30px);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(79, 124, 255, 0.07), rgba(51, 214, 198, 0.05));
+        font-size: clamp(12px, 1.25vw, 15px);
+        color: var(--muted);
+        text-align: left;
+        line-height: 1.5;
+    }
+    .method-bar b { color: var(--text); font-weight: 600; }
+    .doe-pill {
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: var(--grad);
+        color: #04101F;
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.15vw, 14px);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .arch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        width: min(100%, 1100px);
+    }
+    .arch-band {
+        width: 100%;
+        padding: clamp(12px, 1.9vh, 18px) clamp(16px, 2vw, 24px);
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+    .arch-band .ab-label {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16.5px);
+        min-width: 180px;
+    }
+    .arch-band .ab-tag {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        line-height: 1.5;
+        flex: 1;
+        min-width: 160px;
+    }
+    .arch-band.client { border-color: rgba(51, 214, 198, 0.3); }
+    .arch-band.client .ab-label { color: var(--teal); }
+    .arch-band.api { border-color: rgba(79, 124, 255, 0.4); }
+    .arch-band.api .ab-label { color: var(--primary); }
+    .arch-down {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: var(--primary);
+        font-size: clamp(11px, 1.2vw, 14px);
+        height: 26px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+    }
+    .arch-services {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(10px, 1.4vw, 16px);
+        width: 100%;
+    }
+    .arch-svc { padding: clamp(12px, 1.9vh, 16px) clamp(14px, 1.6vw, 18px); text-align: left; }
+    .arch-svc .ft {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12px, 1.25vw, 15.5px);
+    }
+    .arch-svc .fd {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        margin-top: 4px;
+        line-height: 1.5;
+    }
+
+    .stack-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(10px, 1.3vw, 16px);
+        width: min(100%, 1100px);
+    }
+    .stack-card {
+        padding: clamp(12px, 1.9vh, 18px) clamp(14px, 1.8vw, 22px);
+        text-align: left;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+    }
+    .stack-card .st-name {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16px);
+        min-width: 118px;
+        color: var(--text);
+        line-height: 1.25;
+    }
+    .stack-card .st-name small {
+        display: block;
+        font-family: var(--font-body);
+        font-weight: 500;
+        color: var(--muted);
+        font-size: clamp(9px, 0.95vw, 11.5px);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-top: 3px;
+    }
+    .stack-card .st-why {
+        color: var(--muted);
+        font-size: clamp(11px, 1.1vw, 13.5px);
+        line-height: 1.5;
+    }
+
+    .api-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(10px, 1.4vw, 18px);
+        width: min(100%, 1180px);
+    }
+    .api-card { padding: clamp(11px, 1.8vh, 15px) clamp(13px, 1.6vw, 20px); text-align: left; }
+    .api-card h3 {
+        font-family: var(--font-head);
+        font-size: clamp(12px, 1.25vw, 15.5px);
+        font-weight: 700;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .api-card h3 .gdot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+    .api-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.07);
+        font-size: clamp(10px, 1.02vw, 13px);
+    }
+    .api-row:last-child { border-bottom: none; }
+    .method {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(8px, 0.85vw, 10.5px);
+        padding: 2px 7px;
+        border-radius: 5px;
+        letter-spacing: 0.05em;
+        flex: none;
+        width: 54px;
+        text-align: center;
+    }
+    .m-get { background: rgba(51, 214, 198, 0.15); color: #33D6C6; }
+    .m-post { background: rgba(79, 124, 255, 0.15); color: #4F7CFF; }
+    .m-put { background: rgba(246, 178, 87, 0.15); color: #F6B257; }
+    .m-patch { background: rgba(167, 139, 250, 0.15); color: #A78BFA; }
+    .m-delete { background: rgba(244, 107, 107, 0.15); color: #F46B6B; }
+    .api-path {
+        font-family: var(--font-mono);
+        color: var(--text);
+        font-size: clamp(9px, 0.92vw, 11.5px);
+        white-space: nowrap;
+    }
+    .api-desc {
+        color: var(--muted);
+        font-size: clamp(9px, 0.92vw, 11.5px);
+        margin-left: auto;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .er-panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(14px, 2vw, 24px);
+        width: min(100%, 1180px);
+        align-items: stretch;
+    }
+    .er-panel { padding: clamp(14px, 2.4vh, 20px) clamp(14px, 1.8vw, 22px); text-align: left; }
+    .er-panel h3 {
+        font-size: clamp(13px, 1.35vw, 17px);
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+    .er-panel .er-sub { color: var(--muted); font-size: clamp(10.5px, 1.05vw, 13px); margin-bottom: 10px; }
+    .er-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 9px;
+        flex-wrap: nowrap;
+    }
+    .er-row:last-child { margin-bottom: 0; }
+    .er-box {
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.03);
+        text-align: center;
+        flex: 1;
+        min-width: 0;
+    }
+    .er-box .eb-name {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        color: var(--text);
+        white-space: nowrap;
+    }
+    .er-box .eb-fields {
+        display: flex;
+        gap: 3px;
+        justify-content: center;
+        margin-top: 5px;
+        flex-wrap: wrap;
+    }
+    .er-field {
+        font-size: clamp(8px, 0.8vw, 10px);
+        color: var(--muted);
+        background: rgba(148, 163, 184, 0.08);
+        padding: 2px 5px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+    .er-field.pk { color: var(--amber); }
+    .er-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        flex: none;
+    }
+    .er-link .el-label {
+        font-size: clamp(7.5px, 0.78vw, 9.5px);
+        color: var(--teal);
+        white-space: nowrap;
+        font-weight: 600;
+    }
+    .er-link .el-arrow {
+        color: var(--primary);
+        font-size: clamp(9px, 0.95vw, 12px);
+        line-height: 1;
+    }
+
+    .timeline {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: clamp(10px, 1.5vw, 18px);
+        width: min(100%, 1160px);
+    }
+    .tl-item {
+        position: relative;
+        text-align: left;
+        padding-top: 24px;
+    }
+    .tl-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(79, 124, 255, 0.7), rgba(51, 214, 198, 0.7));
+        border-radius: 2px;
+    }
+    .tl-item::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 2px solid var(--bg);
+    }
+    .tl-num {
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--teal);
+    }
+    .tl-title {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16.5px);
+        margin: 5px 0 6px;
+    }
+    .tl-desc {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        line-height: 1.55;
+    }
+
+    .roadmap {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(14px, 2vw, 26px);
+        width: min(100%, 1140px);
+    }
+    .rm-item { position: relative; text-align: left; padding-top: 24px; }
+    .rm-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(79, 124, 255, 0.7), rgba(51, 214, 198, 0.7));
+        border-radius: 2px;
+    }
+    .rm-item::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 2px solid var(--bg);
+    }
+    .rm-item .rm-when {
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--amber);
+    }
+    .rm-item .tl-title { font-size: clamp(13.5px, 1.4vw, 18px); }
+
+    .crit-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(9px, 1.2vw, 14px);
+        width: min(100%, 1020px);
+    }
+    .crit-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: clamp(9px, 1.4vh, 13px) clamp(13px, 1.6vw, 18px);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        text-align: left;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.5;
+    }
+    .crit-item .mk { color: var(--teal); font-weight: 700; }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(10px, 1.3vw, 16px);
+        width: min(100%, 1180px);
+    }
+    .feature-card { padding: clamp(13px, 2vh, 20px) clamp(14px, 1.8vw, 22px); text-align: left; }
+    .feature-icon {
+        width: clamp(30px, 3vw, 38px);
+        height: clamp(30px, 3vw, 38px);
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        margin-bottom: clamp(8px, 1.2vh, 12px);
+        background: rgba(79, 124, 255, 0.12);
+        color: var(--primary);
+    }
+    .feature-icon svg { width: 17px; height: 17px; }
+    .feature-card h3 {
+        font-size: clamp(13px, 1.3vw, 16.5px);
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .feature-card p { color: var(--muted); font-size: clamp(11px, 1.08vw, 13.5px); line-height: 1.45; }
+
+    .chart-card { padding: clamp(16px, 2.6vh, 26px) clamp(16px, 1.8vw, 24px); text-align: left; display: flex; flex-direction: column; }
+    .chart-card h3 {
+        font-size: clamp(14px, 1.45vw, 18px);
+        font-weight: 700;
+    }
+    .chart-card .chart-sub { color: var(--muted); font-size: clamp(11px, 1.05vw, 13px); margin-top: 4px; line-height: 1.45; }
+    .chart-wrap {
+        position: relative;
+        width: min(100%, 230px);
+        margin: clamp(8px, 1.6vh, 14px) auto 0;
+    }
+    .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; font-size: clamp(10px, 1vw, 12.5px); color: var(--muted); }
+    .legend-dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+    .legend-item b { color: var(--text); font-weight: 600; }
+
+    .rules-split {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: clamp(16px, 2.2vw, 28px);
+        width: min(100%, 1120px);
+        align-items: stretch;
+    }
+    .rules-list { padding: clamp(18px, 3vh, 28px) clamp(18px, 2vw, 26px); text-align: left; }
+    .rules-list h3 {
+        font-size: clamp(14px, 1.45vw, 18px);
+        font-weight: 700;
+        margin-bottom: clamp(8px, 1.4vh, 12px);
+    }
+    .rules-list ul { list-style: none; }
+    .rules-list li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 7px 0;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.5;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+    .rules-list li:last-child { border-bottom: none; }
+    .rules-list .mk { color: var(--teal); font-weight: 700; }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 2vw, 28px);
+        width: min(100%, 900px);
+    }
+    .stat-num {
+        font-family: var(--font-head);
+        font-size: clamp(26px, 3.4vw, 46px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+    }
+    .stat-label {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.15vw, 14px);
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .roles-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+    }
+    .role-card { padding: clamp(18px, 2.8vh, 26px) clamp(16px, 2vw, 24px); text-align: left; }
+    .role-card h3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: clamp(14px, 1.5vw, 19px);
+        font-weight: 700;
+        margin-bottom: clamp(10px, 1.6vh, 14px);
+    }
+    .role-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(11px, 1.1vw, 13px);
+        color: #fff;
+        flex: none;
+    }
+    .role-card ul { list-style: none; }
+    .role-card li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 6px 0;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.5;
+    }
+    .role-card .mk { color: var(--teal); font-weight: 700; }
+    .value-para { color: var(--muted); font-size: clamp(12px, 1.2vw, 15px); line-height: 1.6; }
+    .value-para b { color: var(--text); font-weight: 600; }
+
+    .verify-bar-wrap { width: min(100%, 900px); }
+    .verify-track {
+        width: 100%;
+        height: 16px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.12);
+        overflow: hidden;
+        border: 1px solid var(--line);
+    }
+    .verify-fill {
+        width: 100%;
+        height: 100%;
+        background: var(--grad);
+        border-radius: 999px;
+    }
+    .verify-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.1vw, 14px);
+    }
+    .verify-labels b { color: var(--text); }
+
+    .nav-top {
+        display: flex;
+        align-items: stretch;
+        gap: clamp(6px, 1vw, 12px);
+        width: min(100%, 1120px);
+    }
+    .nav-box {
+        flex: 1;
+        padding: clamp(14px, 2.4vh, 22px) clamp(14px, 1.6vw, 20px);
+        text-align: left;
+    }
+    .nav-box .nt {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(13px, 1.35vw, 17px);
+        margin-bottom: 6px;
+    }
+    .nav-box .nd { color: var(--muted); font-size: clamp(11px, 1.1vw, 13.5px); line-height: 1.55; }
+    .nav-box.pub .nt { color: var(--amber); }
+    .nav-box.tok .nt { color: var(--primary); }
+    .nav-box.rol .nt { color: var(--teal); }
+    .nav-arrow {
+        display: flex;
+        align-items: center;
+        color: var(--primary);
+        font-size: clamp(14px, 1.6vw, 20px);
+        font-weight: 700;
+    }
+    .nav-dest {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(14px, 2vw, 24px);
+        width: min(100%, 1120px);
+    }
+    .nav-dest-card { padding: clamp(14px, 2.4vh, 22px) clamp(16px, 2vw, 24px); text-align: left; }
+    .nav-dest-card h3 {
+        font-size: clamp(13px, 1.4vw, 17px);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .nav-dest-card .chip { margin: 0 6px 8px 0; font-size: clamp(10px, 1vw, 12px); padding: 6px 13px; }
+
+    .flow {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: clamp(6px, 1vw, 14px);
+        width: min(100%, 1080px);
+        flex-wrap: wrap;
+    }
+    .flow-step {
+        flex: 1;
+        min-width: 190px;
+        padding: clamp(14px, 2.2vh, 20px) clamp(14px, 1.6vw, 18px);
+        text-align: left;
+    }
+    .flow-num {
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1vw, 12px);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        color: var(--teal);
+    }
+    .flow-step .ft {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16.5px);
+        margin: 4px 0 6px;
+    }
+    .flow-step .fd {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        line-height: 1.5;
+    }
+    .flow-arrow {
+        display: flex;
+        align-items: center;
+        color: var(--primary);
+        font-size: clamp(14px, 1.6vw, 20px);
+        font-weight: 700;
+    }
+    .flow-note {
+        width: min(100%, 1080px);
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.6;
+    }
+
+    .demo-icon {
+        position: relative;
+        width: clamp(76px, 8vw, 104px);
+        height: clamp(76px, 8vw, 104px);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(79, 124, 255, 0.10);
+        border: 1px solid rgba(79, 124, 255, 0.35);
+        color: var(--primary);
+    }
+    .demo-pulse {
+        position: absolute;
+        inset: -14px;
+        border-radius: 50%;
+        border: 1px solid rgba(79, 124, 255, 0.4);
+        animation: pulse 2.4s ease-out infinite;
+    }
+    .demo-icon::after {
+        content: '';
+        position: absolute;
+        inset: -28px;
+        border-radius: 50%;
+        border: 1px solid rgba(79, 124, 255, 0.18);
+        animation: pulse 2.4s ease-out 0.8s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(0.72); opacity: 1; }
+        100% { transform: scale(1.18); opacity: 0; }
+    }
+    .demo-title {
+        font-size: clamp(40px, 6.4vw, 84px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+    }
+    .demo-title .accent {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .concl-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1120px);
+    }
+    .concl-card { padding: clamp(18px, 3vh, 30px) clamp(16px, 2vw, 26px); text-align: left; }
+    .concl-num {
+        font-family: var(--font-head);
+        font-size: clamp(14px, 1.5vw, 19px);
+        font-weight: 800;
+        color: var(--teal);
+        letter-spacing: 0.04em;
+    }
+    .concl-card h3 {
+        font-family: var(--font-head);
+        font-size: clamp(14px, 1.5vw, 19px);
+        font-weight: 700;
+        margin: 8px 0 8px;
+    }
+    .concl-card p { color: var(--muted); font-size: clamp(11.5px, 1.15vw, 14.5px); line-height: 1.55; }
+
+    .thanks {
+        font-family: var(--font-head);
+        font-size: clamp(30px, 4.2vw, 56px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.1;
+    }
+    .thanks-sub { color: var(--muted); font-size: clamp(13px, 1.3vw, 16px); }
+
+    @media (max-width: 768px) {
+        .team-grid { grid-template-columns: repeat(2, 1fr); }
+        .split { grid-template-columns: 1fr; }
+        .rules-split { grid-template-columns: 1fr; }
+        .feature-grid { grid-template-columns: 1fr; }
+        .pain-grid { grid-template-columns: 1fr; }
+        .scope-grid { grid-template-columns: 1fr; }
+        .roles-grid { grid-template-columns: 1fr; }
+        .concl-grid { grid-template-columns: 1fr; }
+        .timeline { grid-template-columns: 1fr; }
+        .roadmap { grid-template-columns: 1fr; }
+        .crit-grid { grid-template-columns: 1fr; }
+        .nav-dest { grid-template-columns: 1fr; }
+        .nav-top { flex-direction: column; }
+        .nav-arrow { transform: rotate(90deg); justify-content: center; }
+        .api-grid { grid-template-columns: 1fr; }
+        .stack-grid { grid-template-columns: 1fr; }
+        .er-panels { grid-template-columns: 1fr; }
+        .er-row { flex-wrap: wrap; }
+        .arch-services { grid-template-columns: 1fr; }
+        .nav-controls { bottom: 14px; right: 14px; }
+        .nav-btn { width: 34px; height: 34px; font-size: 15px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-deck">
+
+    <section class="slide active grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="cover-chip reveal d1">Proyecto Integrador &nbsp;·&nbsp; Mayo – Agosto 2026</div>
+            <h1 class="cover-title reveal d2">AulaVirtual <span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Pro</span></h1>
+            <p class="cover-tagline reveal d3">Plataforma LMS para capacitación empresarial</p>
+            <div class="cover-divider reveal d4"></div>
+            <p class="sub reveal d5" style="margin-top:-4px;">Sistema de gestión de aprendizaje que centraliza cursos, evaluaciones y progreso en una sola plataforma — para <b style="color:var(--text);">CapacitaTec S.A.</b></p>
+            <div class="cover-footer reveal d6">
+                <span class="chip">Presenta: <b>Equipo Alfa</b></span>
+                <span class="chip">Consultoría: <b>NexaTech Consulting</b></span>
+                <span class="chip" style="border-color:rgba(51,214,198,0.35);"><b style="color:var(--teal);">Cliente:</b> CapacitaTec S.A.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">Agenda</div>
+            <h2 class="title reveal d2">¿Qué veremos <span class="accent">hoy?</span></h2>
+            <div class="agenda">
+                <div class="agenda-item reveal d3">
+                    <span class="agenda-num">01</span>
+                    <span>El problema — contexto, WhatsApp y su costo</span>
+                    <small>Contexto</small>
+                </div>
+                <div class="agenda-item reveal d4">
+                    <span class="agenda-num">02</span>
+                    <span>La solución — la plataforma, su alcance y su valor</span>
+                    <small>Propuesta</small>
+                </div>
+                <div class="agenda-item reveal d5">
+                    <span class="agenda-num">03</span>
+                    <span>El desarrollo — equipo, arquitectura, API y datos</span>
+                    <small>Proceso</small>
+                </div>
+                <div class="agenda-item reveal d6">
+                    <span class="agenda-num">04</span>
+                    <span>Lo que entrega — funcionalidades, reglas y calidad</span>
+                    <small>Producto</small>
+                </div>
+                <div class="agenda-item reveal d7">
+                    <span class="agenda-num">05</span>
+                    <span>Lecciones, retos y próximos pasos</span>
+                    <small>Aprendizaje</small>
+                </div>
+                <div class="agenda-item reveal d8">
+                    <span class="agenda-num">06</span>
+                    <span>Demostración en vivo y conclusiones</span>
+                    <small>Cierre</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">01 · Contexto del proyecto</div>
+            <h2 class="title reveal d2">Un proyecto integrador para <span class="accent">un cliente real</span></h2>
+            <div class="scope-grid">
+                <div class="card scope-card highlight reveal d3">
+                    <div class="num-tag">01</div>
+                    <h3>El cliente</h3>
+                    <p>CapacitaTec S.A. patrocina el proyecto y será su usuario final: su operación de capacitación empresarial es el corazón del sistema.</p>
+                </div>
+                <div class="card scope-card reveal d4">
+                    <div class="num-tag" style="background:linear-gradient(135deg,#33D6C6,#2EB4F0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">02</div>
+                    <h3>El equipo</h3>
+                    <p>Cuatro integrantes multidisciplinarios del Equipo Alfa, bajo la consultoría de NexaTech Consulting y coordinados por un Project Manager.</p>
+                </div>
+                <div class="card scope-card reveal d5">
+                    <div class="num-tag" style="background:linear-gradient(135deg,#A78BFA,#D66BFA);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">03</div>
+                    <h3>El horizonte</h3>
+                    <p>Mayo – agosto 2026: del análisis al MVP, con entregas definidas en el cronograma del proyecto desde la primera sesión.</p>
+                </div>
+            </div>
+            <div class="callout reveal d6"><b>Kick-off · 8 de mayo de 2026:</b> alcance, roles del equipo, reglas de negocio y cronograma quedaron formalizados en acta con el cliente.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">02 · El problema del cliente</div>
+            <h2 class="title reveal d2">Capacitar por WhatsApp deja <span class="accent">sin evidencia y sin control</span></h2>
+            <p class="sub reveal d3">CapacitaTec S.A. impartía su capacitación empresarial por WhatsApp: el material llegaba, pero nadie sabía quién lo recibió, quién lo estudió ni quién lo aprobó.</p>
+            <div class="pain-grid">
+                <div class="card pain-card reveal d4">
+                    <div class="pain-num">01</div>
+                    <div class="pain-title">Materiales dispersos</div>
+                    <p class="pain-desc">Archivos, avisos y enlaces se pierden en cadenas de conversaciones. No existe una biblioteca central de contenidos.</p>
+                </div>
+                <div class="card pain-card reveal d5">
+                    <div class="pain-num">02</div>
+                    <div class="pain-title">Seguimiento manual</div>
+                    <p class="pain-desc">El avance de los colaboradores se calcula a mano o simplemente no queda registro de quién completó qué.</p>
+                </div>
+                <div class="card pain-card reveal d6">
+                    <div class="pain-num">03</div>
+                    <div class="pain-title">Evaluaciones informales</div>
+                    <p class="pain-desc">Quizzes y calificaciones sin trazabilidad: no hay historial, no hay reportes y no se puede justificar una decisión.</p>
+                </div>
+                <div class="card pain-card reveal d7">
+                    <div class="pain-num">04</div>
+                    <div class="pain-title">Comunicación limitada</div>
+                    <p class="pain-desc">No existen avisos automáticos de inscripción, avances o resultados. El seguimiento depende de la memoria.</p>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Consecuencia:</b> la capacitación no se puede medir, demostrar ni escalar.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">03 · El costo de no actuar</div>
+            <h2 class="title reveal d2">Sin una plataforma, el problema <span class="accent">solo crece</span></h2>
+            <p class="sub reveal d3">Cada colaborador adicional, cada curso nuevo y cada evaluación sin registro agravan la situación actual.</p>
+            <div class="pain-grid">
+                <div class="card pain-card risk reveal d4">
+                    <div class="pain-num">01</div>
+                    <div class="pain-title">Sin control</div>
+                    <p class="pain-desc">No se sabe quién completó cada curso ni cuándo; la capacitación es una caja negra.</p>
+                </div>
+                <div class="card pain-card risk reveal d5">
+                    <div class="pain-num">02</div>
+                    <div class="pain-title">Sin evidencia</div>
+                    <p class="pain-desc">No hay forma de demostrar resultados ante la dirección ni de respaldar decisiones con datos.</p>
+                </div>
+                <div class="card pain-card risk reveal d6">
+                    <div class="pain-num">03</div>
+                    <div class="pain-title">Sin escalar</div>
+                    <p class="pain-desc">Sumar más colaboradores o más cursos multiplica la dispersión y el trabajo manual.</p>
+                </div>
+                <div class="card pain-card risk reveal d7">
+                    <div class="pain-num">04</div>
+                    <div class="pain-title">Sin historial</div>
+                    <p class="pain-desc">Las calificaciones y evaluaciones se pierden; no existe un expediente de aprendizaje por persona.</p>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Lo que está en juego:</b> el valor real de la inversión en capacitación permanece invisible.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">04 · La solución</div>
+            <h2 class="title reveal d2">AulaVirtual Pro: <span class="accent">una sola plataforma</span> para capacitar, evaluar y medir</h2>
+            <div class="split">
+                <div class="card split-panel before reveal d3">
+                    <h3>Antes · WhatsApp</h3>
+                    <ul>
+                        <li><span class="mk">✕</span> Material disperso en conversaciones</li>
+                        <li><span class="mk">✕</span> Avance calculado a mano, sin evidencia</li>
+                        <li><span class="mk">✕</span> Evaluaciones sin historial ni reportes</li>
+                        <li><span class="mk">✕</span> Cero notificaciones automáticas</li>
+                    </ul>
+                </div>
+                <div class="card split-panel after reveal d4">
+                    <h3>Con AulaVirtual Pro</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Contenido estructurado en cursos, módulos y lecciones</li>
+                        <li><span class="mk">✓</span> Progreso y evaluaciones automatizados y medibles</li>
+                        <li><span class="mk">✓</span> Reportes en tiempo real para administración</li>
+                        <li><span class="mk">✓</span> Notificaciones por correo en cada hito del alumno</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="bridge reveal d5">De una capacitación <span class="em">informal y dispersa</span> a un aprendizaje <span class="em">organizado, medible y automatizado</span>.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">05 · Objetivo y alcance</div>
+            <h2 class="title reveal d2">Un objetivo claro y un alcance <span class="accent">definido</span></h2>
+            <div class="scope-grid">
+                <div class="card scope-card goal highlight reveal d3">
+                    <h3>Objetivo general</h3>
+                    <ul>
+                        <li><span class="mk">→</span> Desarrollar una plataforma LMS que gestione usuarios, cursos, módulos, lecciones, quizzes y progreso.</li>
+                        <li><span class="mk">→</span> Con autenticación segura y reportes para la administración.</li>
+                    </ul>
+                </div>
+                <div class="card scope-card in reveal d4">
+                    <h3>Incluye · v1.0</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Login y registro</li>
+                        <li><span class="mk">✓</span> Cursos, módulos y lecciones</li>
+                        <li><span class="mk">✓</span> Quizzes y calificación automática</li>
+                        <li><span class="mk">✓</span> Dashboards por rol</li>
+                        <li><span class="mk">✓</span> Notificaciones por correo</li>
+                    </ul>
+                </div>
+                <div class="card scope-card out reveal d5">
+                    <h3>Fuera de alcance</h3>
+                    <ul>
+                        <li><span class="mk">✕</span> Videoclases en tiempo real</li>
+                        <li><span class="mk">✕</span> App móvil nativa</li>
+                        <li><span class="mk">✕</span> Pagos en línea</li>
+                        <li><span class="mk">✕</span> Inteligencia artificial o analítica avanzada</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="bridge reveal d6">El foco del MVP: <span class="em">resolver lo esencial</span> con calidad, dejando el camino preparado para lo siguiente.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">06 · Propuesta de valor por rol</div>
+            <h2 class="title reveal d2">Valor concreto <span class="accent">para cada usuario</span></h2>
+            <p class="sub reveal d3">Cada rol obtiene una mejora real y visible frente al proceso anterior por WhatsApp.</p>
+            <div class="roles-grid">
+                <div class="card role-card reveal d4">
+                    <h3><span class="role-badge" style="background:linear-gradient(135deg,#33D6C6,#2EB4F0);">A</span> Alumno</h3>
+                    <p class="value-para">Para <b>aprender sin perderse</b>: contenido ordenado, evaluación con resultado inmediato y avance siempre visible.</p>
+                </div>
+                <div class="card role-card reveal d5">
+                    <h3><span class="role-badge" style="background:linear-gradient(135deg,#F6B257,#F57E4E);">I</span> Instructor</h3>
+                    <p class="value-para">Para <b>enseñar con evidencia</b>: estructura clara, materiales bajo control y resultados de sus alumnos al alcance.</p>
+                </div>
+                <div class="card role-card reveal d6">
+                    <h3><span class="role-badge" style="background:linear-gradient(135deg,#4F7CFF,#7A5CFF);">AD</span> Administrador</h3>
+                    <p class="value-para">Para <b>decidir con datos</b>: visibilidad general de la capacitación, reportes en tiempo real y control total de la operación.</p>
+                </div>
+            </div>
+            <p class="bridge reveal d7">AulaVirtual Pro convierte la capacitación dispersa en <span class="em">aprendizaje organizado, medible y automatizado</span>.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">07 · Desarrollo en equipo</div>
+            <h2 class="title reveal d2">Un equipo multidisciplinario, <span class="accent">del análisis al MVP</span></h2>
+            <div class="team-grid">
+                <div class="card team-card reveal d3">
+                    <div class="avatar av-1">AH</div>
+                    <div class="team-name">Alberto Hernandez Martínez</div>
+                    <div class="team-role">Project Manager · Tech Lead</div>
+                    <p class="team-desc">Arquitectura, base de datos, control de versiones y despliegue.</p>
+                </div>
+                <div class="card team-card reveal d4">
+                    <div class="avatar av-2">JA</div>
+                    <div class="team-name">Johan Anuart</div>
+                    <div class="team-role">Desarrollador Frontend</div>
+                    <p class="team-desc">React: pantallas, componentes e integración con la API.</p>
+                </div>
+                <div class="card team-card reveal d5">
+                    <div class="avatar av-3">EH</div>
+                    <div class="team-name">Erick Hernandez</div>
+                    <div class="team-role">Desarrollador Backend</div>
+                    <p class="team-desc">API REST, seguridad, datos y correos automáticos.</p>
+                </div>
+                <div class="card team-card reveal d6">
+                    <div class="avatar av-4">AS</div>
+                    <div class="team-name">Alan Santillan</div>
+                    <div class="team-role">UI / UX Designer</div>
+                    <p class="team-desc">Figma, sistema visual, prototipos y QA de experiencia.</p>
+                </div>
+            </div>
+            <div class="stack-row reveal d7">
+                <span class="tech">React</span>
+                <span class="tech">Node.js</span>
+                <span class="tech">Express</span>
+                <span class="tech">MongoDB</span>
+                <span class="tech">JWT</span>
+                <span class="tech">Nodemailer</span>
+                <span class="tech">Git · GitHub</span>
+                <span class="tech">Figma</span>
+            </div>
+            <div class="method-bar reveal d8">
+                <b>Metodología ágil</b> con entregas incrementales del MVP (framework Scrum) · el plan se ejecutó <b>tal como se definió en el cronograma del proyecto</b>, de mayo a agosto de 2026 · <span class="doe-pill">10 / 10 criterios de aceptación del MVP cumplidos</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">08 · Arquitectura técnica</div>
+            <h2 class="title reveal d2">Arquitectura de <span class="accent">tres capas</span> + servicios en la nube</h2>
+            <div class="arch">
+                <div class="card arch-band client reveal d2">
+                    <div class="ab-label">CLIENTE · Web</div>
+                    <span class="tech">React + Vite</span>
+                    <span class="tech">React Router</span>
+                    <span class="tech">Axios</span>
+                    <span class="ab-tag">Pantallas por rol (admin · instructor · alumno)</span>
+                </div>
+                <div class="arch-down reveal d3">↓&nbsp; HTTP / REST · JSON &nbsp;+&nbsp; Token JWT &nbsp;↓</div>
+                <div class="card arch-band api reveal d4">
+                    <div class="ab-label">API · Node.js + Express</div>
+                    <span class="tech">verifyToken</span>
+                    <span class="tech">checkRole</span>
+                    <span class="tech">Rutas /api/v1/…</span>
+                    <span class="ab-tag">Reglas de negocio · Puerto 5000</span>
+                </div>
+                <div class="arch-down reveal d5">↓&nbsp; Mongoose &nbsp;·&nbsp; SDKs externos &nbsp;↓</div>
+                <div class="arch-services">
+                    <div class="card arch-svc reveal d5">
+                        <div class="ft">MongoDB Atlas</div>
+                        <p class="fd">Base de datos en la nube: usuarios, cursos, quizzes, progreso y reportes.</p>
+                    </div>
+                    <div class="card arch-svc reveal d6">
+                        <div class="ft">Nodemailer + Gmail</div>
+                        <p class="fd">Notificaciones por correo: bienvenida, inscripción y resultados.</p>
+                    </div>
+                    <div class="card arch-svc reveal d6">
+                        <div class="ft">Materiales por URL</div>
+                        <p class="fd">Las lecciones referencian sus materiales mediante enlaces externos.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="flow-note reveal d7">Separación clara de responsabilidades: la interfaz nunca toca los datos directamente; todo el flujo pasa por la API, lo que mantiene el sistema seguro y fácil de ampliar.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">09 · Stack tecnológico y justificación</div>
+            <h2 class="title reveal d2">Tecnologías elegidas <span class="accent">con un propósito</span></h2>
+            <div class="stack-grid">
+                <div class="card stack-card reveal d3">
+                    <div class="st-name">React + Vite<small>Frontend</small></div>
+                    <p class="st-why">Interfaz por componentes, rápida y responsiva; permite pantallas dedicadas por rol.</p>
+                </div>
+                <div class="card stack-card reveal d4">
+                    <div class="st-name">Node.js + Express<small>Backend</small></div>
+                    <p class="st-why">API REST ligera y de alto rendimiento; un solo lenguaje en todo el stack.</p>
+                </div>
+                <div class="card stack-card reveal d5">
+                    <div class="st-name">MongoDB Atlas<small>Datos</small></div>
+                    <p class="st-why">Modelo flexible para módulos y lecciones anidadas; base en la nube, sin costo para el MVP.</p>
+                </div>
+                <div class="card stack-card reveal d6">
+                    <div class="st-name">JWT + bcrypt<small>Seguridad</small></div>
+                    <p class="st-why">Autenticación sin estado y contraseñas cifradas; control de rol en cada endpoint.</p>
+                </div>
+                <div class="card stack-card reveal d5">
+                    <div class="st-name">Nodemailer + Gmail<small>Correos</small></div>
+                    <p class="st-why">Notificaciones reales sin costo ni tarjeta; evidencia visible durante la demo.</p>
+                </div>
+                <div class="card stack-card reveal d6">
+                    <div class="st-name">GitHub<small>Colaboración</small></div>
+                    <p class="st-why">Ramas, revisión de pull requests y flujo de trabajo ordenado en equipo.</p>
+                </div>
+                <div class="card stack-card reveal d8">
+                    <div class="st-name">Figma<small>Diseño</small></div>
+                    <p class="st-why">Prototipos y sistema visual colaborativo que guiaron el desarrollo.</p>
+                </div>
+            </div>
+            <p class="flow-note reveal d8">Cada tecnología se eligió por su madurez, su costo cero para el MVP y su facilidad de integración.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">10 · API REST documentada</div>
+            <h2 class="title reveal d2">Una API versionada, <span class="accent">segura y completa</span></h2>
+            <p class="sub reveal d3">Todos los endpoints bajo <b style="color:var(--text);">/api/v1</b>, con verificación de token y permisos por rol en cada ruta protegida.</p>
+            <div class="api-grid">
+                <div class="card api-card reveal d4">
+                    <h3><span class="gdot" style="background:#33D6C6;"></span> Autenticación</h3>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/auth/register</span><span class="api-desc">registro de usuario</span></div>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/auth/login</span><span class="api-desc">inicio de sesión + JWT</span></div>
+                </div>
+                <div class="card api-card reveal d4">
+                    <h3><span class="gdot" style="background:#4F7CFF;"></span> Cursos y contenido</h3>
+                    <div class="api-row"><span class="method m-get">GET</span><span class="api-path">/api/v1/cursos</span><span class="api-desc">listado / detalle</span></div>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/cursos</span><span class="api-desc">crear curso</span></div>
+                    <div class="api-row"><span class="method m-put">PUT</span><span class="api-path">/api/v1/cursos/:id</span><span class="api-desc">editar curso</span></div>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/cursos/:id/modulos</span><span class="api-desc">módulos y lecciones</span></div>
+                </div>
+                <div class="card api-card reveal d5">
+                    <h3><span class="gdot" style="background:#A78BFA;"></span> Inscripciones</h3>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/inscripciones/:cursoId</span><span class="api-desc">inscribirse</span></div>
+                    <div class="api-row"><span class="method m-get">GET</span><span class="api-path">/api/v1/inscripciones/mis-cursos</span><span class="api-desc">cursos del alumno</span></div>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/inscripciones/admin</span><span class="api-desc">admin inscribe</span></div>
+                </div>
+                <div class="card api-card reveal d5">
+                    <h3><span class="gdot" style="background:#F6B257;"></span> Progreso</h3>
+                    <div class="api-row"><span class="method m-get">GET</span><span class="api-path">/api/v1/progreso</span><span class="api-desc">mi progreso</span></div>
+                    <div class="api-row"><span class="method m-put">PUT</span><span class="api-path">/api/v1/progreso/:cursoId/leccion/:leccionId</span><span class="api-desc">completar lección</span></div>
+                </div>
+                <div class="card api-card reveal d6">
+                    <h3><span class="gdot" style="background:#33D6C6;"></span> Evaluaciones</h3>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/quiz/:id/submit</span><span class="api-desc">enviar y calificar</span></div>
+                    <div class="api-row"><span class="method m-get">GET</span><span class="api-path">/api/v1/quiz/:id/resultado</span><span class="api-desc">resultado del quiz</span></div>
+                    <div class="api-row"><span class="method m-get">GET</span><span class="api-path">/api/v1/quiz/resultados/mios</span><span class="api-desc">historial del alumno</span></div>
+                </div>
+                <div class="card api-card reveal d6">
+                    <h3><span class="gdot" style="background:#F46B6B;"></span> Administración</h3>
+                    <div class="api-row"><span class="method m-get">GET</span><span class="api-path">/api/v1/reportes/admin</span><span class="api-desc">reporte ejecutivo</span></div>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/usuarios</span><span class="api-desc">crear usuario</span></div>
+                    <div class="api-row"><span class="method m-post">POST</span><span class="api-path">/api/v1/tareas</span><span class="api-desc">tareas del instructor</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">11 · Base de datos · Modelo ER</div>
+            <h2 class="title reveal d2">Un modelo de datos que <span class="accent">conecta todo</span></h2>
+            <div class="er-panels">
+                <div class="card er-panel reveal d3">
+                    <h3>Contenido y aprendizaje</h3>
+                    <p class="er-sub">Estructura del curso: un curso contiene módulos, lecciones y quizzes.</p>
+                    <div class="er-row">
+                        <div class="er-box"><div class="eb-name">courses</div><div class="eb-fields"><span class="er-field pk">_id</span><span class="er-field">título</span><span class="er-field">instructor_id</span></div></div>
+                        <div class="er-link"><span class="el-label">1:N</span><span class="el-arrow">→</span></div>
+                        <div class="er-box"><div class="eb-name">modules</div><div class="eb-fields"><span class="er-field">course_id</span><span class="er-field">título</span><span class="er-field">orden</span></div></div>
+                        <div class="er-link"><span class="el-label">1:N</span><span class="el-arrow">→</span></div>
+                        <div class="er-box"><div class="eb-name">lessons</div><div class="eb-fields"><span class="er-field">module_id</span><span class="er-field">materialURL</span><span class="er-field">duración</span></div></div>
+                    </div>
+                    <div class="er-row">
+                        <div class="er-box"><div class="eb-name">courses</div><div class="eb-fields"><span class="er-field pk">_id</span><span class="er-field">título</span></div></div>
+                        <div class="er-link"><span class="el-label">1:N</span><span class="el-arrow">→</span></div>
+                        <div class="er-box"><div class="eb-name">quizzes</div><div class="eb-fields"><span class="er-field">curso_id</span><span class="er-field">título</span><span class="er-field">preguntas[]</span></div></div>
+                        <div class="er-link"><span class="el-label">1:N</span><span class="el-arrow">→</span></div>
+                        <div class="er-box"><div class="eb-name">quiz_attempts</div><div class="eb-fields"><span class="er-field">quiz_id</span><span class="er-field">alumno_id</span><span class="er-field">calificación</span></div></div>
+                    </div>
+                </div>
+                <div class="card er-panel reveal d4">
+                    <h3>Personas y control</h3>
+                    <p class="er-sub">Quién participa, cómo avanza y qué queda registrado para auditoría.</p>
+                    <div class="er-row">
+                        <div class="er-box"><div class="eb-name">users</div><div class="eb-fields"><span class="er-field pk">_id</span><span class="er-field">nombre</span><span class="er-field">email</span><span class="er-field">rol</span></div></div>
+                        <div class="er-link"><span class="el-label">alumno_id</span><span class="el-arrow">→</span></div>
+                        <div class="er-box"><div class="eb-name">enrollments</div><div class="eb-fields"><span class="er-field">alumno_id</span><span class="er-field">curso_id</span><span class="er-field">inscrito_por</span></div></div>
+                    </div>
+                    <div class="er-row">
+                        <div class="er-box"><div class="eb-name">users</div><div class="eb-fields"><span class="er-field pk">_id</span><span class="er-field">nombre</span><span class="er-field">rol</span></div></div>
+                        <div class="er-link"><span class="el-label">alumno_id</span><span class="el-arrow">→</span></div>
+                        <div class="er-box"><div class="eb-name">progress</div><div class="eb-fields"><span class="er-field">alumno_id</span><span class="er-field">curso_id</span><span class="er-field">porcentaje</span></div></div>
+                    </div>
+                    <div class="er-row">
+                        <div class="er-box"><div class="eb-name">users</div><div class="eb-fields"><span class="er-field pk">_id</span><span class="er-field">rol: admin</span></div></div>
+                        <div class="er-link"><span class="el-label">admin_id</span><span class="el-arrow">→</span></div>
+                        <div class="er-box"><div class="eb-name">report_exports</div><div class="eb-fields"><span class="er-field">admin_id</span><span class="er-field">formato</span><span class="er-field">fecha</span></div></div>
+                    </div>
+                </div>
+            </div>
+            <p class="flow-note reveal d5">El certificado de finalización del alumno también queda registrado: <b style="color:var(--text);">nada queda fuera de control</b>.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">12 · Metodología y proceso</div>
+            <h2 class="title reveal d2">Del análisis al MVP, <span class="accent">siempre según el plan</span></h2>
+            <div class="timeline">
+                <div class="tl-item reveal d3">
+                    <div class="tl-num">FASE 1</div>
+                    <div class="tl-title">Análisis</div>
+                    <p class="tl-desc">Kick-off con el cliente; levantamiento de 23 reglas de negocio y casos de uso.</p>
+                </div>
+                <div class="tl-item reveal d4">
+                    <div class="tl-num">FASE 2</div>
+                    <div class="tl-title">Diseño</div>
+                    <p class="tl-desc">Prototipos en Figma, sistema visual y mapa de navegación por rol.</p>
+                </div>
+                <div class="tl-item reveal d5">
+                    <div class="tl-num">FASE 3</div>
+                    <div class="tl-title">Desarrollo</div>
+                    <p class="tl-desc">Construcción incremental del MVP por módulos funcionales.</p>
+                </div>
+                <div class="tl-item reveal d6">
+                    <div class="tl-num">FASE 4</div>
+                    <div class="tl-title">Integración</div>
+                    <p class="tl-desc">Conexión frontend–backend y pruebas de flujos completos.</p>
+                </div>
+                <div class="tl-item reveal d7">
+                    <div class="tl-num">FASE 5</div>
+                    <div class="tl-title">Entrega</div>
+                    <p class="tl-desc">MVP funcional con 10 de 10 criterios de aceptación cumplidos.</p>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Compromiso cumplido:</b> el plan se ejecutó tal como se definió en el cronograma del proyecto (mayo – agosto 2026), con entregas incrementales del MVP.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">13 · Criterios de aceptación</div>
+            <h2 class="title reveal d2">Diez criterios de aceptación, <span class="accent">todos cumplidos</span></h2>
+            <p class="sub reveal d3">El MVP se consideró completo solo cuando cada criterio acordado funcionó en la práctica.</p>
+            <div class="crit-grid">
+                <div class="crit-item reveal d4"><span class="mk">✓</span> Un alumno puede registrarse e iniciar sesión con JWT</div>
+                <div class="crit-item reveal d4"><span class="mk">✓</span> El sistema distingue 3 roles: admin, instructor, alumno</div>
+                <div class="crit-item reveal d5"><span class="mk">✓</span> Un instructor puede crear cursos con módulos y lecciones</div>
+                <div class="crit-item reveal d5"><span class="mk">✓</span> Un alumno puede inscribirse a cursos disponibles</div>
+                <div class="crit-item reveal d6"><span class="mk">✓</span> El progreso por lección se guarda y muestra en porcentaje</div>
+                <div class="crit-item reveal d6"><span class="mk">✓</span> El alumno realiza un quiz con calificación automática</div>
+                <div class="crit-item reveal d7"><span class="mk">✓</span> El instructor puede crear y asignar tareas por curso</div>
+                <div class="crit-item reveal d7"><span class="mk">✓</span> El admin gestiona usuarios (CRUD) desde su panel</div>
+                <div class="crit-item reveal d8"><span class="mk">✓</span> El sistema envía emails de bienvenida e inscripción</div>
+                <div class="crit-item reveal d8"><span class="mk">✓</span> El admin ve reportes de progreso y calificaciones</div>
+            </div>
+            <span class="doe-pill reveal d8">10 / 10 criterios de aceptación cumplidos</span>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">14 · Funcionalidades clave</div>
+            <h2 class="title reveal d2">Un LMS completo <span class="accent">para CapacitaTec</span></h2>
+            <div class="feature-grid">
+                <div class="card feature-card reveal d3">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
+                    <h3>Cursos estructurados</h3>
+                    <p>Catálogo con módulos y lecciones; materiales descargables por lección.</p>
+                </div>
+                <div class="card feature-card reveal d4">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                    </div>
+                    <h3>Evaluaciones automáticas</h3>
+                    <p>Quizzes con calificación al instante, intentos controlados y nota mínima.</p>
+                </div>
+                <div class="card feature-card reveal d5">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7L13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg>
+                    </div>
+                    <h3>Progreso medible</h3>
+                    <p>Barras de avance automatizadas por alumno y certificado al completar el curso.</p>
+                </div>
+                <div class="card feature-card reveal d6">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3>Acceso por rol</h3>
+                    <p>Alumno, instructor y administrador con permisos controlados por token seguro JWT.</p>
+                </div>
+                <div class="card feature-card reveal d7">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>
+                    </div>
+                    <h3>Reportes en tiempo real</h3>
+                    <p>Inscritos, tasa de aprobación y progreso promedio desde el panel del administrador.</p>
+                </div>
+                <div class="card feature-card reveal d8">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>
+                    </div>
+                    <h3>Notificaciones por correo</h3>
+                    <p>Bienvenida, inscripciones y resultados enviados automáticamente vía Nodemailer.</p>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="reveal d4">
+                    <div class="stat-num">3</div>
+                    <div class="stat-label">Roles de acceso</div>
+                </div>
+                <div class="reveal d5">
+                    <div class="stat-num">23</div>
+                    <div class="stat-label">Reglas de negocio</div>
+                </div>
+                <div class="reveal d6">
+                    <div class="stat-num">10/10</div>
+                    <div class="stat-label">Criterios de aceptación del MVP</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">15 · Reglas de negocio</div>
+            <h2 class="title reveal d2">Un sistema diseñado <span class="accent">con rigor</span></h2>
+            <p class="sub reveal d3">Antes de escribir una sola línea de código, el comportamiento del sistema quedó definido en 23 reglas de negocio acordadas con el cliente.</p>
+            <div class="rules-split">
+                <div class="card chart-card reveal d4">
+                    <h3>23 reglas · 5 módulos funcionales</h3>
+                    <p class="chart-sub">Acceso y autenticación, cursos y contenido, evaluaciones, progreso del alumno y reportes.</p>
+                    <div class="chart-wrap">
+                        <canvas id="rulesChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot" style="background:#4F7CFF;"></span>Cursos y contenido <b>6</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#33D6C6;"></span>Acceso y autenticación <b>5</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#A78BFA;"></span>Evaluaciones <b>5</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#F6B257;"></span>Progreso del alumno <b>4</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#5E8BEA;"></span>Reportes <b>3</b></span>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5">
+                    <h3>Ejemplos que garantizan el orden</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Un curso requiere al menos un módulo y una lección para publicarse.</li>
+                        <li><span class="mk">✓</span> La calificación se calcula automáticamente al enviar el quiz; mínima aprobatoria de 70/100.</li>
+                        <li><span class="mk">✓</span> El progreso del alumno no puede modificarse manualmente por ningún rol.</li>
+                        <li><span class="mk">✓</span> Solo el administrador accede al dashboard de reportes.</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:12px;">Reglas de prioridad alta implementadas en la primera etapa del desarrollo; el resto se distribuyó según la carga del equipo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">16 · Seguridad y acceso</div>
+            <h2 class="title reveal d2">Acceso seguro: <span class="accent">solo quien debe, ve lo que debe</span></h2>
+            <div class="pain-grid">
+                <div class="card pain-card reveal d4">
+                    <div class="pain-num">01</div>
+                    <div class="pain-title">Credenciales válidas</div>
+                    <p class="pain-desc">El acceso solo se permite con correo y contraseña válidos; los intentos sin autenticación son rechazados.</p>
+                </div>
+                <div class="card pain-card reveal d5">
+                    <div class="pain-num">02</div>
+                    <div class="pain-title">Sesiones con token</div>
+                    <p class="pain-desc">Cada sesión se gestiona con un token JWT firmado que expira tras 8 horas de inactividad.</p>
+                </div>
+                <div class="card pain-card reveal d6">
+                    <div class="pain-num">03</div>
+                    <div class="pain-title">Un rol por cuenta</div>
+                    <p class="pain-desc">Un usuario tiene un único rol activo; no se permiten roles simultáneos en la misma cuenta.</p>
+                </div>
+                <div class="card pain-card reveal d7">
+                    <div class="pain-num">04</div>
+                    <div class="pain-title">Control centralizado</div>
+                    <p class="pain-desc">Solo el administrador crea, modifica o desactiva cuentas; los alumnos acceden únicamente a sus cursos.</p>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Privacidad en los datos:</b> las contraseñas se almacenan cifradas (bcrypt) y las credenciales de servicios externos nunca se exponen en el repositorio.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">17 · Dashboards por rol</div>
+            <h2 class="title reveal d2">Tres roles, <span class="accent">un solo sistema</span></h2>
+            <p class="sub reveal d3">Cada usuario ve exactamente lo que necesita — ni más, ni menos.</p>
+            <div class="roles-grid">
+                <div class="card role-card reveal d4">
+                    <h3><span class="role-badge" style="background:linear-gradient(135deg,#33D6C6,#2EB4F0);">A</span> Alumno</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Mis cursos y lecciones</li>
+                        <li><span class="mk">✓</span> Materiales descargables</li>
+                        <li><span class="mk">✓</span> Quizzes con calificación al instante</li>
+                        <li><span class="mk">✓</span> Progreso personal y certificado</li>
+                    </ul>
+                </div>
+                <div class="card role-card reveal d5">
+                    <h3><span class="role-badge" style="background:linear-gradient(135deg,#F6B257,#F57E4E);">I</span> Instructor</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Crear cursos, módulos y lecciones</li>
+                        <li><span class="mk">✓</span> Subir materiales permitidos</li>
+                        <li><span class="mk">✓</span> Quizzes y tareas por curso</li>
+                        <li><span class="mk">✓</span> Resultados de sus alumnos</li>
+                    </ul>
+                </div>
+                <div class="card role-card reveal d6">
+                    <h3><span class="role-badge" style="background:linear-gradient(135deg,#4F7CFF,#7A5CFF);">AD</span> Administrador</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Gestión de usuarios y roles</li>
+                        <li><span class="mk">✓</span> Control de cursos activos y archivados</li>
+                        <li><span class="mk">✓</span> Reportes en tiempo real</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal d7"><b>Función clave del administrador:</b> los reportes muestran alumnos inscritos, tasa de aprobación por curso y progreso promedio del grupo — la evidencia que antes no existía.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">18 · Notificaciones automáticas</div>
+            <h2 class="title reveal d2">La plataforma <span class="accent">que avisa sola</span></h2>
+            <p class="sub reveal d3">Integración con Nodemailer + Gmail: el sistema escribe al alumno en cada momento importante.</p>
+            <div class="pain-grid" style="width:min(100%,1080px);">
+                <div class="card pain-card reveal d4">
+                    <div class="pain-num">01</div>
+                    <div class="pain-title">Bienvenida</div>
+                    <p class="pain-desc">Correo personalizado al registrarse en la plataforma, con plantilla HTML propia.</p>
+                </div>
+                <div class="card pain-card reveal d5">
+                    <div class="pain-num">02</div>
+                    <div class="pain-title">Inscripción</div>
+                    <p class="pain-desc">Confirmación al inscribirse a un curso, con el nombre del curso y acceso directo.</p>
+                </div>
+                <div class="card pain-card reveal d6">
+                    <div class="pain-num">03</div>
+                    <div class="pain-title">Recordatorio</div>
+                    <p class="pain-desc">Aviso para continuar con las lecciones pendientes y no perder el ritmo.</p>
+                </div>
+                <div class="card pain-card reveal d7">
+                    <div class="pain-num">04</div>
+                    <div class="pain-title">Logros</div>
+                    <p class="pain-desc">Correo al aprobar un quiz: el alumno recibe su resultado al instante.</p>
+                </div>
+            </div>
+            <div class="flow">
+                <div class="card flow-step reveal d6">
+                    <div class="flow-num">1 · EVENTO</div>
+                    <div class="ft">Registro o inscripción</div>
+                    <p class="fd">El sistema detecta el evento y prepara el mensaje.</p>
+                </div>
+                <div class="flow-arrow reveal d6">→</div>
+                <div class="card flow-step reveal d7">
+                    <div class="flow-num">2 · ENVÍO</div>
+                    <div class="ft">Nodemailer · SMTP seguro</div>
+                    <p class="fd">Plantilla + destinatario; errores no bloquean la operación.</p>
+                </div>
+                <div class="flow-arrow reveal d7">→</div>
+                <div class="card flow-step reveal d8">
+                    <div class="flow-num">3 · ENTREGA</div>
+                    <div class="ft">Correo en Gmail</div>
+                    <p class="fd">El alumno recibe la notificación en tiempo real.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">19 · Mapa de navegación</div>
+            <h2 class="title reveal d2">Una navegación clara, <span class="accent">pensada por rol</span></h2>
+            <div class="nav-top">
+                <div class="card nav-box pub reveal d3">
+                    <div class="nt">Zona pública</div>
+                    <p class="nd">Login · Registro · Catálogo de cursos — sin autenticación.</p>
+                </div>
+                <div class="nav-arrow reveal d3">→</div>
+                <div class="card nav-box tok reveal d4">
+                    <div class="nt">Token JWT</div>
+                    <p class="nd">Identidad y rol verificados en cada pantalla y cada endpoint.</p>
+                </div>
+                <div class="nav-arrow reveal d4">→</div>
+                <div class="card nav-box rol reveal d5">
+                    <div class="nt">Acceso controlado</div>
+                    <p class="nd">Cada rol llega solo a su sección: alumno o admin / instructor.</p>
+                </div>
+            </div>
+            <div class="nav-dest">
+                <div class="card nav-dest-card reveal d6">
+                    <h3 style="color:var(--teal);">Sección alumno</h3>
+                    <span class="chip">Dashboard</span>
+                    <span class="chip">Mis cursos</span>
+                    <span class="chip">Mi progreso</span>
+                    <span class="chip">Lección</span>
+                    <span class="chip">Quiz y resultado</span>
+                </div>
+                <div class="card nav-dest-card reveal d7">
+                    <h3 style="color:var(--primary);">Sección admin / instructor</h3>
+                    <span class="chip">Dashboard</span>
+                    <span class="chip">Gestión de cursos</span>
+                    <span class="chip">Usuarios</span>
+                    <span class="chip">Reportes</span>
+                    <span class="chip">Quizzes</span>
+                </div>
+            </div>
+            <p class="flow-note reveal d8">Los eventos de correo automáticos acompañan todo el recorrido: registro, inscripción y avisos sin intervención manual.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">20 · Pruebas y calidad</div>
+            <h2 class="title reveal d2">Calidad verificada, <span class="accent">criterio por criterio</span></h2>
+            <div class="pain-grid">
+                <div class="card pain-card reveal d4">
+                    <div class="pain-num">01</div>
+                    <div class="pain-title">Pruebas funcionales</div>
+                    <p class="pain-desc">Flujos completos probados por rol: registro, login, inscripción, lección, quiz y reportes.</p>
+                </div>
+                <div class="card pain-card reveal d5">
+                    <div class="pain-num">02</div>
+                    <div class="pain-title">Criterios de aceptación</div>
+                    <p class="pain-desc">Los 10 criterios del MVP verificados manualmente antes de darse por cumplidos.</p>
+                </div>
+                <div class="card pain-card reveal d6">
+                    <div class="pain-num">03</div>
+                    <div class="pain-title">Revisión de código</div>
+                    <p class="pain-desc">Pull requests revisados y aprobados por el Project Manager antes de integrarse.</p>
+                </div>
+                <div class="card pain-card reveal d7">
+                    <div class="pain-num">04</div>
+                    <div class="pain-title">Seguridad verificada</div>
+                    <p class="pain-desc">Sin credenciales expuestas en el repositorio: todo se maneja con variables de entorno (.env).</p>
+                </div>
+            </div>
+            <div class="verify-bar-wrap reveal d8">
+                <div class="verify-track"><div class="verify-fill"></div></div>
+                <div class="verify-labels"><span>Verificación del MVP</span><b>10 de 10 criterios verificados</b></div>
+            </div>
+            <div class="callout reveal d8" style="max-width:min(100%,900px);"><b>Resultado:</b> un MVP estable, sin credenciales expuestas y listo para la demostración en vivo.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">21 · Lecciones aprendidas y retos</div>
+            <h2 class="title reveal d2">Lo que el proyecto nos <span class="accent">enseñó</span></h2>
+            <div class="split">
+                <div class="card split-panel good reveal d3">
+                    <h3>Lecciones aprendidas</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">El análisis primero:</b> definir reglas de negocio antes de codificar evitó retrabajo y ambigüedad.</li>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">Roles claros:</b> separar frontend, backend, diseño y gestión aceleró la integración.</li>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">Entregas incrementales:</b> los avances por módulos permitieron cumplir el cronograma.</li>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">Integración temprana:</b> conectar frontend y backend desde las primeras fases destapó errores a tiempo.</li>
+                    </ul>
+                </div>
+                <div class="card split-panel hard reveal d4">
+                    <h3>Retos enfrentados</h3>
+                    <ul>
+                        <li><span class="mk">✕</span> <b style="color:var(--text);">Equipo pequeño:</b> las tareas críticas se concentran en pocas personas; riesgo de cuellos de botella.</li>
+                        <li><span class="mk">✕</span> <b style="color:var(--text);">Materiales por URL:</b> los materiales de las lecciones se gestionan como enlaces externos, sin subida de archivos propia.</li>
+                        <li><span class="mk">✕</span> <b style="color:var(--text);">Recursos académicos:</b> la infraestructura de producción es limitada en el entorno del proyecto.</li>
+                        <li><span class="mk">✕</span> <b style="color:var(--text);">Alcance acotado:</b> videoclases y app móvil quedaron fuera de v1.0 por decisión de alcance.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">22 · Próximos pasos</div>
+            <h2 class="title reveal d2">Del MVP <span class="accent">a producción</span> y más allá</h2>
+            <div class="roadmap">
+                <div class="rm-item reveal d3">
+                    <div class="rm-when">FASE 1 · CORTO PLAZO</div>
+                    <div class="tl-title">Consolidación</div>
+                    <p class="tl-desc">Despliegue en producción (Vercel / Railway / Render); carga de cursos reales de CapacitaTec y materiales por URL.</p>
+                </div>
+                <div class="rm-item reveal d4">
+                    <div class="rm-when">FASE 2 · MEDIANO PLAZO</div>
+                    <div class="tl-title">Contenido y analítica</div>
+                    <p class="tl-desc">Videoclases grabadas; reportes para el instructor; analítica de aprobación por curso y por grupo.</p>
+                </div>
+                <div class="rm-item reveal d5">
+                    <div class="rm-when">FASE 3 · LARGO PLAZO</div>
+                    <div class="tl-title">Nuevos canales</div>
+                    <p class="tl-desc">Aplicación móvil; integraciones (pagos, SSO); analítica avanzada e inteligencia artificial.</p>
+                </div>
+            </div>
+            <div class="callout reveal d6"><b>El camino está listo:</b> la arquitectura modular y documentada de v1.0 deja preparada cada una de estas fases.</div>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="demo-icon reveal d1">
+                <div class="demo-pulse"></div>
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <h2 class="demo-title reveal d2">Demostración <span class="accent">en vivo</span></h2>
+            <p class="sub reveal d3">A continuación, veremos la plataforma funcionando de principio a fin.</p>
+        </div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">23 · Conclusiones</div>
+            <h2 class="title reveal d2">Una capacitación que <span class="accent">se ve, se mide y se demuestra</span></h2>
+            <div class="concl-grid">
+                <div class="card concl-card reveal d3">
+                    <div class="concl-num">01</div>
+                    <h3>Capacitación formalizada</h3>
+                    <p>Un centro de aprendizaje estructurado con evidencia de cada avance y cada evaluación, sin depender de la memoria ni del WhatsApp.</p>
+                </div>
+                <div class="card concl-card reveal d4">
+                    <div class="concl-num">02</div>
+                    <h3>Entrega completa y documentada</h3>
+                    <p>MVP funcional con 10 de 10 criterios de aceptación cumplidos, respaldado por reglas de negocio, arquitectura, API y modelo de datos.</p>
+                </div>
+                <div class="card concl-card reveal d5">
+                    <div class="concl-num">03</div>
+                    <h3>Base lista para evolucionar</h3>
+                    <p>Arquitectura modular y documentada, preparada para sumar videoclases, app móvil, almacenamiento en la nube y nuevas integraciones.</p>
+                </div>
+            </div>
+            <div class="thanks reveal d6">Gracias.</div>
+            <p class="thanks-sub reveal d7">Equipo Alfa · NexaTech Consulting &nbsp;—&nbsp; Proyecto desarrollado para CapacitaTec S.A.</p>
+        </div>
+    </section>
+
+</div>
+
+<div class="nav-controls">
+    <button class="nav-btn fs-btn" onclick="toggleFullscreen()" title="Pantalla completa (F)">↗</button>
+    <button class="nav-btn" onclick="prevSlide()" title="Anterior">←</button>
+    <span class="slide-counter"><span id="current">1</span> / <span id="total">26</span></span>
+    <button class="nav-btn" onclick="nextSlide()" title="Siguiente">→</button>
+</div>
+
+<script>
+    const centerText = {
+        id: 'centerText',
+        afterDraw(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const { ctx, chartArea: { top, left, right, bottom } } = chart;
+            const cx = (left + right) / 2;
+            const cy = (top + bottom) / 2;
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#E6EBF5';
+            ctx.font = "800 34px 'Sora', sans-serif";
+            ctx.fillText('23', cx, cy + 2);
+            ctx.fillStyle = '#8B98B4';
+            ctx.font = "500 11px 'Inter', sans-serif";
+            ctx.fillText('reglas de negocio', cx, cy + 20);
+            ctx.restore();
+        }
+    };
+
+    new Chart(document.getElementById('rulesChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Cursos y contenido', 'Acceso y autenticación', 'Evaluaciones', 'Progreso del alumno', 'Reportes'],
+            datasets: [{
+                data: [6, 5, 5, 4, 3],
+                backgroundColor: ['#4F7CFF', '#33D6C6', '#A78BFA', '#F6B257', '#5E8BEA'],
+                borderColor: '#0D1424',
+                borderWidth: 3,
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '68%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#111A2E',
+                    borderColor: 'rgba(148,163,184,0.25)',
+                    borderWidth: 1,
+                    titleFont: { family: "'Sora', sans-serif", weight: 600 },
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: {
+                        label: (c) => ` ${c.label}: ${c.parsed} reglas`
+                    }
+                }
+            }
+        },
+        plugins: [centerText]
+    });
+
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    document.getElementById('total').textContent = total;
+
+    function showSlide(n) {
+        if (n < 1) n = 1;
+        if (n > total) n = total;
+        current = n;
+        document.querySelectorAll('.slide').forEach((s, i) => {
+            s.classList.toggle('active', i === n - 1);
+        });
+        document.getElementById('current').textContent = n;
+        document.getElementById('progressBar').style.width = (n / total * 100) + '%';
+    }
+
+    function nextSlide() { showSlide(current + 1); }
+    function prevSlide() { showSlide(current - 1); }
+
+    function toggleFullscreen() {
+        const el = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen).call(el);
+        } else {
+            (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.nav-controls') && !e.target.closest('.nav-btn')) nextSlide();
+    });
+
+    showSlide(1);
+</script>
+</body>
+</html>

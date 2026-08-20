@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AulaVirtual Pro — Reporte de Cierre Financiero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+    :root {
+        --bg: #08100C;
+        --panel: #0E1713;
+        --panel-2: #132019;
+        --line: rgba(190, 214, 200, 0.13);
+        --text: #EDF4F0;
+        --muted: #8FA59A;
+        --primary: #2FBF8F;
+        --emerald: #34D399;
+        --sage: #9BD4B0;
+        --gold: #E0BC6E;
+        --copper: #C98F4E;
+        --red: #EF7A7A;
+        --grad: linear-gradient(135deg, #34D399 0%, #E0BC6E 100%);
+        --font-head: 'Sora', sans-serif;
+        --font-body: 'Inter', sans-serif;
+        --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        overflow: hidden;
+    }
+
+    .slide-deck {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+    @media (min-width: 769px) {
+        .slide-deck {
+            max-width: calc(100vh * 16 / 9);
+            max-height: calc(100vw * 9 / 16);
+            margin: auto;
+            position: absolute;
+            inset: 0;
+        }
+    }
+
+    .slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(28px, 5vw, 60px) clamp(32px, 6vw, 88px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.45s ease;
+        overflow: hidden;
+    }
+    .slide.active { opacity: 1; visibility: visible; }
+
+    .slide-content {
+        width: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(14px, 2.2vh, 24px);
+        text-align: center;
+    }
+
+    .grid-bg::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(190, 214, 200, 0.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(190, 214, 200, 0.045) 1px, transparent 1px);
+        background-size: 44px 44px;
+        -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 25%, transparent 78%);
+        mask-image: radial-gradient(ellipse at 50% 40%, black 25%, transparent 78%);
+        pointer-events: none;
+    }
+
+    .glow {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .glow-1 {
+        width: clamp(380px, 44vw, 640px);
+        height: clamp(380px, 44vw, 640px);
+        background: radial-gradient(circle, rgba(47, 191, 143, 0.15), transparent 65%);
+        top: -22%;
+        left: -12%;
+    }
+    .glow-2 {
+        width: clamp(340px, 38vw, 560px);
+        height: clamp(340px, 38vw, 560px);
+        background: radial-gradient(circle, rgba(224, 188, 110, 0.11), transparent 65%);
+        bottom: -20%;
+        right: -10%;
+    }
+
+    h1, h2, h3 { font-family: var(--font-head); }
+    .slide-content > * { position: relative; z-index: 1; }
+
+    .doc-footer {
+        position: absolute;
+        bottom: clamp(10px, 1.8vh, 18px);
+        left: clamp(32px, 6vw, 88px);
+        right: clamp(32px, 6vw, 88px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-head);
+        font-size: clamp(8px, 0.8vw, 10.5px);
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(143, 165, 154, 0.55);
+        z-index: 2;
+        pointer-events: none;
+    }
+    .doc-footer .df-sep { width: 6px; height: 6px; border-radius: 50%; background: var(--grad); display: inline-block; margin: 0 10px; }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+    .eyebrow::before {
+        content: '';
+        width: 34px;
+        height: 1px;
+        background: var(--grad);
+    }
+    .eyebrow::after {
+        content: '';
+        width: 34px;
+        height: 1px;
+        background: var(--grad);
+    }
+
+    .title {
+        font-size: clamp(26px, 3.4vw, 48px);
+        font-weight: 700;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        max-width: 26ch;
+    }
+    .title b, .title .accent {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    .sub {
+        color: var(--muted);
+        font-size: clamp(13px, 1.35vw, 17px);
+        line-height: 1.55;
+        max-width: 64ch;
+    }
+
+    .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+    .slide.active .reveal { opacity: 1; transform: none; }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+    .d5 { transition-delay: 0.40s; }
+    .d6 { transition-delay: 0.48s; }
+    .d7 { transition-delay: 0.56s; }
+    .d8 { transition-delay: 0.64s; }
+
+    .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+        border: 1px solid var(--line);
+        border-radius: 14px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--muted);
+        font-size: clamp(11px, 1vw, 13px);
+        font-weight: 500;
+        letter-spacing: 0.04em;
+    }
+    .chip b { color: var(--text); font-weight: 600; }
+
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: var(--grad);
+        transition: width 0.35s ease;
+        z-index: 1000;
+    }
+
+    .nav-controls {
+        position: fixed;
+        bottom: clamp(14px, 2.5vh, 28px);
+        right: clamp(16px, 3vw, 40px);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1001;
+    }
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: rgba(14, 23, 19, 0.7);
+        backdrop-filter: blur(6px);
+        color: var(--text);
+        font-size: 17px;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .nav-btn:hover { border-color: var(--primary); background: rgba(47, 191, 143, 0.15); }
+    .slide-counter { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .fs-btn { font-size: 16px; line-height: 1; }
+
+    .cover-chip {
+        display: inline-flex;
+        gap: 10px;
+        padding: 9px 20px;
+        border: 1px solid rgba(224, 188, 110, 0.35);
+        border-radius: 999px;
+        background: rgba(224, 188, 110, 0.05);
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1vw, 13px);
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+    .cover-title {
+        font-size: clamp(48px, 8.4vw, 110px);
+        font-weight: 800;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+    }
+    .cover-tagline {
+        font-family: var(--font-head);
+        font-size: clamp(15px, 1.9vw, 24px);
+        font-weight: 500;
+        color: var(--muted);
+    }
+    .cover-divider {
+        width: 64px;
+        height: 2px;
+        background: var(--grad);
+        border-radius: 2px;
+    }
+    .cover-footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+    .cover-footer .chip b { color: var(--emerald); }
+    .cover-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 22px;
+        border: 1px solid rgba(47, 191, 143, 0.45);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(47, 191, 143, 0.12), rgba(224, 188, 110, 0.08));
+        font-family: var(--font-head);
+        font-size: clamp(12px, 1.2vw, 15px);
+        font-weight: 600;
+        color: var(--text);
+    }
+    .cover-badge b { color: var(--emerald); font-weight: 700; }
+
+    .agenda {
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+        width: min(100%, 760px);
+    }
+    .agenda-item {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: clamp(10px, 1.7vh, 15px) clamp(16px, 2vw, 24px);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        text-align: left;
+    }
+    .agenda-num {
+        font-family: var(--font-head);
+        font-weight: 800;
+        font-size: clamp(14px, 1.5vw, 18px);
+        min-width: 40px;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .agenda-item span:last-child {
+        color: var(--text);
+        font-size: clamp(13px, 1.4vw, 16px);
+        font-weight: 500;
+    }
+    .agenda-item small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: clamp(10px, 1.05vw, 12.5px);
+        white-space: nowrap;
+    }
+
+    .scope-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+        align-items: stretch;
+    }
+    .scope-card { padding: clamp(18px, 3vh, 26px) clamp(16px, 2vw, 24px); text-align: left; }
+    .scope-card h3 {
+        font-size: clamp(13px, 1.4vw, 18px);
+        font-weight: 700;
+        margin-bottom: clamp(8px, 1.4vh, 12px);
+    }
+    .scope-card p { color: var(--muted); font-size: clamp(12px, 1.15vw, 15px); line-height: 1.55; }
+    .scope-card ul { list-style: none; }
+    .scope-card li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 6px 0;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.5;
+    }
+    .scope-card .mk { font-weight: 700; }
+    .scope-card.goal .mk { color: var(--emerald); }
+    .scope-card.in .mk { color: var(--gold); }
+    .scope-card.out .mk { color: var(--muted); }
+    .scope-card.goal h3 { color: var(--emerald); }
+    .scope-card.in h3 { color: var(--gold); }
+    .scope-card.out h3 { color: var(--muted); }
+    .scope-card.highlight {
+        border-color: rgba(47, 191, 143, 0.45);
+        background: linear-gradient(180deg, rgba(47, 191, 143, 0.08), rgba(47, 191, 143, 0.02));
+    }
+    .num-tag {
+        font-family: var(--font-head);
+        font-size: clamp(22px, 2.6vw, 32px);
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+
+    .pain-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(12px, 1.6vw, 20px);
+        width: min(100%, 1040px);
+    }
+    .pain-card { padding: clamp(14px, 2.2vh, 20px) clamp(16px, 2vw, 24px); text-align: left; }
+    .pain-num {
+        font-family: var(--font-head);
+        font-size: clamp(18px, 1.8vw, 26px);
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 0.02em;
+    }
+    .pain-title {
+        font-family: var(--font-head);
+        font-size: clamp(14px, 1.45vw, 19px);
+        font-weight: 600;
+        margin-top: 6px;
+    }
+    .pain-desc {
+        color: var(--muted);
+        font-size: clamp(12px, 1.18vw, 15px);
+        line-height: 1.5;
+        margin-top: 6px;
+    }
+
+    .callout {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: clamp(10px, 1.6vh, 14px) clamp(16px, 2vw, 24px);
+        border: 1px solid rgba(47, 191, 143, 0.35);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(47, 191, 143, 0.10), rgba(224, 188, 110, 0.06));
+        font-size: clamp(12px, 1.25vw, 16px);
+        color: var(--text);
+        max-width: min(100%, 1080px);
+        text-align: left;
+        line-height: 1.5;
+    }
+    .callout b { color: var(--emerald); font-weight: 600; }
+
+    .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(16px, 2.4vw, 32px);
+        width: min(100%, 1100px);
+        align-items: stretch;
+    }
+    .split-panel { padding: clamp(18px, 3vh, 28px) clamp(18px, 2.4vw, 28px); text-align: left; }
+    .split-panel h3 {
+        font-size: clamp(15px, 1.6vw, 21px);
+        font-weight: 700;
+        margin-bottom: clamp(10px, 1.6vh, 16px);
+    }
+    .split-panel.before { border-color: rgba(224, 188, 110, 0.28); }
+    .split-panel.before h3 { color: var(--gold); }
+    .split-panel.after { border-color: rgba(47, 191, 143, 0.35); }
+    .split-panel.after h3 { color: var(--emerald); }
+    .split-panel ul { list-style: none; }
+    .split-panel li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 8px 0;
+        color: var(--muted);
+        font-size: clamp(12px, 1.22vw, 16px);
+        line-height: 1.45;
+        border-bottom: 1px solid rgba(190, 214, 200, 0.08);
+    }
+    .split-panel li:last-child { border-bottom: none; }
+    .mk { font-weight: 700; margin-top: 1px; }
+    .before .mk { color: var(--gold); }
+    .after .mk { color: var(--emerald); }
+    .split-panel.good .mk { color: var(--emerald); }
+    .split-panel.hard .mk { color: var(--gold); }
+    .split-panel.good h3 { color: var(--emerald); }
+    .split-panel.hard h3 { color: var(--gold); }
+    .split-panel.good { border-color: rgba(47, 191, 143, 0.3); }
+    .split-panel.hard { border-color: rgba(224, 188, 110, 0.28); }
+
+    .bridge {
+        font-family: var(--font-head);
+        font-size: clamp(13px, 1.5vw, 19px);
+        font-weight: 600;
+        color: var(--text);
+        max-width: 66ch;
+        line-height: 1.5;
+    }
+    .bridge .em {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(12px, 1.6vw, 20px);
+        width: min(100%, 1100px);
+    }
+    .team-card { padding: clamp(16px, 2.6vh, 24px) clamp(14px, 1.8vw, 20px); text-align: left; }
+    .avatar {
+        width: clamp(40px, 4.2vw, 54px);
+        height: clamp(40px, 4.2vw, 54px);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(13px, 1.4vw, 17px);
+        letter-spacing: 0.03em;
+        margin-bottom: clamp(10px, 1.4vh, 14px);
+    }
+    .av-1 { background: linear-gradient(135deg, #2FBF8F, #1D7A5C); }
+    .av-2 { background: linear-gradient(135deg, #E0BC6E, #C98F4E); }
+    .av-3 { background: linear-gradient(135deg, #34D399, #2FBF8F); }
+    .av-4 { background: linear-gradient(135deg, #9BD4B0, #4E8A6B); }
+    .team-name {
+        font-family: var(--font-head);
+        font-size: clamp(13px, 1.3vw, 17px);
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .team-role {
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1.05vw, 13px);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--gold);
+        margin: 5px 0 8px;
+    }
+    .team-desc { color: var(--muted); font-size: clamp(11px, 1.1vw, 14px); line-height: 1.5; }
+
+    .stack-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    .tech {
+        padding: 7px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.035);
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .method-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(10px, 1.5vw, 20px);
+        width: min(100%, 1100px);
+        padding: clamp(12px, 2vh, 16px) clamp(18px, 2.4vw, 28px);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(47, 191, 143, 0.07), rgba(224, 188, 110, 0.05));
+        font-size: clamp(12px, 1.25vw, 15px);
+        color: var(--muted);
+        text-align: left;
+        line-height: 1.5;
+    }
+    .method-bar b { color: var(--text); font-weight: 600; }
+    .doe-pill {
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: var(--grad);
+        color: #06251A;
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.15vw, 14px);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .stack-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(10px, 1.3vw, 16px);
+        width: min(100%, 1100px);
+    }
+    .stack-card {
+        padding: clamp(12px, 1.9vh, 16px) clamp(14px, 1.8vw, 20px);
+        text-align: left;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+    }
+    .stack-card .st-name {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16px);
+        min-width: 118px;
+        color: var(--text);
+        line-height: 1.25;
+    }
+    .stack-card .st-name small {
+        display: block;
+        font-family: var(--font-body);
+        font-weight: 500;
+        color: var(--muted);
+        font-size: clamp(9px, 0.95vw, 11.5px);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-top: 3px;
+    }
+    .stack-card .st-why {
+        color: var(--muted);
+        font-size: clamp(11px, 1.1vw, 13.5px);
+        line-height: 1.5;
+    }
+
+    .timeline {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: clamp(10px, 1.5vw, 18px);
+        width: min(100%, 1160px);
+    }
+    .tl-item {
+        position: relative;
+        text-align: left;
+        padding-top: 24px;
+    }
+    .tl-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(47, 191, 143, 0.7), rgba(224, 188, 110, 0.7));
+        border-radius: 2px;
+    }
+    .tl-item::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 2px solid var(--bg);
+    }
+    .tl-num {
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--emerald);
+    }
+    .tl-title {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16.5px);
+        margin: 5px 0 6px;
+    }
+    .tl-desc {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        line-height: 1.55;
+    }
+    .tl-sp {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(47, 191, 143, 0.12);
+        border: 1px solid rgba(47, 191, 143, 0.3);
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(10px, 1vw, 12.5px);
+        color: var(--emerald);
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(12px, 2vw, 28px);
+        width: min(100%, 1000px);
+    }
+    .stat-num {
+        font-family: var(--font-head);
+        font-size: clamp(24px, 3.2vw, 42px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+    }
+    .stat-label {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.15vw, 14px);
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+    .stat-good .stat-num { background: linear-gradient(135deg, #34D399, #2FBF8F); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-bad .stat-num { background: linear-gradient(135deg, #E0BC6E, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .chart-card { padding: clamp(14px, 2.4vh, 22px) clamp(16px, 1.8vw, 22px); text-align: left; display: flex; flex-direction: column; }
+    .chart-card h3 {
+        font-size: clamp(14px, 1.45vw, 18px);
+        font-weight: 700;
+    }
+    .chart-card .chart-sub { color: var(--muted); font-size: clamp(11px, 1.05vw, 13px); margin-top: 4px; line-height: 1.45; }
+    .chart-wrap {
+        position: relative;
+        width: min(100%, 260px);
+        margin: clamp(8px, 1.6vh, 14px) auto 0;
+    }
+    .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; font-size: clamp(10px, 1vw, 12.5px); color: var(--muted); }
+    .legend-dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+    .legend-item b { color: var(--text); font-weight: 600; }
+
+    .fin-split {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: clamp(16px, 2.2vw, 28px);
+        width: min(100%, 1140px);
+        align-items: stretch;
+    }
+    .bar-card { padding: clamp(14px, 2.4vh, 20px) clamp(16px, 1.8vw, 22px); text-align: left; display: flex; flex-direction: column; }
+    .bar-card h3 {
+        font-size: clamp(14px, 1.45vw, 18px);
+        font-weight: 700;
+    }
+    .bar-card .chart-sub { color: var(--muted); font-size: clamp(11px, 1.05vw, 13px); margin-top: 4px; line-height: 1.45; }
+    .bar-wrap {
+        position: relative;
+        height: clamp(150px, 26vh, 230px);
+        margin-top: clamp(8px, 1.4vh, 14px);
+        width: 100%;
+    }
+    .big-kpis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+    }
+    .kpi-card { padding: clamp(16px, 2.6vh, 24px) clamp(16px, 2vw, 24px); text-align: left; }
+    .kpi-card .k-label {
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1.05vw, 13px);
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .kpi-card .k-value {
+        font-family: var(--font-head);
+        font-size: clamp(26px, 3.4vw, 44px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        margin: 6px 0;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .kpi-card .k-note { color: var(--muted); font-size: clamp(11px, 1.1vw, 13.5px); line-height: 1.5; }
+    .kpi-card.gold .k-value { background: linear-gradient(135deg, #E0BC6E, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .kpi-card.red .k-value { background: linear-gradient(135deg, #EF7A7A, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .money-flow {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: clamp(6px, 1vw, 14px);
+        width: min(100%, 1080px);
+        flex-wrap: wrap;
+    }
+    .money-step {
+        flex: 1;
+        min-width: 200px;
+        padding: clamp(13px, 2.2vh, 18px) clamp(14px, 1.6vw, 18px);
+        text-align: left;
+    }
+    .money-step .ft {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16.5px);
+        margin: 4px 0 6px;
+    }
+    .money-step .fd {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        line-height: 1.5;
+    }
+    .money-step .fv {
+        font-family: var(--font-head);
+        font-weight: 800;
+        font-size: clamp(17px, 2vw, 24px);
+        margin-top: 6px;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .money-arrow {
+        display: flex;
+        align-items: center;
+        color: var(--gold);
+        font-size: clamp(14px, 1.6vw, 20px);
+        font-weight: 700;
+    }
+    .money-step.green { border-color: rgba(47, 191, 143, 0.35); }
+    .money-step.green .fv { background: linear-gradient(135deg, #34D399, #2FBF8F); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .money-step.gold { border-color: rgba(224, 188, 110, 0.3); }
+    .money-step.gold .fv { background: linear-gradient(135deg, #E0BC6E, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .money-step.red { border-color: rgba(239, 122, 122, 0.3); }
+    .money-step.red .fv { background: linear-gradient(135deg, #EF7A7A, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .roi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+    }
+    .roi-card { padding: clamp(16px, 2.6vh, 22px) clamp(16px, 2vw, 22px); text-align: left; }
+    .roi-card h3 {
+        font-size: clamp(13px, 1.35vw, 17px);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .roi-card .r-value {
+        font-family: var(--font-head);
+        font-size: clamp(20px, 2.6vw, 32px);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 6px;
+    }
+    .roi-card .r-desc { color: var(--muted); font-size: clamp(11px, 1.1vw, 13.5px); line-height: 1.5; }
+    .roi-card.pos { border-color: rgba(47, 191, 143, 0.4); }
+    .roi-card.pos .r-value { color: var(--emerald); }
+    .roi-card.gol { border-color: rgba(224, 188, 110, 0.4); }
+    .roi-card.gol .r-value { color: var(--gold); }
+    .roi-card.neg { border-color: rgba(224, 188, 110, 0.35); }
+    .roi-card.neg .r-value { color: var(--copper); }
+    .roi-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px 18px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.1vw, 13.5px);
+    }
+
+    .crit-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(9px, 1.2vw, 14px);
+        width: min(100%, 1020px);
+    }
+    .crit-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: clamp(9px, 1.4vh, 12px) clamp(13px, 1.6vw, 16px);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        text-align: left;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.5;
+    }
+    .crit-item .mk { color: var(--emerald); font-weight: 700; }
+    .crit-item .crit-sp {
+        margin-left: auto;
+        flex: none;
+        font-family: var(--font-head);
+        font-size: clamp(8.5px, 0.9vw, 11px);
+        font-weight: 700;
+        color: var(--gold);
+        background: rgba(224, 188, 110, 0.1);
+        border: 1px solid rgba(224, 188, 110, 0.25);
+        border-radius: 999px;
+        padding: 2px 9px;
+        white-space: nowrap;
+    }
+
+    .scrum-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+    }
+    .scrum-card { padding: clamp(14px, 2.4vh, 20px) clamp(14px, 1.6vw, 18px); text-align: left; }
+    .scrum-card .s-label {
+        font-family: var(--font-head);
+        font-size: clamp(9.5px, 1vw, 12px);
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .scrum-card .s-value {
+        font-family: var(--font-head);
+        font-size: clamp(22px, 2.8vw, 36px);
+        font-weight: 800;
+        margin: 6px 0 4px;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.1;
+    }
+    .scrum-card .s-desc { color: var(--muted); font-size: clamp(10.5px, 1.05vw, 13px); line-height: 1.5; }
+
+    .split-final {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(16px, 2.4vw, 32px);
+        width: min(100%, 1100px);
+        align-items: stretch;
+    }
+    .final-panel { padding: clamp(16px, 2.8vh, 24px) clamp(18px, 2.4vw, 26px); text-align: left; }
+    .final-panel h3 {
+        font-size: clamp(14px, 1.5vw, 19px);
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--emerald);
+    }
+    .final-panel ul { list-style: none; }
+    .final-panel li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 7px 0;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.18vw, 15px);
+        line-height: 1.5;
+        border-bottom: 1px solid rgba(190, 214, 200, 0.08);
+    }
+    .final-panel li:last-child { border-bottom: none; }
+    .final-panel .mk { color: var(--emerald); font-weight: 700; }
+    .final-panel.gold-panel h3 { color: var(--gold); }
+    .final-panel.gold-panel .mk { color: var(--gold); }
+
+    .thanks {
+        font-family: var(--font-head);
+        font-size: clamp(30px, 4.2vw, 54px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.1;
+    }
+    .thanks-sub { color: var(--muted); font-size: clamp(13px, 1.3vw, 16px); }
+    .sign-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: clamp(10px, 1.5vw, 18px);
+        width: min(100%, 900px);
+    }
+    .sign-card { padding: clamp(10px, 1.6vh, 14px) clamp(14px, 1.8vw, 20px); text-align: left; }
+    .sign-card .sn { font-family: var(--font-head); font-weight: 700; font-size: clamp(12px, 1.25vw, 15.5px); }
+    .sign-card .sr { color: var(--muted); font-size: clamp(10.5px, 1.05vw, 13px); margin-top: 3px; }
+    .sign-card .sd { color: var(--gold); font-size: clamp(10px, 1vw, 12.5px); margin-top: 3px; }
+
+    .verify-bar-wrap { width: min(100%, 900px); }
+    .verify-track {
+        width: 100%;
+        height: 16px;
+        border-radius: 999px;
+        background: rgba(143, 165, 154, 0.12);
+        overflow: hidden;
+        border: 1px solid var(--line);
+    }
+    .verify-fill {
+        width: 100%;
+        height: 100%;
+        background: var(--grad);
+        border-radius: 999px;
+    }
+    .verify-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.1vw, 14px);
+    }
+    .verify-labels b { color: var(--text); }
+
+    @media (max-width: 768px) {
+        .team-grid { grid-template-columns: repeat(2, 1fr); }
+        .split { grid-template-columns: 1fr; }
+        .fin-split { grid-template-columns: 1fr; }
+        .split-final { grid-template-columns: 1fr; }
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .big-kpis { grid-template-columns: 1fr; }
+        .roi-grid { grid-template-columns: 1fr; }
+        .scrum-stats { grid-template-columns: repeat(2, 1fr); }
+        .scope-grid { grid-template-columns: 1fr; }
+        .pain-grid { grid-template-columns: 1fr; }
+        .timeline { grid-template-columns: 1fr; }
+        .crit-grid { grid-template-columns: 1fr; }
+        .stack-grid { grid-template-columns: 1fr; }
+        .money-flow { flex-direction: column; }
+        .money-arrow { transform: rotate(90deg); justify-content: center; }
+        .nav-controls { bottom: 14px; right: 14px; }
+        .nav-btn { width: 34px; height: 34px; font-size: 15px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-deck">
+
+    <section class="slide active grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="cover-chip reveal d1">Reporte Financiero de Cierre · Semana 10 · 2026</div>
+            <h1 class="cover-title reveal d2">AulaVirtual <span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Pro</span></h1>
+            <p class="cover-tagline reveal d3">LMS Empresarial · Escenario de cierre: Valor de Negocio Alcanzado</p>
+            <div class="cover-divider reveal d4"></div>
+            <div class="cover-badge reveal d5"><b>MVP entregado</b> · 10/10 criterios de aceptación · dentro del presupuesto y en tiempo</div>
+            <p class="sub reveal d6" style="margin-top:-2px;">Presentación del cierre de proyecto para <b style="color:var(--text);">CapacitaTec S.A.</b> — lo que se construyó, cómo se invirtió y el valor de negocio generado.</p>
+            <div class="cover-footer reveal d7">
+                <span class="chip">Equipo: <b>Equipo Alfa</b></span>
+                <span class="chip">PM: <b>Alberto Anyelo</b></span>
+                <span class="chip" style="border-color:rgba(47,191,143,0.35);"><b style="color:var(--emerald);">Cliente:</b> CapacitaTec S.A.</span>
+                <span class="chip">Sprints: <b>5 · 10 semanas</b></span>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">Agenda del cierre</div>
+            <h2 class="title reveal d2">¿Qué vamos <span class="accent">a presentar?</span></h2>
+            <div class="agenda">
+                <div class="agenda-item reveal d3">
+                    <span class="agenda-num">01</span>
+                    <span>El proyecto — qué es AulaVirtual Pro y para quién</span>
+                    <small>Proyecto</small>
+                </div>
+                <div class="agenda-item reveal d4">
+                    <span class="agenda-num">02</span>
+                    <span>Qué se hizo y qué se utilizó — alcance, épicas y stack</span>
+                    <small>Entrega</small>
+                </div>
+                <div class="agenda-item reveal d5">
+                    <span class="agenda-num">03</span>
+                    <span>Historias de usuario — captura y estimación de puntos</span>
+                    <small>Scrum</small>
+                </div>
+                <div class="agenda-item reveal d6">
+                    <span class="agenda-num">04</span>
+                    <span>Los sprints — avance, velocidad y tiempos reales</span>
+                    <small>Ejecución</small>
+                </div>
+                <div class="agenda-item reveal d7">
+                    <span class="agenda-num">05</span>
+                    <span>El dinero — presupuesto, gasto real y valor generado</span>
+                    <small>Finanzas</small>
+                </div>
+                <div class="agenda-item reveal d8">
+                    <span class="agenda-num">06</span>
+                    <span>Aceptación, métricas y declaración formal de cierre</span>
+                    <small>Cierre</small>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">01 · El proyecto</div>
+            <h2 class="title reveal d2">Un LMS que <span class="accent">digitalizó la capacitación</span> de CapacitaTec</h2>
+            <p class="sub reveal d3">AulaVirtual Pro es un sistema de gestión de aprendizaje (LMS) que reemplaza la distribución de materiales por WhatsApp con una plataforma estructurada de cursos, evaluaciones y seguimiento de progreso por alumno.</p>
+            <div class="scope-grid">
+                <div class="card scope-card goal highlight reveal d4">
+                    <div class="num-tag">01</div>
+                    <h3>El cliente</h3>
+                    <p>CapacitaTec S.A., empresa de capacitación empresarial que operaba sus cursos por WhatsApp sin evidencia de avance ni resultados.</p>
+                </div>
+                <div class="card scope-card reveal d5">
+                    <div class="num-tag" style="background:linear-gradient(135deg,#E0BC6E,#C98F4E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">02</div>
+                    <h3>El equipo</h3>
+                    <p>Equipo Alfa: 4 integrantes multidisciplinarios — PM/DevOps, backend, frontend y UX/UI — bajo marco Scrum.</p>
+                </div>
+                <div class="card scope-card reveal d6">
+                    <div class="num-tag" style="background:linear-gradient(135deg,#34D399,#2FBF8F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">03</div>
+                    <h3>El horizonte</h3>
+                    <p>5 sprints · 10 semanas: de la Semana 1 a la Semana 10, cuando el MVP fue entregado y aceptado.</p>
+                </div>
+            </div>
+            <div class="callout reveal d7"><b>Resultado al cierre:</b> plataforma funcional desplegada en producción, con 131 de 131 story points entregados y 10 de 10 criterios de aceptación cumplidos.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">02 · Qué se hizo</div>
+            <h2 class="title reveal d2">Seis épicas, <span class="accent">un alcance completo</span></h2>
+            <p class="sub reveal d3">El MVP cubrió el 100% del alcance definido en el Sprint 0, organizado en 6 épicas y 20 historias de usuario.</p>
+            <div class="pain-grid" style="width:min(100%,1080px);">
+                <div class="card pain-card reveal d4">
+                    <div class="pain-num">EP-01</div>
+                    <div class="pain-title">Autenticación y roles</div>
+                    <p class="pain-desc">Registro, login con JWT y control de acceso por rol (admin / instructor / alumno).</p>
+                </div>
+                <div class="card pain-card reveal d5">
+                    <div class="pain-num">EP-02</div>
+                    <div class="pain-title">Gestión de cursos</div>
+                    <p class="pain-desc">CRUD de cursos, módulos, lecciones y materiales adjuntos por URL; vistas de alumno e instructor.</p>
+                </div>
+                <div class="card pain-card reveal d6">
+                    <div class="pain-num">EP-03</div>
+                    <div class="pain-title">Evaluaciones</div>
+                    <p class="pain-desc">Quizzes de opción múltiple con calificación automática y visualización de resultados.</p>
+                </div>
+                <div class="card pain-card reveal d7">
+                    <div class="pain-num">EP-04</div>
+                    <div class="pain-title">Inscripciones y progreso</div>
+                    <p class="pain-desc">Inscripción a cursos, barra de progreso por lección y dashboard del alumno con estadísticas.</p>
+                </div>
+                <div class="card pain-card reveal d5">
+                    <div class="pain-num">EP-05</div>
+                    <div class="pain-title">Gestión administrativa</div>
+                    <p class="pain-desc">Panel admin con CRUD de usuarios, reportes de progreso y tareas asignadas por instructor.</p>
+                </div>
+                <div class="card pain-card reveal d6">
+                    <div class="pain-num">EP-06</div>
+                    <div class="pain-title">Notificaciones e integración</div>
+                    <p class="pain-desc">Emails automáticos con Nodemailer (bienvenida e inscripción) para los alumnos.</p>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Entregables del cierre:</b> mono-repo de código, API REST documentada (Postman), diagramas UML, wireframes Figma, seed de datos, plan de proyecto y la app desplegada en Vercel + Render.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">03 · Qué se utilizó</div>
+            <h2 class="title reveal d2">Un stack <span class="accent">moderno y de costo cero</span> para el MVP</h2>
+            <p class="sub reveal d3">Cada tecnología se eligió por madurez, integración y costo cero durante el proyecto — decisión que impactó directamente el resultado financiero.</p>
+            <div class="stack-grid">
+                <div class="card stack-card reveal d3">
+                    <div class="st-name">React + Vite<small>Frontend</small></div>
+                    <p class="st-why">Interfaz por componentes con pantallas dedicadas por rol (alumno, instructor, admin).</p>
+                </div>
+                <div class="card stack-card reveal d4">
+                    <div class="st-name">Node.js + Express<small>Backend</small></div>
+                    <p class="st-why">API REST /api/v1 ligera y de alto rendimiento; un solo lenguaje en todo el stack.</p>
+                </div>
+                <div class="card stack-card reveal d5">
+                    <div class="st-name">MongoDB Atlas<small>Datos</small></div>
+                    <p class="st-why">Modelo flexible para cursos anidados; base en la nube sin costo adicional para el MVP.</p>
+                </div>
+                <div class="card stack-card reveal d6">
+                    <div class="st-name">JWT + bcryptjs<small>Seguridad</small></div>
+                    <p class="st-why">Sesiones sin estado con token firmado y contraseñas encriptadas; control de rol por endpoint.</p>
+                </div>
+                <div class="card stack-card reveal d5">
+                    <div class="st-name">Nodemailer + Gmail<small>Correos</small></div>
+                    <p class="st-why">Notificaciones de bienvenida e inscripción con SMTP de Gmail, sin costo de licencia.</p>
+                </div>
+                <div class="card stack-card reveal d6">
+                    <div class="st-name">Vercel + Render<small>Deploy</small></div>
+                    <p class="st-why">Despliegue en producción: frontend en Vercel y backend en Render, con un costo real de $1,120 MXN.</p>
+                </div>
+                <div class="card stack-card reveal d7">
+                    <div class="st-name">GitHub<small>Colaboración</small></div>
+                    <p class="st-why">Gitflow con ramas feature, pull requests y tablero Projects; 127 commits y 23 PRs integradas.</p>
+                </div>
+                <div class="card stack-card reveal d8">
+                    <div class="st-name">Figma<small>Diseño</small></div>
+                    <p class="st-why">Prototipos y design system colaborativo que guiaron el desarrollo del frontend.</p>
+                </div>
+            </div>
+            <p class="flow-note reveal d8" style="color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);">Los materiales de las lecciones se gestionan mediante URL — sin necesidad de infraestructura de archivos en el MVP.</p>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">04 · Historias de usuario</div>
+            <h2 class="title reveal d2">20 historias de usuario <span class="accent">capturadas y priorizadas</span></h2>
+            <p class="sub reveal d3">El backlog del MVP quedó definido en el Sprint 0: 20 historias (US-01 a US-20) agrupadas en 6 épicas, cada una con criterios de aceptación y tareas técnicas estimadas.</p>
+            <div class="fin-split">
+                <div class="card chart-card reveal d4">
+                    <h3>Distribución de puntos por épica</h3>
+                    <p class="chart-sub">131 story points · 20 historias · 6 épicas</p>
+                    <div class="chart-wrap">
+                        <canvas id="epicChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot" style="background:#2FBF8F;"></span>EP-02 Cursos <b>34</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#E0BC6E;"></span>EP-01 Auth <b>21</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#34D399;"></span>EP-03 Evaluaciones <b>21</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#9BD4B0;"></span>EP-04 Inscripciones <b>21</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#C98F4E;"></span>EP-05 Admin <b>21</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#5B8F76;"></span>EP-06 Notificaciones <b>13</b></span>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Ejemplos del backlog</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">US-01</span> Registro de alumno — validación, bcrypt, JWT y email de bienvenida · <b style="color:var(--gold);">5 SP</b></li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">US-05</span> Crear y editar cursos — CRUD completo con soft delete · <b style="color:var(--gold);">8 SP</b></li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">US-08</span> Realizar un quiz — calificación automática sobre 10, historial guardado · <b style="color:var(--gold);">8 SP</b></li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">US-15</span> CRUD de usuarios — admin crea, activa y elimina cuentas · <b style="color:var(--gold);">8 SP</b></li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">US-18</span> Email de bienvenida — HTML personalizado vía Gmail SMTP · <b style="color:var(--gold);">5 SP</b></li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">Cada historia incluyó sus criterios de aceptación y la definición de Done (DoD) verificada en el tablero GitHub Projects.</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">05 · Estimación de esfuerzo</div>
+            <h2 class="title reveal d2">Estimación con la <span class="accent">escala Fibonacci</span> y carga balanceada</h2>
+            <p class="sub reveal d3">El esfuerzo se estimó en story points con la escala 1 · 2 · 3 · 5 · 8 · 13; el MVP totalizó 131 SP distribuidos entre los 4 integrantes.</p>
+            <div class="fin-split">
+                <div class="card bar-card reveal d4">
+                    <h3>Story points por integrante</h3>
+                    <p class="chart-sub">% de participación en el esfuerzo del MVP</p>
+                    <div class="bar-wrap">
+                        <canvas id="effortChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Escala de story points usada</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">1 SP</span> Trivial — cambio de una línea o configuración mínima</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">3 SP</span> Simple — tarea de 2-3 horas sin dependencias complejas</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">5 SP</span> Moderada — funcionalidad de medio día con dependencias</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">8 SP</span> Compleja — 1 día completo, múltiples capas involucradas</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">13 SP</span> Muy compleja — 2+ días, coordinación entre integrantes</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="method-bar reveal d6"><b>Participación por integrante:</b> Alberto Anyelo <b style="color:var(--emerald);">22 SP (17%)</b> · Erick Hernandez <b style="color:var(--emerald);">55 SP (42%)</b> · Johan Anuart <b style="color:var(--emerald);">42 SP (32%)</b> · Alan Hazel <b style="color:var(--emerald);">12 SP (9%)</b> · <span class="doe-pill">TOTAL 131 / 131 SP entregados</span></div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">06 · Plan de entregas</div>
+            <h2 class="title reveal d2">Cinco sprints, <span class="accent">cero desviación</span></h2>
+            <p class="sub reveal d3">El plan se ejecutó tal como se definió en el Sprint 0: 5 sprints de 2 semanas cada uno, con 131 SP comprometidos y entregados.</p>
+            <div class="timeline">
+                <div class="tl-item reveal d3">
+                    <div class="tl-num">SPRINT 1 · SEM 1-2</div>
+                    <div class="tl-title">Fundación y acceso</div>
+                    <p class="tl-desc">Repo, base de datos, autenticación JWT y estructura base del proyecto.</p>
+                    <span class="tl-sp">34 SP</span>
+                </div>
+                <div class="tl-item reveal d4">
+                    <div class="tl-num">SPRINT 2 · SEM 3-4</div>
+                    <div class="tl-title">API y contenido</div>
+                    <p class="tl-desc">API REST, CRUD de cursos, módulos, lecciones y el primer quiz funcional.</p>
+                    <span class="tl-sp">34 SP</span>
+                </div>
+                <div class="tl-item reveal d5">
+                    <div class="tl-num">SPRINT 3 · SEM 5-6</div>
+                    <div class="tl-title">Aprendizaje activo</div>
+                    <p class="tl-desc">Inscripciones, progreso por lección, dashboard del alumno y tareas.</p>
+                    <span class="tl-sp">34 SP</span>
+                </div>
+                <div class="tl-item reveal d6">
+                    <div class="tl-num">SPRINT 4 · SEM 7-8</div>
+                    <div class="tl-title">Administración</div>
+                    <p class="tl-desc">Panel admin, reportes de progreso y emails automáticos con Nodemailer.</p>
+                    <span class="tl-sp">21 SP</span>
+                </div>
+                <div class="tl-item reveal d7">
+                    <div class="tl-num">SPRINT 5 · SEM 9-10</div>
+                    <div class="tl-title">Cierre y despliegue</div>
+                    <p class="tl-desc">QA, deploy en Vercel + Render y presentación del MVP al cliente.</p>
+                    <span class="tl-sp">8 SP</span>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Compromiso cumplido:</b> 5 de 5 sprints completados en tiempo · 131 de 131 SP · 10 de 10 criterios de aceptación · sin sprints adicionales requeridos.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">07 · Avance por sprint</div>
+            <h2 class="title reveal d2">Story points: <span class="accent">planeado vs. entregado</span></h2>
+            <p class="sub reveal d3">El equipo planeó 32 SP por sprint; la velocidad real superó la meta en los sprints 1-3 y cerró el plan en los sprints 4-5.</p>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d4">
+                    <h3>SP planeados vs. entregados por sprint</h3>
+                    <p class="chart-sub">131 / 131 SP entregados · 100% del alcance</p>
+                    <div class="bar-wrap" style="height:clamp(180px,30vh,260px);">
+                        <canvas id="sprintChart"></canvas>
+                    </div>
+                </div>
+                <div class="card bar-card reveal d5">
+                    <h3>Velocidad real vs. planeada</h3>
+                    <p class="chart-sub">Promedio real: 26 SP/sprint · objetivo: 32 SP</p>
+                    <div class="bar-wrap" style="height:clamp(180px,30vh,260px);">
+                        <canvas id="velocityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="callout reveal d6"><b>Lectura de los datos:</b> los sprints 1-3 cerraron con 34 SP (por encima del plan); el sprint 4 bajó a 21 SP y el 5 a 8 SP, concentrado en QA y despliegue — el 100% del alcance se entregó sin exceder el tiempo.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">08 · Tiempo y ejecución</div>
+            <h2 class="title reveal d2">El tiempo, <span class="accent">una variable cumplida</span></h2>
+            <p class="sub reveal d3">El proyecto cerró en la Semana 10 tal como se planeó — sin prórrogas, con el MVP listo para producción.</p>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d4">
+                    <h3>Avance acumulado de story points</h3>
+                    <p class="chart-sub">Trayectoria planeada vs. real semana a semana</p>
+                    <div class="bar-wrap" style="height:clamp(180px,30vh,260px);">
+                        <canvas id="cumChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(16px,2.6vh,22px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Cumplimiento de tiempo</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> 5 sprints completados <b style="color:var(--text);">en tiempo</b> · desviación 0</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> 131 SP entregados · <b style="color:var(--text);">100% del alcance</b></li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> 10/10 criterios de aceptación <b style="color:var(--text);">sin pendientes</b></li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> 0 bugs críticos en producción</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> 127 commits · 23 PRs · revisión promedio de <b style="color:var(--text);">8.5 h</b></li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">La velocidad promedio real (26 SP/sprint) refleja el enfoque en calidad durante QA y despliegue en la última etapa.</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">09 · Resumen financiero</div>
+            <h2 class="title reveal d2">El presupuesto: <span class="accent">aprobado y respetado</span></h2>
+            <p class="sub reveal d3">De los $280,000 MXN aprobados, el proyecto consumió $265,200 — un ahorro de $14,800 que se devolvió sin afectar el alcance.</p>
+            <div class="big-kpis">
+                <div class="card kpi-card reveal d4">
+                    <div class="k-label">Presupuesto aprobado</div>
+                    <div class="k-value">$280,000</div>
+                    <p class="k-note">Aprobado por CapacitaTec S.A. en el Sprint 0, incluyendo contingencia del ~8%.</p>
+                </div>
+                <div class="card kpi-card gold reveal d5">
+                    <div class="k-label">Costo real del proyecto</div>
+                    <div class="k-value">$265,200</div>
+                    <p class="k-note">Mano de obra, nube, herramientas, deploy y contingencia utilizada.</p>
+                </div>
+                <div class="card kpi-card reveal d6">
+                    <div class="k-label">Ahorro sobre presupuesto</div>
+                    <div class="k-value">−$14,800</div>
+                    <p class="k-note">5.3% del presupuesto sin utilizar — sin sacrificar ninguna historia del MVP.</p>
+                </div>
+            </div>
+            <div class="callout reveal d7"><b>Conclusión financiera:</b> el MVP se entregó completo (100% alcance, 131/131 SP) con un gasto 5.3% por debajo del presupuesto y en el tiempo acordado.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">10 · Composición del costo</div>
+            <h2 class="title reveal d2">¿En qué se <span class="accent">invirtió el dinero?</span></h2>
+            <p class="sub reveal d3">El 89% del costo real corresponde a mano de obra; la infraestructura y herramientas representaron menos del 4%.</p>
+            <div class="fin-split">
+                <div class="card chart-card reveal d4">
+                    <h3>Composición del costo real · $265,200</h3>
+                    <p class="chart-sub">MXN · cierre del proyecto</p>
+                    <div class="chart-wrap">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot" style="background:#2FBF8F;"></span>Mano de obra <b>$236,080</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#34D399;"></span>Servicios nube <b>$5,000</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#E0BC6E;"></span>Herramientas <b>$3,000</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#C98F4E;"></span>Deploy <b>$1,120</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#5B8F76;"></span>Contingencia <b>$20,000</b></span>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Detalle del gasto real</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> Mano de obra (4 integrantes) · <b style="color:var(--text);">$236,080</b> — 753 horas totales</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> Servicios en la nube (Atlas, GitHub) · <b style="color:var(--text);">$5,000</b> — exacto al plan</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> Herramientas y licencias (Figma Pro) · <b style="color:var(--text);">$3,000</b> — exacto al plan</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> Deploy Vercel + Render · <b style="color:var(--text);">$1,120</b> — costo no contemplado inicialmente</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> Contingencia utilizada · <b style="color:var(--text);">$20,000</b> — de los $22,000 reservados</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal d6"><b>Transparencia:</b> cada peso se registró por integrante, por concepto y por sprint — el desglose completo está en el Reporte Financiero de Cierre.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">11 · Costo por integrante</div>
+            <h2 class="title reveal d2">Mano de obra: <span class="accent">presupuestada vs. real</span></h2>
+            <p class="sub reveal d3">Los 4 integrantes cerraron por debajo de sus horas planeadas — el equipo fue más eficiente de lo estimado.</p>
+            <div class="fin-split">
+                <div class="card bar-card reveal d4">
+                    <h3>Costo por integrante (MXN)</h3>
+                    <p class="chart-sub">Plan: $250,000 · Real: $236,080 (−$13,920)</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="memberChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Horas reales vs. planeadas</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">AA</span> Alberto Anyelo · PM/DevOps · <b style="color:var(--text);">185h de 200h</b> · $300/hr</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">EH</span> Erick Hernandez · Backend · <b style="color:var(--text);">198h de 200h</b> · $350/hr</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">JH</span> Johan Anuart · Frontend · <b style="color:var(--text);">192h de 200h</b> · $320/hr</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">AH</span> Alan Hazel · UX/UI · <b style="color:var(--text);">178h de 200h</b> · $280/hr</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">El mayor ahorro de horas se dio en UX/UI (−22h) y PM/DevOps (−15h), sin comprometer ningún criterio de aceptación.</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">12 · Gasto por sprint</div>
+            <h2 class="title reveal d2">El dinero, <span class="accent">sprint a sprint</span></h2>
+            <p class="sub reveal d3">Cada sprint cerró por debajo de su costo planeado — en total, $14,800 menos de lo presupuestado.</p>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d4">
+                    <h3>Costo real vs. planeado por sprint (MXN)</h3>
+                    <p class="chart-sub">Total real: $265,200 · Total plan: $280,000</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="sprintCostChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Ahorro por sprint</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">S1</span> <b style="color:var(--text);">$2,400</b> bajo plan · 34 SP entregados</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">S2</span> <b style="color:var(--text);">$2,800</b> bajo plan · 34 SP entregados</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">S3</span> <b style="color:var(--text);">$800</b> bajo plan · 34 SP entregados</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">S4</span> <b style="color:var(--text);">$600</b> bajo plan · 21 SP entregados</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">S5</span> <b style="color:var(--text);">$8,200</b> bajo plan · QA + deploy</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">El sprint 5 registró el mayor ahorro: las horas de QA fueron cubiertas con la eficiencia acumulada del equipo.</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">13 · ¿Qué pasó con el dinero?</div>
+            <h2 class="title reveal d2">El recorrido del presupuesto, <span class="accent">con números</span></h2>
+            <p class="sub reveal d3">Del presupuesto aprobado al cierre formal: cada partida tuvo un destino claro y verificado.</p>
+            <div class="money-flow">
+                <div class="card money-step gold reveal d4">
+                    <div class="ft">1 · Presupuesto aprobado</div>
+                    <div class="fd">Aprobado por el cliente en el Sprint 0 con partidas por integrante y contingencia.</div>
+                    <div class="fv">$280,000</div>
+                </div>
+                <div class="money-arrow reveal d4">→</div>
+                <div class="card money-step reveal d5">
+                    <div class="ft">2 · Gasto real ejecutado</div>
+                    <div class="fd">Mano de obra, nube, herramientas y deploy — registrado por sprint e integrante.</div>
+                    <div class="fv">$265,200</div>
+                </div>
+                <div class="money-arrow reveal d5">→</div>
+                <div class="card money-step green reveal d6">
+                    <div class="ft">3 · Ahorro devuelto al cliente</div>
+                    <div class="fd">$14,800 no utilizados — 100% del alcance entregado con menor gasto.</div>
+                    <div class="fv">+ $14,800</div>
+                </div>
+            </div>
+            <div class="split" style="width:min(100%,1080px);">
+                <div class="card split-panel after reveal d6">
+                    <h3>Lo que no costó más de lo planeado</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Contingencia: se usaron $20,000 de $22,000 reservados</li>
+                        <li><span class="mk">✓</span> Nube y licencias: $8,000 exactos al presupuesto</li>
+                        <li><span class="mk">✓</span> Mano de obra: −$13,920 por eficiencia del equipo</li>
+                        <li><span class="mk">✓</span> Sin costos ocultos ni facturación adicional</li>
+                    </ul>
+                </div>
+                <div class="card split-panel before reveal d7">
+                    <h3>El único costo imprevisto</h3>
+                    <ul>
+                        <li><span class="mk">✕</span> Deploy en Vercel + Render: $1,120 no presupuestados</li>
+                        <li><span class="mk">✓</span> Absorbido por la contingencia sin tocar el ahorro final</li>
+                        <li><span class="mk">✓</span> Justificado: producción real para CapacitaTec</li>
+                        <li><span class="mk">✓</span> Sin impacto en el presupuesto ni en el alcance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">14 · Valor de negocio</div>
+            <h2 class="title reveal d2">El valor que genera <span class="accent">el dinero invertido</span></h2>
+            <p class="sub reveal d3">La inversión se recupera al sustituir plataformas externas y eliminar el trabajo manual de capacitación.</p>
+            <div class="roi-grid">
+                <div class="card roi-card pos reveal d4">
+                    <h3>Beneficio anual estimado</h3>
+                    <div class="r-value">$240,000 / año</div>
+                    <p class="r-desc">Licencias LMS canceladas ($144k) + ahorro de tiempo administrativo ($36k) + mayor tasa de capacitación completada ($60k).</p>
+                </div>
+                <div class="card roi-card neg reveal d5">
+                    <h3>ROI · primer año</h3>
+                    <div class="r-value">−9.5%</div>
+                    <p class="r-desc">La inversión de $265,200 se recupera durante el primer año; el flujo se cierra a los 13 meses.</p>
+                </div>
+                <div class="card roi-card gol reveal d6">
+                    <h3>ROI · segundo año</h3>
+                    <div class="r-value">+80.7%</div>
+                    <p class="r-desc">Ganancia neta de $214,800 MXN una vez recuperada la inversión del MVP.</p>
+                </div>
+            </div>
+            <div class="roi-legend reveal d7">
+                <span>Fuentes del beneficio: licencias Moodle/TalentLMS canceladas · 8 h/semana de administración ahorradas · tasa de capacitación completada superior</span>
+            </div>
+            <div class="callout reveal d8"><b>El punto de equilibrio llega a los 13 meses;</b> a partir del segundo año, cada peso invertido en el MVP genera un retorno positivo sostenido.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">15 · Aceptación del MVP</div>
+            <h2 class="title reveal d2">10 criterios de aceptación, <span class="accent">todos cumplidos</span></h2>
+            <p class="sub reveal d3">Cada criterio acordado en el Sprint 0 fue verificado en la práctica antes de darse por cumplido — con el sprint en que se cerró.</p>
+            <div class="crit-grid">
+                <div class="crit-item reveal d4"><span class="mk">✓</span> Registro e inicio de sesión con JWT<span class="crit-sp">S1</span></div>
+                <div class="crit-item reveal d4"><span class="mk">✓</span> Sistema distingue 3 roles: admin, instructor, alumno<span class="crit-sp">S1</span></div>
+                <div class="crit-item reveal d5"><span class="mk">✓</span> Instructor crea cursos con módulos y lecciones<span class="crit-sp">S2</span></div>
+                <div class="crit-item reveal d5"><span class="mk">✓</span> Alumno realiza quiz con calificación automática<span class="crit-sp">S2</span></div>
+                <div class="crit-item reveal d6"><span class="mk">✓</span> Alumno se inscribe a cursos disponibles<span class="crit-sp">S3</span></div>
+                <div class="crit-item reveal d6"><span class="mk">✓</span> Progreso por lección se guarda y muestra en %<span class="crit-sp">S3</span></div>
+                <div class="crit-item reveal d7"><span class="mk">✓</span> Instructor crea y asigna tareas por curso<span class="crit-sp">S3</span></div>
+                <div class="crit-item reveal d7"><span class="mk">✓</span> Admin gestiona usuarios (CRUD) desde su panel<span class="crit-sp">S4</span></div>
+                <div class="crit-item reveal d8"><span class="mk">✓</span> Sistema envía emails de bienvenida e inscripción<span class="crit-sp">S4</span></div>
+                <div class="crit-item reveal d8"><span class="mk">✓</span> Admin ve reportes de progreso y calificaciones<span class="crit-sp">S4</span></div>
+            </div>
+            <div class="verify-bar-wrap reveal d8">
+                <div class="verify-track"><div class="verify-fill"></div></div>
+                <div class="verify-labels"><span>Verificación final del MVP</span><b>10 de 10 criterios · 0 pendientes</b></div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">16 · Métricas Scrum</div>
+            <h2 class="title reveal d2">Un proceso <span class="accent">medido y saludable</span></h2>
+            <p class="sub reveal d3">Las métricas del cierre confirman un flujo de trabajo estable de principio a fin.</p>
+            <div class="scrum-stats">
+                <div class="card scrum-card reveal d4">
+                    <div class="s-label">Velocidad promedio</div>
+                    <div class="s-value">26 SP</div>
+                    <p class="s-desc">Por sprint · objetivo 32 SP · picos de 34 SP en S1-S3.</p>
+                </div>
+                <div class="card scrum-card reveal d5">
+                    <div class="s-label">Pull requests</div>
+                    <div class="s-value">23</div>
+                    <p class="s-desc">Integradas con Gitflow: feature branch → review → development.</p>
+                </div>
+                <div class="card scrum-card reveal d6">
+                    <div class="s-label">Revisión de PR</div>
+                    <div class="s-value">8.5 h</div>
+                    <p class="s-desc">Promedio, por debajo del objetivo de 24 horas.</p>
+                </div>
+                <div class="card scrum-card reveal d7">
+                    <div class="s-label">Commits al repo</div>
+                    <div class="s-value">127</div>
+                    <p class="s-desc">Con Conventional Commits; rama development estable en todo momento.</p>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Cero bugs críticos en producción</b> · seed de datos desde el Sprint 1 · middlewares reutilizables (verifyToken, checkRole) · comunicación diaria por WhatsApp y reuniones semanales.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">17 · Lecciones aprendidas</div>
+            <h2 class="title reveal d2">Lo que el proyecto <span class="accent">dejó para el siguiente</span></h2>
+            <div class="split-final">
+                <div class="card final-panel reveal d3">
+                    <h3>Lo que funcionó bien</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Gitflow con feature branches y review mantuvo la rama estable en todos los sprints.</li>
+                        <li><span class="mk">✓</span> Separar backend y frontend en el mono-repo facilitó la integración.</li>
+                        <li><span class="mk">✓</span> Seed de datos desde el Sprint 1 permitió probar la API real sin datos manuales.</li>
+                        <li><span class="mk">✓</span> Middlewares reutilizables redujeron código duplicado en los controllers.</li>
+                        <li><span class="mk">✓</span> Comunicación diaria + reuniones semanales evitaron bloqueos prolongados.</li>
+                    </ul>
+                </div>
+                <div class="card final-panel gold-panel reveal d4">
+                    <h3>Áreas de mejora para futuros proyectos</h3>
+                    <ul>
+                        <li><span class="mk">→</span> Configurar todos los servicios externos en la Semana 0, antes del Sprint 1.</li>
+                        <li><span class="mk">→</span> Documentar los endpoints en Swagger desde el inicio — hacerlo al final genera retrabajo.</li>
+                        <li><span class="mk">→</span> Ambiente de staging desde el Sprint 2 para integración continua.</li>
+                        <li><span class="mk">→</span> El diseñador debe entregar los tokens de diseño antes del Sprint 1.</li>
+                        <li><span class="mk">→</span> Acordar convenciones de ramas y commits en el Sprint 0 y documentarlas en el README.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">18 · Declaración formal de cierre</div>
+            <h2 class="title reveal d2">Proyecto <span class="accent">cerrado formalmente</span></h2>
+            <p class="sub reveal d3">El Equipo Alfa declara cerrado el proyecto AulaVirtual Pro: producto completo, dentro del presupuesto y en el tiempo acordado.</p>
+            <div class="callout reveal d4" style="max-width:min(100%,960px);"><b>Declaración:</b> el producto entregado cumple con el 100% del alcance definido en el Sprint 0, dentro del presupuesto aprobado y en el tiempo acordado. CapacitaTec S.A. cuenta con un sistema LMS funcional, desplegado en producción y documentado. No se requieren sprints adicionales para el MVP; la Fase 2 (pagos, Socket.io, nuevas integraciones) se gestionará como proyecto independiente.</div>
+            <div class="sign-row">
+                <div class="card sign-card reveal d5">
+                    <div class="sn">Alberto Anyelo</div>
+                    <div class="sr">Scrum Master · PM</div>
+                    <div class="sd">Firma ___/___/2026</div>
+                </div>
+                <div class="card sign-card reveal d6">
+                    <div class="sn">CapacitaTec S.A.</div>
+                    <div class="sr">Product Owner · Cliente</div>
+                    <div class="sd">Firma ___/___/2026</div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="reveal d5">
+                    <div class="stat-num">100%</div>
+                    <div class="stat-label">Alcance entregado</div>
+                </div>
+                <div class="reveal d6">
+                    <div class="stat-num">5/5</div>
+                    <div class="stat-label">Sprints completados</div>
+                </div>
+                <div class="reveal d7">
+                    <div class="stat-num">$14.8k</div>
+                    <div class="stat-label">Ahorro sobre presupuesto</div>
+                </div>
+                <div class="reveal d8">
+                    <div class="stat-num">13 meses</div>
+                    <div class="stat-label">Retorno de la inversión</div>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">Cierre</div>
+            <div class="thanks reveal d2">Gracias.</div>
+            <p class="thanks-sub reveal d3">Equipo Alfa · Proyecto AulaVirtual Pro para CapacitaTec S.A. — Reporte de cierre con valor de negocio alcanzado.</p>
+            <div class="cover-footer reveal d4">
+                <span class="chip">5 sprints · 10 semanas</span>
+                <span class="chip">131 / 131 SP</span>
+                <span class="chip">$265,200 invertidos</span>
+                <span class="chip">$240,000 / año de beneficio</span>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Cierre financiero</span></div>
+    </section>
+
+</div>
+
+<div class="nav-controls">
+    <button class="nav-btn fs-btn" onclick="toggleFullscreen()" title="Pantalla completa (F)">↗</button>
+    <button class="nav-btn" onclick="prevSlide()" title="Anterior">←</button>
+    <span class="slide-counter"><span id="current">1</span> / <span id="total">20</span></span>
+    <button class="nav-btn" onclick="nextSlide()" title="Siguiente">→</button>
+</div>
+
+<script>
+    const centerText = (value, sub) => ({
+        id: 'centerText',
+        afterDraw(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const { ctx, chartArea: { top, left, right, bottom } } = chart;
+            const cx = (left + right) / 2;
+            const cy = (top + bottom) / 2;
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#EDF4F0';
+            ctx.font = "800 30px 'Sora', sans-serif";
+            ctx.fillText(value, cx, cy + 2);
+            ctx.fillStyle = '#8FA59A';
+            ctx.font = "500 10px 'Inter', sans-serif";
+            ctx.fillText(sub, cx, cy + 18);
+            ctx.restore();
+        }
+    });
+
+    const gridColor = 'rgba(190, 214, 200, 0.06)';
+    const tickColor = '#8FA59A';
+
+    new Chart(document.getElementById('epicChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['EP-02 Cursos', 'EP-01 Auth', 'EP-03 Evaluaciones', 'EP-04 Inscripciones', 'EP-05 Admin', 'EP-06 Notificaciones'],
+            datasets: [{
+                data: [34, 21, 21, 21, 21, 13],
+                backgroundColor: ['#2FBF8F', '#E0BC6E', '#34D399', '#9BD4B0', '#C98F4E', '#5B8F76'],
+                borderColor: '#0E1713',
+                borderWidth: 3,
+                hoverOffset: 6
+            }]
+        },
+        plugins: [centerText('131', 'story points')],
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '68%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    titleFont: { family: "'Sora', sans-serif", weight: 600 },
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.label}: ${c.parsed} SP` }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('effortChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Alberto (PM/DevOps)', 'Erick (Backend)', 'Johan (Frontend)', 'Alan (UX/UI)'],
+            datasets: [{
+                label: 'Story points',
+                data: [22, 55, 42, 12],
+                backgroundColor: ['#2FBF8F', '#E0BC6E', '#34D399', '#9BD4B0'],
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.parsed.y} SP` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 10 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor }, beginAtZero: true }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('sprintChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5'],
+            datasets: [
+                { label: 'Planeado (32 SP)', data: [32, 32, 32, 32, 3], backgroundColor: 'rgba(224, 188, 110, 0.45)', borderRadius: 6, borderSkipped: false },
+                { label: 'Entregado', data: [34, 34, 34, 21, 8], backgroundColor: '#2FBF8F', borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.dataset.label}: ${c.parsed.y} SP` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor }, beginAtZero: true, suggestedMax: 40 }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('velocityChart'), {
+        type: 'line',
+        data: {
+            labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5'],
+            datasets: [
+                { label: 'Velocidad real', data: [34, 34, 34, 21, 8], borderColor: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.12)', fill: true, tension: 0.35, borderWidth: 3, pointBackgroundColor: '#34D399', pointRadius: 4 },
+                { label: 'Objetivo (32 SP)', data: [32, 32, 32, 32, 32], borderColor: 'rgba(224, 188, 110, 0.7)', borderDash: [6, 6], tension: 0, borderWidth: 2, pointRadius: 0 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.dataset.label}: ${c.parsed.y} SP` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor }, beginAtZero: true, suggestedMax: 40 }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('cumChart'), {
+        type: 'line',
+        data: {
+            labels: ['Semana 2', 'Semana 4', 'Semana 6', 'Semana 8', 'Semana 10'],
+            datasets: [
+                { label: 'Real acumulado', data: [34, 68, 102, 123, 131], borderColor: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.12)', fill: true, tension: 0.3, borderWidth: 3, pointBackgroundColor: '#34D399', pointRadius: 4 },
+                { label: 'Plan acumulado', data: [32, 64, 96, 128, 131], borderColor: 'rgba(224, 188, 110, 0.8)', borderDash: [6, 6], tension: 0, borderWidth: 2, pointRadius: 3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.dataset.label}: ${c.parsed.y} SP` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor }, beginAtZero: true, suggestedMax: 140 }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('costChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Mano de obra', 'Servicios nube', 'Herramientas', 'Deploy', 'Contingencia'],
+            datasets: [{
+                data: [236080, 5000, 3000, 1120, 20000],
+                backgroundColor: ['#2FBF8F', '#34D399', '#E0BC6E', '#C98F4E', '#5B8F76'],
+                borderColor: '#0E1713',
+                borderWidth: 3,
+                hoverOffset: 6
+            }]
+        },
+        plugins: [centerText('$265.2k', 'costo real')],
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '68%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    titleFont: { family: "'Sora', sans-serif", weight: 600 },
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.label}: $${c.parsed.toLocaleString()}` }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('memberChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Alberto Anyelo', 'Erick Hernandez', 'Johan Anuart', 'Alan Hazel'],
+            datasets: [
+                { label: 'Planeado', data: [60000, 70000, 64000, 56000], backgroundColor: 'rgba(224, 188, 110, 0.45)', borderRadius: 6, borderSkipped: false },
+                { label: 'Real', data: [55500, 69300, 61440, 49840], backgroundColor: '#2FBF8F', borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.dataset.label}: $${c.parsed.y.toLocaleString()}` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 10 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => '$' + (v / 1000) + 'k' }, beginAtZero: true }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('sprintCostChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5'],
+            datasets: [
+                { label: 'Planeado', data: [52000, 70000, 67600, 53000, 37400], backgroundColor: 'rgba(224, 188, 110, 0.45)', borderRadius: 6, borderSkipped: false },
+                { label: 'Real', data: [49600, 67200, 66800, 52400, 29200], backgroundColor: '#2FBF8F', borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: {
+                    backgroundColor: '#132019',
+                    borderColor: 'rgba(190,214,200,0.25)',
+                    borderWidth: 1,
+                    bodyFont: { family: "'Inter', sans-serif" },
+                    callbacks: { label: (c) => ` ${c.dataset.label}: $${c.parsed.y.toLocaleString()}` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => '$' + (v / 1000) + 'k' }, beginAtZero: true }
+            }
+        }
+    });
+
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    document.getElementById('total').textContent = total;
+
+    function showSlide(n) {
+        if (n < 1) n = 1;
+        if (n > total) n = total;
+        current = n;
+        document.querySelectorAll('.slide').forEach((s, i) => {
+            s.classList.toggle('active', i === n - 1);
+        });
+        document.getElementById('current').textContent = n;
+        document.getElementById('progressBar').style.width = (n / total * 100) + '%';
+    }
+
+    function nextSlide() { showSlide(current + 1); }
+    function prevSlide() { showSlide(current - 1); }
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.nav-controls')) nextSlide();
+    });
+
+    showSlide(1);
+</script>
+</body>
+</html>

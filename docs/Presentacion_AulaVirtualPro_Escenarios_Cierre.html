@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AulaVirtual Pro — Dos Escenarios de Cierre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+    :root {
+        --bg: #08100C;
+        --panel: #0E1713;
+        --panel-2: #132019;
+        --line: rgba(190, 214, 200, 0.13);
+        --text: #EDF4F0;
+        --muted: #8FA59A;
+        --primary: #2FBF8F;
+        --emerald: #34D399;
+        --sage: #9BD4B0;
+        --gold: #E0BC6E;
+        --copper: #C98F4E;
+        --red: #EF7A7A;
+        --grad: linear-gradient(135deg, #34D399 0%, #E0BC6E 100%);
+        --font-head: 'Sora', sans-serif;
+        --font-body: 'Inter', sans-serif;
+        --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        overflow: hidden;
+    }
+
+    .slide-deck {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+    @media (min-width: 769px) {
+        .slide-deck {
+            max-width: calc(100vh * 16 / 9);
+            max-height: calc(100vw * 9 / 16);
+            margin: auto;
+            position: absolute;
+            inset: 0;
+        }
+    }
+
+    .slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(28px, 5vw, 60px) clamp(32px, 6vw, 88px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.45s ease;
+        overflow: hidden;
+    }
+    .slide.active { opacity: 1; visibility: visible; }
+
+    .slide-content {
+        width: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(14px, 2.2vh, 24px);
+        text-align: center;
+    }
+
+    .grid-bg::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(190, 214, 200, 0.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(190, 214, 200, 0.045) 1px, transparent 1px);
+        background-size: 44px 44px;
+        -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 25%, transparent 78%);
+        mask-image: radial-gradient(ellipse at 50% 40%, black 25%, transparent 78%);
+        pointer-events: none;
+    }
+
+    .glow {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .glow-1 {
+        width: clamp(380px, 44vw, 640px);
+        height: clamp(380px, 44vw, 640px);
+        background: radial-gradient(circle, rgba(47, 191, 143, 0.15), transparent 65%);
+        top: -22%;
+        left: -12%;
+    }
+    .glow-2 {
+        width: clamp(340px, 38vw, 560px);
+        height: clamp(340px, 38vw, 560px);
+        background: radial-gradient(circle, rgba(224, 188, 110, 0.11), transparent 65%);
+        bottom: -20%;
+        right: -10%;
+    }
+
+    h1, h2, h3 { font-family: var(--font-head); }
+    .slide-content > * { position: relative; z-index: 1; }
+
+    .doc-footer {
+        position: absolute;
+        bottom: clamp(10px, 1.8vh, 18px);
+        left: clamp(32px, 6vw, 88px);
+        right: clamp(32px, 6vw, 88px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-head);
+        font-size: clamp(8px, 0.8vw, 10.5px);
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(143, 165, 154, 0.55);
+        z-index: 2;
+        pointer-events: none;
+    }
+    .doc-footer .df-sep { width: 6px; height: 6px; border-radius: 50%; background: var(--grad); display: inline-block; margin: 0 10px; }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+    .eyebrow::before {
+        content: '';
+        width: 34px;
+        height: 1px;
+        background: var(--grad);
+    }
+    .eyebrow::after {
+        content: '';
+        width: 34px;
+        height: 1px;
+        background: var(--grad);
+    }
+
+    .title {
+        font-size: clamp(26px, 3.4vw, 48px);
+        font-weight: 700;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        max-width: 30ch;
+    }
+    .title b, .title .accent {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    .sub {
+        color: var(--muted);
+        font-size: clamp(13px, 1.35vw, 17px);
+        line-height: 1.55;
+        max-width: 66ch;
+    }
+
+    .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+    .slide.active .reveal { opacity: 1; transform: none; }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+    .d5 { transition-delay: 0.40s; }
+    .d6 { transition-delay: 0.48s; }
+    .d7 { transition-delay: 0.56s; }
+    .d8 { transition-delay: 0.64s; }
+
+    .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+        border: 1px solid var(--line);
+        border-radius: 14px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--muted);
+        font-size: clamp(11px, 1vw, 13px);
+        font-weight: 500;
+        letter-spacing: 0.04em;
+    }
+    .chip b { color: var(--text); font-weight: 600; }
+
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: var(--grad);
+        transition: width 0.35s ease;
+        z-index: 1000;
+    }
+
+    .nav-controls {
+        position: fixed;
+        bottom: clamp(14px, 2.5vh, 28px);
+        right: clamp(16px, 3vw, 40px);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1001;
+    }
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: rgba(14, 23, 19, 0.7);
+        backdrop-filter: blur(6px);
+        color: var(--text);
+        font-size: 17px;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .nav-btn:hover { border-color: var(--primary); background: rgba(47, 191, 143, 0.15); }
+    .slide-counter { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .fs-btn { font-size: 16px; line-height: 1; }
+
+    .cover-chip {
+        display: inline-flex;
+        gap: 10px;
+        padding: 9px 20px;
+        border: 1px solid rgba(224, 188, 110, 0.35);
+        border-radius: 999px;
+        background: rgba(224, 188, 110, 0.05);
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1vw, 13px);
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+    .cover-title {
+        font-size: clamp(44px, 7.4vw, 96px);
+        font-weight: 800;
+        line-height: 1.04;
+        letter-spacing: -0.03em;
+    }
+    .cover-tagline {
+        font-family: var(--font-head);
+        font-size: clamp(15px, 1.9vw, 24px);
+        font-weight: 500;
+        color: var(--muted);
+    }
+    .cover-divider {
+        width: 64px;
+        height: 2px;
+        background: var(--grad);
+        border-radius: 2px;
+    }
+    .cover-footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+    .cover-footer .chip b { color: var(--emerald); }
+    .cover-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 22px;
+        border: 1px solid rgba(47, 191, 143, 0.45);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(47, 191, 143, 0.12), rgba(224, 188, 110, 0.08));
+        font-family: var(--font-head);
+        font-size: clamp(12px, 1.2vw, 15px);
+        font-weight: 600;
+        color: var(--text);
+    }
+    .cover-badge b { color: var(--emerald); font-weight: 700; }
+
+    .agenda {
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+        width: min(100%, 760px);
+    }
+    .agenda-item {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: clamp(10px, 1.7vh, 15px) clamp(16px, 2vw, 24px);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        text-align: left;
+    }
+    .agenda-num {
+        font-family: var(--font-head);
+        font-weight: 800;
+        font-size: clamp(14px, 1.5vw, 18px);
+        min-width: 40px;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .agenda-item span:last-child {
+        color: var(--text);
+        font-size: clamp(13px, 1.4vw, 16px);
+        font-weight: 500;
+    }
+    .agenda-item small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: clamp(10px, 1.05vw, 12.5px);
+        white-space: nowrap;
+    }
+
+    .scope-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+        align-items: stretch;
+    }
+    .scope-card { padding: clamp(18px, 3vh, 26px) clamp(16px, 2vw, 24px); text-align: left; }
+    .scope-card h3 {
+        font-size: clamp(13px, 1.4vw, 18px);
+        font-weight: 700;
+        margin-bottom: clamp(8px, 1.4vh, 12px);
+    }
+    .scope-card p { color: var(--muted); font-size: clamp(12px, 1.15vw, 15px); line-height: 1.55; }
+    .scope-card.highlight {
+        border-color: rgba(47, 191, 143, 0.45);
+        background: linear-gradient(180deg, rgba(47, 191, 143, 0.08), rgba(47, 191, 143, 0.02));
+    }
+    .num-tag {
+        font-family: var(--font-head);
+        font-size: clamp(22px, 2.6vw, 32px);
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+
+    .pain-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(12px, 1.6vw, 20px);
+        width: min(100%, 1040px);
+    }
+    .pain-card { padding: clamp(14px, 2.2vh, 20px) clamp(16px, 2vw, 24px); text-align: left; }
+    .pain-num {
+        font-family: var(--font-head);
+        font-size: clamp(18px, 1.8vw, 26px);
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 0.02em;
+    }
+    .pain-title {
+        font-family: var(--font-head);
+        font-size: clamp(14px, 1.45vw, 19px);
+        font-weight: 600;
+        margin-top: 6px;
+    }
+    .pain-desc {
+        color: var(--muted);
+        font-size: clamp(12px, 1.18vw, 15px);
+        line-height: 1.5;
+        margin-top: 6px;
+    }
+
+    .callout {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: clamp(10px, 1.6vh, 14px) clamp(16px, 2vw, 24px);
+        border: 1px solid rgba(47, 191, 143, 0.35);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(47, 191, 143, 0.10), rgba(224, 188, 110, 0.06));
+        font-size: clamp(12px, 1.25vw, 16px);
+        color: var(--text);
+        max-width: min(100%, 1080px);
+        text-align: left;
+        line-height: 1.5;
+    }
+    .callout b { color: var(--emerald); font-weight: 600; }
+    .callout.warn { border-color: rgba(224, 188, 110, 0.35); background: linear-gradient(90deg, rgba(224, 188, 110, 0.10), rgba(47, 191, 143, 0.05)); }
+    .callout.warn b { color: var(--gold); }
+
+    .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(16px, 2.4vw, 32px);
+        width: min(100%, 1100px);
+        align-items: stretch;
+    }
+    .split-panel { padding: clamp(18px, 3vh, 28px) clamp(18px, 2.4vw, 28px); text-align: left; }
+    .split-panel h3 {
+        font-size: clamp(15px, 1.6vw, 21px);
+        font-weight: 700;
+        margin-bottom: clamp(10px, 1.6vh, 16px);
+    }
+    .split-panel ul { list-style: none; }
+    .split-panel li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 8px 0;
+        color: var(--muted);
+        font-size: clamp(12px, 1.22vw, 16px);
+        line-height: 1.45;
+        border-bottom: 1px solid rgba(190, 214, 200, 0.08);
+    }
+    .split-panel li:last-child { border-bottom: none; }
+    .mk { font-weight: 700; margin-top: 1px; }
+    .split-panel.before { border-color: rgba(224, 188, 110, 0.28); }
+    .split-panel.before h3 { color: var(--gold); }
+    .split-panel.before .mk { color: var(--gold); }
+    .split-panel.after { border-color: rgba(47, 191, 143, 0.35); }
+    .split-panel.after h3 { color: var(--emerald); }
+    .split-panel.after .mk { color: var(--emerald); }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(12px, 2vw, 28px);
+        width: min(100%, 1000px);
+    }
+    .stat-num {
+        font-family: var(--font-head);
+        font-size: clamp(24px, 3.2vw, 42px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+    }
+    .stat-label {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.15vw, 14px);
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+    .stat-good .stat-num { background: linear-gradient(135deg, #34D399, #2FBF8F); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-bad .stat-num { background: linear-gradient(135deg, #E0BC6E, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .chart-card { padding: clamp(14px, 2.4vh, 22px) clamp(16px, 1.8vw, 22px); text-align: left; display: flex; flex-direction: column; }
+    .chart-card h3 {
+        font-size: clamp(14px, 1.45vw, 18px);
+        font-weight: 700;
+    }
+    .chart-card .chart-sub { color: var(--muted); font-size: clamp(11px, 1.05vw, 13px); margin-top: 4px; line-height: 1.45; }
+    .chart-wrap {
+        position: relative;
+        width: min(100%, 260px);
+        margin: clamp(8px, 1.6vh, 14px) auto 0;
+    }
+    .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; font-size: clamp(10px, 1vw, 12.5px); color: var(--muted); }
+    .legend-dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+    .legend-item b { color: var(--text); font-weight: 600; }
+
+    .fin-split {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: clamp(16px, 2.2vw, 28px);
+        width: min(100%, 1140px);
+        align-items: stretch;
+    }
+    .bar-card { padding: clamp(14px, 2.4vh, 20px) clamp(16px, 1.8vw, 22px); text-align: left; display: flex; flex-direction: column; }
+    .bar-card h3 {
+        font-size: clamp(14px, 1.45vw, 18px);
+        font-weight: 700;
+    }
+    .bar-card .chart-sub { color: var(--muted); font-size: clamp(11px, 1.05vw, 13px); margin-top: 4px; line-height: 1.45; }
+    .bar-wrap {
+        position: relative;
+        height: clamp(150px, 26vh, 230px);
+        margin-top: clamp(8px, 1.4vh, 14px);
+        width: 100%;
+    }
+
+    .big-kpis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+    }
+    .kpi-card { padding: clamp(16px, 2.6vh, 24px) clamp(16px, 2vw, 24px); text-align: left; }
+    .kpi-card .k-label {
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1.05vw, 13px);
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .kpi-card .k-value {
+        font-family: var(--font-head);
+        font-size: clamp(26px, 3.4vw, 44px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        margin: 6px 0;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .kpi-card .k-note { color: var(--muted); font-size: clamp(11px, 1.1vw, 13.5px); line-height: 1.5; }
+    .kpi-card.gold .k-value { background: linear-gradient(135deg, #E0BC6E, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .kpi-card.red .k-value { background: linear-gradient(135deg, #EF7A7A, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .money-flow {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: clamp(6px, 1vw, 14px);
+        width: min(100%, 1080px);
+        flex-wrap: wrap;
+    }
+    .money-step {
+        flex: 1;
+        min-width: 200px;
+        padding: clamp(13px, 2.2vh, 18px) clamp(14px, 1.6vw, 18px);
+        text-align: left;
+    }
+    .money-step .ft {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16.5px);
+        margin: 4px 0 6px;
+    }
+    .money-step .fd {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        line-height: 1.5;
+    }
+    .money-step .fv {
+        font-family: var(--font-head);
+        font-weight: 800;
+        font-size: clamp(17px, 2vw, 24px);
+        margin-top: 6px;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .money-arrow {
+        display: flex;
+        align-items: center;
+        color: var(--gold);
+        font-size: clamp(14px, 1.6vw, 20px);
+        font-weight: 700;
+    }
+    .money-step.green { border-color: rgba(47, 191, 143, 0.35); }
+    .money-step.green .fv { background: linear-gradient(135deg, #34D399, #2FBF8F); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .money-step.gold { border-color: rgba(224, 188, 110, 0.3); }
+    .money-step.gold .fv { background: linear-gradient(135deg, #E0BC6E, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .money-step.red { border-color: rgba(239, 122, 122, 0.3); }
+    .money-step.red .fv { background: linear-gradient(135deg, #EF7A7A, #C98F4E); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .roi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(12px, 1.8vw, 22px);
+        width: min(100%, 1140px);
+    }
+    .roi-card { padding: clamp(16px, 2.6vh, 22px) clamp(16px, 2vw, 22px); text-align: left; }
+    .roi-card h3 {
+        font-size: clamp(13px, 1.35vw, 17px);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .roi-card .r-value {
+        font-family: var(--font-head);
+        font-size: clamp(20px, 2.6vw, 32px);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 6px;
+    }
+    .roi-card .r-desc { color: var(--muted); font-size: clamp(11px, 1.1vw, 13.5px); line-height: 1.5; }
+    .roi-card.pos { border-color: rgba(47, 191, 143, 0.4); }
+    .roi-card.pos .r-value { color: var(--emerald); }
+    .roi-card.gol { border-color: rgba(224, 188, 110, 0.4); }
+    .roi-card.gol .r-value { color: var(--gold); }
+    .roi-card.neg { border-color: rgba(224, 188, 110, 0.35); }
+    .roi-card.neg .r-value { color: var(--copper); }
+    .roi-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px 18px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.1vw, 13.5px);
+    }
+
+    .crit-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(9px, 1.2vw, 14px);
+        width: min(100%, 1020px);
+    }
+    .crit-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: clamp(9px, 1.4vh, 12px) clamp(13px, 1.6vw, 16px);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        text-align: left;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.15vw, 14.5px);
+        line-height: 1.5;
+    }
+    .crit-item .mk { color: var(--emerald); font-weight: 700; }
+    .crit-item.no .mk { color: var(--gold); }
+    .crit-item .crit-sp {
+        margin-left: auto;
+        flex: none;
+        font-family: var(--font-head);
+        font-size: clamp(8.5px, 0.9vw, 11px);
+        font-weight: 700;
+        color: var(--gold);
+        background: rgba(224, 188, 110, 0.1);
+        border: 1px solid rgba(224, 188, 110, 0.25);
+        border-radius: 999px;
+        padding: 2px 9px;
+        white-space: nowrap;
+    }
+    .crit-item.no .crit-sp { color: var(--copper); border-color: rgba(201, 143, 78, 0.35); background: rgba(201, 143, 78, 0.1); }
+
+    .split-final {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(16px, 2.4vw, 32px);
+        width: min(100%, 1100px);
+        align-items: stretch;
+    }
+    .final-panel { padding: clamp(16px, 2.8vh, 24px) clamp(18px, 2.4vw, 26px); text-align: left; }
+    .final-panel h3 {
+        font-size: clamp(14px, 1.5vw, 19px);
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--emerald);
+    }
+    .final-panel ul { list-style: none; }
+    .final-panel li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 7px 0;
+        color: var(--muted);
+        font-size: clamp(11.5px, 1.18vw, 15px);
+        line-height: 1.5;
+        border-bottom: 1px solid rgba(190, 214, 200, 0.08);
+    }
+    .final-panel li:last-child { border-bottom: none; }
+    .final-panel .mk { color: var(--emerald); font-weight: 700; }
+    .final-panel.gold-panel h3 { color: var(--gold); }
+    .final-panel.gold-panel .mk { color: var(--gold); }
+
+    .thanks {
+        font-family: var(--font-head);
+        font-size: clamp(30px, 4.2vw, 54px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.1;
+    }
+    .thanks-sub { color: var(--muted); font-size: clamp(13px, 1.3vw, 16px); }
+
+    .timeline {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: clamp(10px, 1.5vw, 18px);
+        width: min(100%, 1160px);
+    }
+    .tl-item {
+        position: relative;
+        text-align: left;
+        padding-top: 24px;
+    }
+    .tl-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(47, 191, 143, 0.7), rgba(224, 188, 110, 0.7));
+        border-radius: 2px;
+    }
+    .tl-item::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 2px solid var(--bg);
+    }
+    .tl-item.cancel::before { background: linear-gradient(90deg, rgba(201, 143, 78, 0.55), rgba(143, 165, 154, 0.25)); }
+    .tl-item.cancel::after { background: var(--copper); }
+    .tl-num {
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.1vw, 14px);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--emerald);
+    }
+    .tl-item.cancel .tl-num { color: var(--copper); }
+    .tl-title {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12.5px, 1.3vw, 16.5px);
+        margin: 5px 0 6px;
+    }
+    .tl-desc {
+        color: var(--muted);
+        font-size: clamp(10.5px, 1.05vw, 13px);
+        line-height: 1.55;
+    }
+    .tl-sp {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(47, 191, 143, 0.12);
+        border: 1px solid rgba(47, 191, 143, 0.3);
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(10px, 1vw, 12.5px);
+        color: var(--emerald);
+    }
+    .tl-item.cancel .tl-sp {
+        background: rgba(201, 143, 78, 0.1);
+        border-color: rgba(201, 143, 78, 0.35);
+        color: var(--copper);
+    }
+    .tl-row { width: min(100%, 1160px); }
+    .tl-row + .tl-row { margin-top: clamp(10px, 1.6vh, 16px); }
+    .tl-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: clamp(6px, 1vh, 10px);
+        font-family: var(--font-head);
+        font-size: clamp(11px, 1.15vw, 14px);
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        text-align: left;
+    }
+
+    .scen-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-family: var(--font-head);
+        font-size: clamp(10px, 1vw, 12.5px);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        white-space: nowrap;
+    }
+    .scen-chip.a {
+        color: var(--gold);
+        border: 1px solid rgba(224, 188, 110, 0.4);
+        background: rgba(224, 188, 110, 0.08);
+    }
+    .scen-chip.b {
+        color: var(--emerald);
+        border: 1px solid rgba(47, 191, 143, 0.4);
+        background: rgba(47, 191, 143, 0.08);
+    }
+
+    .cmp-table-wrap { width: min(100%, 1080px); }
+    .cmp-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        font-size: clamp(12px, 1.2vw, 15px);
+        text-align: left;
+    }
+    .cmp-table th {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(11px, 1.1vw, 13.5px);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: clamp(10px, 1.6vh, 14px) clamp(14px, 1.8vw, 22px);
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--line);
+    }
+    .cmp-table th.ind { color: var(--muted); }
+    .cmp-table th.col-a { color: var(--gold); }
+    .cmp-table th.col-b { color: var(--emerald); }
+    .cmp-table td {
+        padding: clamp(9px, 1.4vh, 13px) clamp(14px, 1.8vw, 22px);
+        color: var(--muted);
+        border-bottom: 1px solid rgba(190, 214, 200, 0.08);
+        line-height: 1.45;
+    }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .cmp-table td b { color: var(--text); font-weight: 600; }
+    .cmp-table td.val-a b { color: var(--gold); }
+    .cmp-table td.val-b b { color: var(--emerald); }
+
+    .duo-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(16px, 2.4vw, 32px);
+        width: min(100%, 1100px);
+        align-items: stretch;
+    }
+    .duo-panel { padding: clamp(16px, 2.6vh, 22px) clamp(16px, 2vw, 22px); text-align: left; }
+    .duo-panel.a { border-color: rgba(224, 188, 110, 0.28); }
+    .duo-panel.b { border-color: rgba(47, 191, 143, 0.35); }
+    .duo-panel h3 {
+        font-size: clamp(14px, 1.5vw, 19px);
+        font-weight: 700;
+        margin-bottom: clamp(8px, 1.4vh, 12px);
+    }
+    .duo-panel.a h3 { color: var(--gold); }
+    .duo-panel.b h3 { color: var(--emerald); }
+    .duo-panel .d-val {
+        font-family: var(--font-head);
+        font-size: clamp(24px, 3vw, 38px);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 8px;
+    }
+    .duo-panel.a .d-val { color: var(--gold); }
+    .duo-panel.b .d-val { color: var(--emerald); }
+    .duo-panel .d-desc { color: var(--muted); font-size: clamp(11.5px, 1.15vw, 14.5px); line-height: 1.5; }
+
+    .gauge-row { width: min(100%, 1000px); display: flex; flex-direction: column; gap: clamp(10px, 1.6vh, 14px); }
+    .gauge {
+        display: flex;
+        align-items: center;
+        gap: clamp(12px, 1.6vw, 20px);
+        text-align: left;
+    }
+    .gauge .g-label {
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: clamp(12px, 1.25vw, 16px);
+        min-width: 230px;
+    }
+    .gauge.a .g-label { color: var(--gold); }
+    .gauge.b .g-label { color: var(--emerald); }
+    .gauge .g-track {
+        flex: 1;
+        height: clamp(14px, 2.2vh, 20px);
+        border-radius: 999px;
+        background: rgba(143, 165, 154, 0.12);
+        border: 1px solid var(--line);
+        overflow: hidden;
+    }
+    .gauge .g-fill {
+        height: 100%;
+        border-radius: 999px;
+    }
+    .gauge.a .g-fill { width: 60%; background: linear-gradient(90deg, #C98F4E, #E0BC6E); }
+    .gauge.b .g-fill { width: 100%; background: linear-gradient(90deg, #2FBF8F, #34D399); }
+    .gauge .g-val {
+        font-family: var(--font-head);
+        font-weight: 800;
+        font-size: clamp(15px, 1.6vw, 21px);
+        min-width: 90px;
+        text-align: right;
+    }
+    .gauge.a .g-val { color: var(--gold); }
+    .gauge.b .g-val { color: var(--emerald); }
+    .gauge .g-sub { color: var(--muted); font-size: clamp(10.5px, 1.05vw, 13px); }
+
+    .seg-bar { width: min(100%, 900px); }
+    .seg-track {
+        width: 100%;
+        height: 22px;
+        border-radius: 999px;
+        background: rgba(143, 165, 154, 0.12);
+        overflow: hidden;
+        display: flex;
+        border: 1px solid var(--line);
+    }
+    .seg-a { width: 68%; background: linear-gradient(90deg, #C98F4E, #E0BC6E); }
+    .seg-b { width: 32%; background: rgba(143, 165, 154, 0.2); }
+    .seg-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: clamp(11px, 1.1vw, 14px);
+    }
+    .seg-labels b { color: var(--text); }
+
+    @media (max-width: 768px) {
+        .split { grid-template-columns: 1fr; }
+        .fin-split { grid-template-columns: 1fr; }
+        .split-final { grid-template-columns: 1fr; }
+        .duo-row { grid-template-columns: 1fr; }
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .big-kpis { grid-template-columns: 1fr; }
+        .roi-grid { grid-template-columns: 1fr; }
+        .scope-grid { grid-template-columns: 1fr; }
+        .pain-grid { grid-template-columns: 1fr; }
+        .timeline { grid-template-columns: 1fr; }
+        .crit-grid { grid-template-columns: 1fr; }
+        .money-flow { flex-direction: column; }
+        .money-arrow { transform: rotate(90deg); justify-content: center; }
+        .gauge { flex-wrap: wrap; }
+        .gauge .g-label { min-width: 100%; }
+        .nav-controls { bottom: 14px; right: 14px; }
+        .nav-btn { width: 34px; height: 34px; font-size: 15px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-deck">
+
+    <section class="slide active grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="cover-chip reveal d1">Análisis de escenarios · Reporte Financiero de Cierre · 2026</div>
+            <h1 class="cover-title reveal d2">Dos caminos,<br><span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">un mismo presupuesto</span></h1>
+            <p class="cover-tagline reveal d3">AulaVirtual Pro · Los escenarios de cierre del proyecto: límite de presupuesto vs. valor de negocio alcanzado</p>
+            <div class="cover-divider reveal d4"></div>
+            <div class="cover-badge reveal d5"><b>Mismo punto de partida</b> · $280,000 MXN · 131 SP · 5 sprints · 10 semanas · dos resultados posibles</div>
+            <p class="sub reveal d6" style="margin-top:-2px;">Análisis comparativo preparado para <b style="color:var(--text);">CapacitaTec S.A.</b> — cómo la gestión de presupuesto, tiempo y alcance define el final de un proyecto.</p>
+            <div class="cover-footer reveal d7">
+                <span class="chip">Equipo: <b>Equipo Alfa</b></span>
+                <span class="chip">PM: <b>Alberto Anyelo</b></span>
+                <span class="chip" style="border-color:rgba(47,191,143,0.35);"><b style="color:var(--emerald);">Cliente:</b> CapacitaTec S.A.</span>
+                <span class="chip">Escenario A · B</span>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">Agenda del análisis</div>
+            <h2 class="title reveal d2">¿Qué vamos <span class="accent">a comparar?</span></h2>
+            <div class="agenda">
+                <div class="agenda-item reveal d3">
+                    <span class="agenda-num">01</span>
+                    <span>El punto de partida — un mismo proyecto, mismas reglas</span>
+                    <small>Contexto</small>
+                </div>
+                <div class="agenda-item reveal d4">
+                    <span class="agenda-num">02</span>
+                    <span>Los dos escenarios de cierre — límite de presupuesto y valor de negocio</span>
+                    <small>Escenarios</small>
+                </div>
+                <div class="agenda-item reveal d5">
+                    <span class="agenda-num">03</span>
+                    <span>Alcance, sprints y velocidad — qué se entregó y en qué tiempo</span>
+                    <small>Entrega</small>
+                </div>
+                <div class="agenda-item reveal d6">
+                    <span class="agenda-num">04</span>
+                    <span>El dinero — presupuesto, gasto real y qué pasó con la contingencia</span>
+                    <small>Finanzas</small>
+                </div>
+                <div class="agenda-item reveal d7">
+                    <span class="agenda-num">05</span>
+                    <span>Valor de negocio y ROI — lo que generó cada final</span>
+                    <small>Retorno</small>
+                </div>
+                <div class="agenda-item reveal d8">
+                    <span class="agenda-num">06</span>
+                    <span>Causas, lecciones y conclusiones — qué separa un cierre del otro</span>
+                    <small>Decisión</small>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">01 · El punto de partida</div>
+            <h2 class="title reveal d2">Un solo proyecto, <span class="accent">unas mismas reglas</span></h2>
+            <p class="sub reveal d3">AulaVirtual Pro es un LMS empresarial para CapacitaTec S.A. Ambos escenarios parten de la misma planeación definida en el Sprint 0: mismo presupuesto, mismo alcance, mismo equipo y mismo calendario.</p>
+            <div class="scope-grid">
+                <div class="card scope-card highlight reveal d4">
+                    <div class="num-tag">$280,000</div>
+                    <h3>El presupuesto aprobado</h3>
+                    <p>MXN aprobados por el cliente: $250,000 en mano de obra, $5,000 en nube, $3,000 en herramientas y $22,000 de contingencia (8%).</p>
+                </div>
+                <div class="card scope-card reveal d5">
+                    <div class="num-tag" style="background:linear-gradient(135deg,#E0BC6E,#C98F4E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">131 SP</div>
+                    <h3>El alcance definido</h3>
+                    <p>Seis épicas y 20 historias de usuario estimadas en 131 story points, con 10 criterios de aceptación acordados con el cliente.</p>
+                </div>
+                <div class="card scope-card reveal d6">
+                    <div class="num-tag" style="background:linear-gradient(135deg,#34D399,#2FBF8F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">5 × 2</div>
+                    <h3>El tiempo planeado</h3>
+                    <p>Cinco sprints de dos semanas cada uno: de la Semana 1 a la Semana 10, con 4 integrantes a 200 horas planeadas cada uno.</p>
+                </div>
+            </div>
+            <div class="callout reveal d7"><b>La pregunta que responde este análisis:</b> con las mismas reglas iniciales, ¿qué decisiones llevan al cierre anticipado y cuáles al valor de negocio alcanzado?</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">02 · Los dos escenarios</div>
+            <h2 class="title reveal d2">Dos finales posibles, <span class="accent">una misma inversión</span></h2>
+            <p class="sub reveal d3">El proyecto se analizó bajo dos escenarios hipotéticos de cierre. El punto de partida es idéntico; el resultado financiero y de alcance no lo es.</p>
+            <div class="cmp-table-wrap reveal d4">
+                <table class="cmp-table">
+                    <thead>
+                        <tr>
+                            <th class="ind">Indicador</th>
+                            <th class="col-a"><span class="scen-chip a">Escenario A · Límite</span></th>
+                            <th class="col-b"><span class="scen-chip b">Escenario B · Valor</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ind">Cierre del proyecto</td>
+                            <td class="val-a"><b>Semana 6</b> · Sprint 3 · presupuesto agotado</td>
+                            <td class="val-b"><b>Semana 10</b> · Sprint 5 · MVP entregado</td>
+                        </tr>
+                        <tr>
+                            <td class="ind">Sprints completados</td>
+                            <td class="val-a"><b>3 de 5</b> · dos sprints cancelados</td>
+                            <td class="val-b"><b>5 de 5</b> · en tiempo</td>
+                        </tr>
+                        <tr>
+                            <td class="ind">Story points entregados</td>
+                            <td class="val-a"><b>89 de 131</b> · 68% del alcance</td>
+                            <td class="val-b"><b>131 de 131</b> · 100% del alcance</td>
+                        </tr>
+                        <tr>
+                            <td class="ind">Criterios de aceptación</td>
+                            <td class="val-a"><b>6 de 10</b> verificados</td>
+                            <td class="val-b"><b>10 de 10</b> sin pendientes</td>
+                        </tr>
+                        <tr>
+                            <td class="ind">Costo real del proyecto</td>
+                            <td class="val-a"><b>$277,400</b> · presupuesto prácticamente agotado</td>
+                            <td class="val-b"><b>$265,200</b> · ahorro de $14,800</td>
+                        </tr>
+                        <tr>
+                            <td class="ind">Contingencia utilizada</td>
+                            <td class="val-a"><b>$63,000</b> · sobrepasada en $41,000</td>
+                            <td class="val-b"><b>$20,000</b> · dentro de lo reservado</td>
+                        </tr>
+                        <tr>
+                            <td class="ind">Estado del producto</td>
+                            <td class="val-a"><b>Parcial</b> · base sólida, épicas pendientes</td>
+                            <td class="val-b"><b>En producción</b> · Vercel + Render</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout warn reveal d5"><b>Lectura rápida:</b> el mismo presupuesto rindió de forma distinta — en A se consumió antes de terminar el alcance; en B alcanzó para el 100% y devolvió $14,800 al cliente.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">03 · Escenario A</div>
+            <h2 class="title reveal d2"><span class="accent" style="background:linear-gradient(135deg,#E0BC6E,#C98F4E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Cierre por límite</span> de presupuesto y tiempo</h2>
+            <p class="sub reveal d3">El proyecto cerró anticipadamente en la Semana 6 (Sprint 3) al agotarse el presupuesto aprobado para el MVP. Se entregaron las funcionalidades de mayor prioridad: autenticación, cursos y evaluaciones.</p>
+            <div class="big-kpis">
+                <div class="card kpi-card gold reveal d4">
+                    <div class="k-label">Alcance entregado</div>
+                    <div class="k-value">68%</div>
+                    <p class="k-note">89 de 131 story points · 6 de 10 criterios de aceptación verificados.</p>
+                </div>
+                <div class="card kpi-card red reveal d5">
+                    <div class="k-label">Costo real</div>
+                    <div class="k-value">$277,400</div>
+                    <p class="k-note">De $280,000 aprobados · contingencia disparada a $63,000.</p>
+                </div>
+                <div class="card kpi-card gold reveal d6">
+                    <div class="k-label">Sprints ejecutados</div>
+                    <div class="k-value">3 de 5</div>
+                    <p class="k-note">Sprint 4 y 5 cancelados: admin, reportes, notificaciones y QA quedaron pendientes.</p>
+                </div>
+            </div>
+            <div class="duo-row" style="width:min(100%,1140px);">
+                <div class="card duo-panel a reveal d6">
+                    <h3>Lo entregado</h3>
+                    <div class="d-desc">API REST /api/v1 con autenticación JWT · CRUD de cursos, módulos y lecciones · sistema de quiz con calificación automática · panel del instructor.</div>
+                </div>
+                <div class="card duo-panel b reveal d7">
+                    <h3>Lo pendiente (Fase 2)</h3>
+                    <div class="d-desc">Inscripciones completas · panel admin con reportes · tareas · Nodemailer · Cloudinary · deploy. La base técnica quedó sólida y funcional.</div>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">03 · Escenario B</div>
+            <h2 class="title reveal d2"><span class="accent">Valor de negocio alcanzado</span> · MVP exitoso</h2>
+            <p class="sub reveal d3">El proyecto se completó en los 5 sprints planeados (Semana 10). El producto cumple los 10 criterios de aceptación, cubre las 6 épicas y está listo para producción.</p>
+            <div class="big-kpis">
+                <div class="card kpi-card reveal d4">
+                    <div class="k-label">Alcance entregado</div>
+                    <div class="k-value">100%</div>
+                    <p class="k-note">131 de 131 story points · 10 de 10 criterios de aceptación sin pendientes.</p>
+                </div>
+                <div class="card kpi-card gold reveal d5">
+                    <div class="k-label">Costo real</div>
+                    <div class="k-value">$265,200</div>
+                    <p class="k-note">De $280,000 aprobados · ahorro de $14,800 devuelto al cliente.</p>
+                </div>
+                <div class="card kpi-card reveal d6">
+                    <div class="k-label">Sprints ejecutados</div>
+                    <div class="k-value">5 de 5</div>
+                    <p class="k-note">Cero desviación de tiempo · 0 bugs críticos · despliegue en Vercel + Render.</p>
+                </div>
+            </div>
+            <div class="callout reveal d7"><b>Resultado del cierre:</b> CapacitaTec S.A. cuenta con un LMS funcional que reemplaza la distribución de materiales por WhatsApp — con un beneficio anual estimado de $240,000 MXN.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">04 · Alcance por épica</div>
+            <h2 class="title reveal d2">El alcance, <span class="accent">épica por épica</span></h2>
+            <p class="sub reveal d3">Las seis épicas del MVP frente a lo entregado en cada escenario: en A, el alcance se cortó a partir de Inscripciones; en B, se completó íntegro.</p>
+            <div class="fin-split">
+                <div class="card bar-card reveal d4">
+                    <h3>Story points por épica · planeado vs. entregado</h3>
+                    <p class="chart-sub">A: 89/131 SP · B: 131/131 SP · total planeado: 131 SP</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="epicChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Estado por épica en el Escenario A</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> EP-01 Autenticación · <b style="color:var(--gold);">21/21 SP</b> · completa</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> EP-02 Gestión de cursos · <b style="color:var(--gold);">34/34 SP</b> · completa</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">⚠</span> EP-03 Evaluaciones · <b style="color:var(--gold);">21/21 SP</b> · parcial</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--copper);font-weight:700;">✕</span> EP-04 Inscripciones · <b style="color:var(--gold);">13/21 SP</b> · incompleta</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--copper);font-weight:700;">✕</span> EP-05 Administración · <b style="color:var(--gold);">0/21 SP</b> · no iniciada</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--copper);font-weight:700;">✕</span> EP-06 Notificaciones · <b style="color:var(--gold);">0/13 SP</b> · no iniciada</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">En el Escenario B, las seis épicas cerraron completas: 131/131 SP.</p>
+                </div>
+            </div>
+            <div class="callout reveal d6"><b>Lectura:</b> la brecha entre escenarios se concentra en EP-04, EP-05 y EP-06 — las épicas que el presupuesto agotado de A dejó fuera del MVP.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">04 · Sprints ejecutados</div>
+            <h2 class="title reveal d2">Tres sprints <span class="accent">vs. cinco sprints</span></h2>
+            <p class="sub reveal d3">El calendario planeado fue el mismo: 5 sprints de 2 semanas. La diferencia está en cuántos se completaron antes del cierre.</p>
+            <div class="tl-row reveal d4">
+                <div class="tl-head"><span class="scen-chip a">Escenario A · Límite</span><span style="color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0.02em;font-size:clamp(11px,1.1vw,13.5px);">Cierre en Semana 6 · Sprints 4 y 5 cancelados</span></div>
+                <div class="timeline">
+                    <div class="tl-item reveal d4">
+                        <div class="tl-num">SPRINT 1 · SEM 1-2</div>
+                        <div class="tl-title">Fundación y acceso</div>
+                        <p class="tl-desc">Auth JWT, setup de repo, BD y estructura base.</p>
+                        <span class="tl-sp">34 SP ✓</span>
+                    </div>
+                    <div class="tl-item reveal d5">
+                        <div class="tl-num">SPRINT 2 · SEM 3-4</div>
+                        <div class="tl-title">API y contenido</div>
+                        <p class="tl-desc">API REST, CRUD de cursos, módulos y quiz.</p>
+                        <span class="tl-sp">34 SP ✓</span>
+                    </div>
+                    <div class="tl-item reveal d6">
+                        <div class="tl-num">SPRINT 3 · SEM 5-6</div>
+                        <div class="tl-title">Evaluaciones y progreso</div>
+                        <p class="tl-desc">Quiz con resultado, progreso, Postman y diagramas.</p>
+                        <span class="tl-sp">21 SP ✓</span>
+                    </div>
+                    <div class="tl-item cancel reveal d7">
+                        <div class="tl-num">SPRINT 4 · SEM 7-8</div>
+                        <div class="tl-title">Administración</div>
+                        <p class="tl-desc">Admin, reportes, Nodemailer — cancelado por presupuesto.</p>
+                        <span class="tl-sp">0 SP ✕</span>
+                    </div>
+                    <div class="tl-item cancel reveal d8">
+                        <div class="tl-num">SPRINT 5 · SEM 9-10</div>
+                        <div class="tl-title">QA y despliegue</div>
+                        <p class="tl-desc">QA, deploy y presentación — cancelado.</p>
+                        <span class="tl-sp">0 SP ✕</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tl-row reveal d5" style="margin-top:clamp(14px,2.2vh,20px);">
+                <div class="tl-head"><span class="scen-chip b">Escenario B · Valor</span><span style="color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0.02em;font-size:clamp(11px,1.1vw,13.5px);">Cierre en Semana 10 · 5 de 5 sprints completados</span></div>
+                <div class="timeline">
+                    <div class="tl-item reveal d5">
+                        <div class="tl-num">SPRINT 1 · SEM 1-2</div>
+                        <div class="tl-title">Fundación y acceso</div>
+                        <p class="tl-desc">Auth, setup, BD y estructura base.</p>
+                        <span class="tl-sp">34 SP ✓</span>
+                    </div>
+                    <div class="tl-item reveal d6">
+                        <div class="tl-num">SPRINT 2 · SEM 3-4</div>
+                        <div class="tl-title">API y contenido</div>
+                        <p class="tl-desc">API REST, CRUD de cursos, módulos y quiz.</p>
+                        <span class="tl-sp">34 SP ✓</span>
+                    </div>
+                    <div class="tl-item reveal d6">
+                        <div class="tl-num">SPRINT 3 · SEM 5-6</div>
+                        <div class="tl-title">Aprendizaje activo</div>
+                        <p class="tl-desc">Inscripciones, progreso, dashboard y tareas.</p>
+                        <span class="tl-sp">34 SP ✓</span>
+                    </div>
+                    <div class="tl-item reveal d7">
+                        <div class="tl-num">SPRINT 4 · SEM 7-8</div>
+                        <div class="tl-title">Administración</div>
+                        <p class="tl-desc">Panel admin, reportes y emails automáticos.</p>
+                        <span class="tl-sp">21 SP ✓</span>
+                    </div>
+                    <div class="tl-item reveal d8">
+                        <div class="tl-num">SPRINT 5 · SEM 9-10</div>
+                        <div class="tl-title">Cierre y despliegue</div>
+                        <p class="tl-desc">QA, deploy Vercel + Render y presentación.</p>
+                        <span class="tl-sp">8 SP ✓</span>
+                    </div>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Diferencia clave:</b> en A, el Sprint 3 concentró la contingencia agotada y dejó sin margen para los sprints finales; en B, el ritmo constante permitió ejecutar el plan completo.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">05 · Story points por sprint</div>
+            <h2 class="title reveal d2">Lo entregado, <span class="accent">sprint a sprint</span></h2>
+            <p class="sub reveal d3">En el Escenario A, el alcance se detiene en el Sprint 3; en el B, cada sprint suma hasta cerrar los 131 story points del MVP.</p>
+            <div class="fin-split">
+                <div class="card bar-card reveal d4">
+                    <h3>SP entregados por sprint · A vs. B</h3>
+                    <p class="chart-sub">Escenario A: 89 SP (68%) · Escenario B: 131 SP (100%)</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="sprintChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Acumulado del alcance</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> Sprint 1: 34 · Sprint 2: 68 · <b style="color:var(--text);">Sprint 3: 89</b> · se detiene aquí</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> Sprint 1: 34 · Sprint 2: 68 · Sprint 3: 102 · <b style="color:var(--text);">Sprint 4: 123</b> · Sprint 5: 131</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> Planeado: 32 SP/sprint · Sprint 5: 3 SP (QA/deploy)</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--copper);font-weight:700;">✕</span> La brecha de 42 SP (131 − 89) es exactamente lo que quedó sin entregar en A</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">Los 42 SP pendientes de A corresponden a las épicas EP-04 (8), EP-05 (21) y EP-06 (13) no completadas.</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">05 · Velocidad del equipo</div>
+            <h2 class="title reveal d2">La velocidad, <span class="accent">el termómetro del riesgo</span></h2>
+            <p class="sub reveal d3">El equipo planeó 32 SP por sprint. En B la velocidad promedio fue de 26 SP/sprint; en A cayó a 22 SP en el Sprint 3 por la curva de aprendizaje en JWT y React Context.</p>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d4">
+                    <h3>Velocidad real por sprint · A vs. B</h3>
+                    <p class="chart-sub">Objetivo: 32 SP/sprint</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="velocityChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Lo que revela la métrica</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> Sprint 3: <b style="color:var(--text);">22 SP</b> — la integración de módulos anidados e inscripciones tomó 40% más horas de lo estimado</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> Sprints 1-3: <b style="color:var(--text);">34 SP</b> — por encima del plan, con seed de datos y middlewares reutilizables</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> Sprint 4: 21 SP · Sprint 5: 8 SP (QA + deploy)</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> Promedio real B: <b style="color:var(--text);">26 SP/sprint</b> · sin bugs críticos en producción</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout warn reveal d6"><b>Si la velocidad se revisa al cierre de cada sprint, el backlog se ajusta a tiempo.</b> En A, la caída a 22 SP no se corrigió y el costo del Sprint 3 se disparó; en B, el plan se mantuvo realista de principio a fin.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">06 · Criterios de aceptación</div>
+            <h2 class="title reveal d2">La calidad final: <span class="accent">6 de 10 vs. 10 de 10</span></h2>
+            <p class="sub reveal d3">Los 10 criterios acordados en el Sprint 0 se verificaron de forma distinta en cada escenario: en A solo los de las épicas entregadas; en B, todos.</p>
+            <div class="gauge-row reveal d4">
+                <div class="gauge a">
+                    <div class="g-label">Escenario A · Límite</div>
+                    <div class="g-track"><div class="g-fill"></div></div>
+                    <div class="g-val">6 / 10</div>
+                </div>
+                <div class="gauge b">
+                    <div class="g-label">Escenario B · Valor</div>
+                    <div class="g-track"><div class="g-fill"></div></div>
+                    <div class="g-val">10 / 10</div>
+                </div>
+            </div>
+            <div class="split" style="width:min(100%,1100px);">
+                <div class="card split-panel after reveal d5">
+                    <h3>Verificados en el Escenario A</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Registro e inicio de sesión con JWT · Sprint 1</li>
+                        <li><span class="mk">✓</span> Sistema distingue 3 roles: admin, instructor, alumno · Sprint 1</li>
+                        <li><span class="mk">✓</span> Instructor crea cursos con módulos y lecciones · Sprint 2</li>
+                        <li><span class="mk">✓</span> Alumno realiza quiz con calificación automática · Sprint 2</li>
+                        <li><span class="mk">✓</span> Inscripción a cursos disponibles (parcial) · Sprint 3</li>
+                        <li><span class="mk">✓</span> Progreso por lección en % (parcial) · Sprint 3</li>
+                    </ul>
+                </div>
+                <div class="card split-panel before reveal d6">
+                    <h3>Sin verificar al cierre del Escenario A</h3>
+                    <ul>
+                        <li><span class="mk">✕</span> Tareas por curso asignadas por el instructor</li>
+                        <li><span class="mk">✕</span> Admin gestiona usuarios (CRUD) desde su panel</li>
+                        <li><span class="mk">✕</span> Emails de bienvenida e inscripción (Nodemailer)</li>
+                        <li><span class="mk">✕</span> Reportes de progreso y calificaciones para el admin</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">Los cuatro criterios pendientes en A corresponden a las épicas EP-04 (parcial), EP-05 y EP-06 — todas completadas en el Escenario B.</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">07 · El presupuesto</div>
+            <h2 class="title reveal d2">El mismo $280,000, <span class="accent">dos destinos distintos</span></h2>
+            <p class="sub reveal d3">El presupuesto aprobado fue idéntico. En A se consumió casi en su totalidad sin terminar el alcance; en B sobró $14,800 y el MVP se entregó completo.</p>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d4">
+                    <h3>Presupuesto aprobado vs. gasto real (MXN)</h3>
+                    <p class="chart-sub">Aprobado: $280,000 · A: $277,400 · B: $265,200</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Lectura financiera</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> <b style="color:var(--text);">$277,400</b> consumidos · solo $2,600 sin ejercer · alcance del 68%</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> <b style="color:var(--text);">$265,200</b> consumidos · ahorro de $14,800 (5.3%) · alcance del 100%</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> El ahorro se devolvió al cliente sin sacrificar ninguna historia</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--copper);font-weight:700;">✕</span> En A, el costo por hora efectivo fue mayor: el mismo presupuesto alcanzó para menos alcance</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout warn reveal d6"><b>El costo del Sprint 3 en A fue de $84,400 — el más alto del proyecto</b> — absorbiendo la configuración de MongoDB Atlas, la integración de módulos anidados y la curva de aprendizaje en JWT.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">08 · Composición del costo</div>
+            <h2 class="title reveal d2">¿En qué se gastó el dinero? <span class="accent">Escenario A</span></h2>
+            <p class="sub reveal d3">Del presupuesto aprobado al cierre en la Semana 6: el gasto se concentró en mano de obra y en una contingencia que se disparó a $63,000.</p>
+            <div class="fin-split">
+                <div class="card chart-card reveal d4">
+                    <h3>Composición del gasto · $277,400</h3>
+                    <p class="chart-sub">MXN · cierre anticipado · Semana 6</p>
+                    <div class="chart-wrap">
+                        <canvas id="costAChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot" style="background:#C98F4E;"></span>Mano de obra <b>$206,400</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#EF7A7A;"></span>Contingencia <b>$63,000</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#E0BC6E;"></span>Nube + herramientas <b>$8,000</b></span>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">El detalle del gasto</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">74%</span> Mano de obra · <b style="color:var(--text);">$206,400</b> — 650 horas totales</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">23%</span> Contingencia · <b style="color:var(--text);">$63,000</b> — vs. $22,000 planeados</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">3%</span> Nube + herramientas · <b style="color:var(--text);">$8,000</b> — exacto al plan</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--red);font-weight:700;">!</span> <b style="color:var(--text);">$41,000 sobre la contingencia</b> — el costo imprevisto de la subestimación de esfuerzo</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">La contingencia no cubrió el riesgo: los imprevistos se acumularon en el Sprint 3 (integración, Atlas, scope creep).</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">08 · Composición del costo</div>
+            <h2 class="title reveal d2">¿En qué se gastó el dinero? <span class="accent">Escenario B</span></h2>
+            <p class="sub reveal d3">Del presupuesto aprobado al cierre en la Semana 10: el 89% del gasto fue mano de obra; la contingencia se usó con mesura y el deploy se cubrió sin descuadrar.</p>
+            <div class="fin-split">
+                <div class="card chart-card reveal d4">
+                    <h3>Composición del gasto · $265,200</h3>
+                    <p class="chart-sub">MXN · cierre exitoso · Semana 10</p>
+                    <div class="chart-wrap">
+                        <canvas id="costBChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot" style="background:#2FBF8F;"></span>Mano de obra <b>$236,080</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#34D399;"></span>Contingencia <b>$20,000</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#E0BC6E;"></span>Nube + herramientas <b>$8,000</b></span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#C98F4E;"></span>Deploy <b>$1,120</b></span>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">El detalle del gasto</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">89%</span> Mano de obra · <b style="color:var(--text);">$236,080</b> — 753 horas totales</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">8%</span> Contingencia · <b style="color:var(--text);">$20,000</b> — de $22,000 reservados</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">3%</span> Nube + herramientas · <b style="color:var(--text);">$8,000</b> — exacto al plan</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--gold);font-weight:700;">&lt;1%</span> Deploy Vercel + Render · <b style="color:var(--text);">$1,120</b> — imprevisto absorbido por la contingencia</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">La mano de obra cerró $13,920 por debajo de lo planeado ($250,000 → $236,080) por la eficiencia del equipo.</p>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">09 · Costo por integrante</div>
+            <h2 class="title reveal d2">La mano de obra, <span class="accent">integrante por integrante</span></h2>
+            <p class="sub reveal d3">Con la misma tarifa por hora y las mismas 200 horas planeadas, cada escenario repartió el esfuerzo de forma distinta.</p>
+            <div class="fin-split">
+                <div class="card bar-card reveal d4">
+                    <h3>Costo por integrante · planeado, A y B (MXN)</h3>
+                    <p class="chart-sub">Planeado: $250,000 · A: $206,400 · B: $236,080</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="memberChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Horas reales en cada escenario</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> Alberto Anyelo · PM/DevOps · <b style="color:var(--text);">120h</b> · $36,000</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> Erick · Backend · <b style="color:var(--text);">200h</b> · Johan · Frontend · <b style="color:var(--text);">200h</b> · $134,000</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> Alan Hazel · UX/UI · <b style="color:var(--text);">130h</b> · $36,400</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> 185h / 198h / 192h / 178h · <b style="color:var(--text);">todos bajo 200h</b> · $236,080</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">✓</span> En B, la eficiencia del equipo generó <b style="color:var(--text);">$13,920 de ahorro</b> en mano de obra</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">10 · Gasto por sprint</div>
+            <h2 class="title reveal d2">El dinero, <span class="accent">sprint a sprint</span></h2>
+            <p class="sub reveal d3">En A, el gasto creció sprint tras sprint hasta agotar el presupuesto; en B, cada sprint cerró por debajo de su costo planeado.</p>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d4">
+                    <h3>Costo real por sprint · A vs. B (MXN)</h3>
+                    <p class="chart-sub">A: $277,400 en 3 sprints · B: $265,200 en 5 sprints</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="sprintCostChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">¿Por qué se agotó en A?</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--copper);font-weight:700;">S1</span> $52,800 · dentro del rango planeado</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--copper);font-weight:700;">S2</span> $70,200 · horas extra por configuración de MongoDB Atlas</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--red);font-weight:700;">S3</span> <b style="color:var(--text);">$84,400</b> · el sprint más caro: integración + scope creep + curva de aprendizaje</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--copper);font-weight:700;">S4-S5</span> $0 · cancelados · el presupuesto ya no alcanzaba</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">En B, el sprint 5 ahorró $8,200 — las horas de QA se cubrieron con la eficiencia acumulada del equipo.</p>
+                </div>
+            </div>
+            <div class="callout reveal d6"><b>El patrón que separa a los escenarios:</b> en B el gasto por sprint fue estable y decreciente en desviación; en A, cada sprint costó más que el anterior hasta agotar la caja en la Semana 6.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">11 · La contingencia</div>
+            <h2 class="title reveal d2">El destino de los <span class="accent">$22,000 de contingencia</span></h2>
+            <p class="sub reveal d3">La contingencia reservada en el Sprint 0 fue la misma en ambos escenarios. Su uso fue radicalmente distinto — y decidió el destino del proyecto.</p>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d4">
+                    <h3>Contingencia planeada vs. utilizada (MXN)</h3>
+                    <p class="chart-sub">Planeada: $22,000 · A: $63,000 · B: $20,000</p>
+                    <div class="bar-wrap" style="height:clamp(190px,32vh,280px);">
+                        <canvas id="contingencyChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d5" style="padding:clamp(14px,2.4vh,20px) clamp(16px,1.8vw,22px);text-align:left;">
+                    <h3 style="font-size:clamp(14px,1.45vw,18px);font-weight:700;margin-bottom:8px;">Dos lecturas de la misma reserva</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--red);font-weight:700;">A</span> <b style="color:var(--text);">$63,000</b> utilizados — 2.9× lo reservado · absorbió retrabajo, infraestructura y alcance extra sin ajustar el presupuesto</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> <b style="color:var(--text);">$20,000</b> utilizados — dentro de la reserva · cubrió el deploy imprevisto ($1,120) y ajustes menores</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11.5px,1.15vw,14.5px);line-height:1.5;"><span class="mk" style="color:var(--gold);font-weight:700;">!</span> La recomendación del cierre: buffer de riesgo del <b style="color:var(--text);">20%</b> en las estimaciones iniciales, no del 10%</li>
+                    </ul>
+                    <p class="chart-sub" style="margin-top:10px;">En A la contingencia se usó para financiar el sobreesfuerzo; en B se usó solo para lo imprevisto real. Esa es la diferencia de gestión.</p>
+                </div>
+            </div>
+            <div class="callout warn reveal d6"><b>El detonante:</b> la integración de módulos anidados y la lógica de inscripciones tomó 40% más horas de lo estimado — en A ese sobrecosto se pagó con contingencia hasta agotarla.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">12 · ¿Qué pasó con el dinero?</div>
+            <h2 class="title reveal d2">El recorrido del dinero en <span class="accent" style="background:linear-gradient(135deg,#E0BC6E,#C98F4E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">el Escenario A</span></h2>
+            <p class="sub reveal d3">Del presupuesto aprobado al cierre anticipado en la Semana 6: cada peso tuvo un destino, pero el margen se agotó antes de terminar el alcance.</p>
+            <div class="money-flow">
+                <div class="card money-step gold reveal d4">
+                    <div class="ft">1 · Presupuesto aprobado</div>
+                    <div class="fd">Aprobado por el cliente en el Sprint 0 con contingencia del 8%.</div>
+                    <div class="fv">$280,000</div>
+                </div>
+                <div class="money-arrow reveal d4">→</div>
+                <div class="card money-step reveal d5">
+                    <div class="ft">2 · Gasto real ejecutado</div>
+                    <div class="fd">Mano de obra $206,400 · nube y herramientas $8,000 · contingencia $63,000.</div>
+                    <div class="fv">$277,400</div>
+                </div>
+                <div class="money-arrow reveal d5">→</div>
+                <div class="card money-step red reveal d6">
+                    <div class="ft">3 · Cierre anticipado</div>
+                    <div class="fd">$2,600 sin ejercer, pero el presupuesto se declaró agotado en la Semana 6.</div>
+                    <div class="fv">68% alcance</div>
+                </div>
+            </div>
+            <div class="split" style="width:min(100%,1080px);">
+                <div class="card split-panel before reveal d6">
+                    <h3>Qué consumió el dinero en A</h3>
+                    <ul>
+                        <li><span class="mk">✕</span> Retrabajo por integración de módulos anidados e inscripciones (+40% de horas)</li>
+                        <li><span class="mk">✕</span> Configuración de MongoDB Atlas: DNS, permisos y cluster pausado</li>
+                        <li><span class="mk">✕</span> Scope creep: pantallas fuera del alcance original sin ajustar el presupuesto</li>
+                        <li><span class="mk">✕</span> Curva de aprendizaje en JWT y React Context (velocidad de 22 SP)</li>
+                    </ul>
+                </div>
+                <div class="card split-panel after reveal d7">
+                    <h3>Qué NO costó de más</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Nube (Atlas, GitHub): $5,000 exactos al plan</li>
+                        <li><span class="mk">✓</span> Herramientas y licencias (Figma Pro): $3,000 exactos al plan</li>
+                        <li><span class="mk">✓</span> La base técnica entregada es sólida y reutilizable para Fase 2</li>
+                        <li><span class="mk">✓</span> Sin deuda técnica acumulada en lo entregado</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout warn reveal d8"><b>Conclusión del escenario:</b> el dinero no desapareció — se gastó en horas imprevistas que la contingencia del 8% no alcanzó a cubrir, dejando 3 épicas sin entregar.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">12 · ¿Qué pasó con el dinero?</div>
+            <h2 class="title reveal d2">El recorrido del dinero en <span class="accent">el Escenario B</span></h2>
+            <p class="sub reveal d3">Del presupuesto aprobado al cierre formal en la Semana 10: el gasto se controló sprint a sprint y sobró dinero que se devolvió al cliente.</p>
+            <div class="money-flow">
+                <div class="card money-step gold reveal d4">
+                    <div class="ft">1 · Presupuesto aprobado</div>
+                    <div class="fd">Aprobado por el cliente en el Sprint 0 con contingencia del 8%.</div>
+                    <div class="fv">$280,000</div>
+                </div>
+                <div class="money-arrow reveal d4">→</div>
+                <div class="card money-step reveal d5">
+                    <div class="ft">2 · Gasto real ejecutado</div>
+                    <div class="fd">Mano de obra $236,080 · nube $5,000 · herramientas $3,000 · deploy $1,120 · contingencia $20,000.</div>
+                    <div class="fv">$265,200</div>
+                </div>
+                <div class="money-arrow reveal d5">→</div>
+                <div class="card money-step green reveal d6">
+                    <div class="ft">3 · Ahorro devuelto al cliente</div>
+                    <div class="fd">$14,800 no utilizados — 100% del alcance entregado con menor gasto.</div>
+                    <div class="fv">+ $14,800</div>
+                </div>
+            </div>
+            <div class="split" style="width:min(100%,1080px);">
+                <div class="card split-panel after reveal d6">
+                    <h3>Lo que no costó más de lo planeado</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> Mano de obra: −$13,920 por eficiencia del equipo (753 horas totales)</li>
+                        <li><span class="mk">✓</span> Contingencia: $20,000 de $22,000 reservados</li>
+                        <li><span class="mk">✓</span> Nube y licencias: $8,000 exactos al presupuesto</li>
+                        <li><span class="mk">✓</span> Sin costos ocultos ni facturación adicional</li>
+                    </ul>
+                </div>
+                <div class="card split-panel before reveal d7">
+                    <h3>El único costo imprevisto</h3>
+                    <ul>
+                        <li><span class="mk">✕</span> Deploy en Vercel + Render: $1,120 no presupuestados</li>
+                        <li><span class="mk">✓</span> Absorbido por la contingencia sin tocar el ahorro final</li>
+                        <li><span class="mk">✓</span> Justificado: producción real para CapacitaTec</li>
+                        <li><span class="mk">✓</span> Sin impacto en el presupuesto ni en el alcance</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Conclusión del escenario:</b> el dinero se invirtió en lo planeado, el único imprevisto (deploy) se absorbió con la reserva, y el ahorro de $14,800 se devolvió al cliente con el MVP completo.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">13 · Valor de negocio</div>
+            <h2 class="title reveal d2">El valor que genera <span class="accent">el dinero invertido</span></h2>
+            <p class="sub reveal d3">Solo el Escenario B transforma la inversión en retorno: al sustituir plataformas externas y eliminar el trabajo manual de capacitación, el dinero invertido se recupera y luego genera ganancia.</p>
+            <div class="roi-grid">
+                <div class="card roi-card pos reveal d4">
+                    <h3>Beneficio anual estimado</h3>
+                    <div class="r-value">$240,000 / año</div>
+                    <p class="r-desc">Licencias LMS canceladas ($144k) + ahorro de tiempo administrativo ($36k) + mayor tasa de capacitación completada ($60k).</p>
+                </div>
+                <div class="card roi-card neg reveal d5">
+                    <h3>ROI · primer año</h3>
+                    <div class="r-value">−9.5%</div>
+                    <p class="r-desc">La inversión de $265,200 se recupera durante el primer año; el flujo se cierra a los 13 meses.</p>
+                </div>
+                <div class="card roi-card gol reveal d6">
+                    <h3>ROI · segundo año</h3>
+                    <div class="r-value">+80.7%</div>
+                    <p class="r-desc">Ganancia neta de $214,800 MXN una vez recuperada la inversión del MVP.</p>
+                </div>
+            </div>
+            <div class="fin-split" style="grid-template-columns:1.3fr 1fr;">
+                <div class="card bar-card reveal d7">
+                    <h3>Flujo acumulado de la inversión (MXN)</h3>
+                    <p class="chart-sub">Inversión −$265,200 · beneficio anual $240,000</p>
+                    <div class="bar-wrap" style="height:clamp(150px,24vh,210px);">
+                        <canvas id="roiChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rules-list reveal d7" style="padding:clamp(12px,2vh,18px) clamp(14px,1.6vw,20px);text-align:left;">
+                    <h3 style="font-size:clamp(13px,1.35vw,17px);font-weight:700;margin-bottom:6px;">Y en el Escenario A…</h3>
+                    <ul style="list-style:none;">
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11px,1.12vw,14px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> <b style="color:var(--text);">$277,400</b> invertidos en el 68% del MVP — sin plataforma completa en producción</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11px,1.12vw,14px);line-height:1.5;border-bottom:1px solid rgba(190,214,200,0.08);"><span class="mk" style="color:var(--gold);font-weight:700;">A</span> Los beneficios estimados ($240k/año) <b style="color:var(--text);">no se materializan</b> sin las épicas de inscripciones, admin y notificaciones</li>
+                        <li style="display:flex;gap:10px;padding:7px 0;color:var(--muted);font-size:clamp(11px,1.12vw,14px);line-height:1.5;"><span class="mk" style="color:var(--emerald);font-weight:700;">B</span> La Fase 2 (pagos, Cloudinary, Socket.io) se gestionará como proyecto independiente</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="roi-legend reveal d8">
+                <span>Fuentes del beneficio: licencias Moodle/TalentLMS canceladas · 8 h/semana de administración ahorradas · tasa de capacitación completada superior</span>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">14 · Causas del cierre</div>
+            <h2 class="title reveal d2">Qué separa <span class="accent">un final del otro</span></h2>
+            <p class="sub reveal d3">Las cuatro causas documentadas del cierre anticipado en el Escenario A — y la práctica que las evitó en el Escenario B.</p>
+            <div class="split" style="width:min(100%,1120px);">
+                <div class="card split-panel before reveal d4">
+                    <h3>Lo que llevó al cierre en A</h3>
+                    <ul>
+                        <li><span class="mk">1</span> <b style="color:var(--text);">Subestimación de esfuerzo</b> — la integración de módulos anidados e inscripciones tomó 40% más horas de lo estimado</li>
+                        <li><span class="mk">2</span> <b style="color:var(--text);">Problemas técnicos de red/BD</b> — MongoDB Atlas (DNS, permisos, cluster pausado) consumió horas no planeadas</li>
+                        <li><span class="mk">3</span> <b style="color:var(--text);">Scope creep no controlado</b> — pantallas fuera del alcance (SearchPage, AssignmentsPage) sin ajustar presupuesto</li>
+                        <li><span class="mk">4</span> <b style="color:var(--text);">Velocidad menor a la estimada</b> — el equipo planeó 32 SP/sprint y promedió 22 SP en el Sprint 3</li>
+                    </ul>
+                </div>
+                <div class="card split-panel after reveal d5">
+                    <h3>Lo que lo evitó en B</h3>
+                    <ul>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">DoD definido desde el Sprint 0</b> — sin retrabajo por criterios mal interpretados</li>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">Servicios externos configurados antes del Sprint 1</b> — Atlas, Cloudinary y SMTP listos desde la Semana 0</li>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">Alcance congelado tras el Sprint 1</b> — cualquier historia nueva reemplaza a una existente</li>
+                        <li><span class="mk">✓</span> <b style="color:var(--text);">Velocidad revisada al cierre de cada sprint</b> — el backlog se ajustó de forma proactiva</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout warn reveal d6"><b>El aprendizaje central:</b> ninguna de las cuatro causas de A fue un evento inesperado de fuerza mayor — todas eran gestionables desde la planeación y el seguimiento semanal.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">15 · Lecciones aprendidas</div>
+            <h2 class="title reveal d2">Lo que dejan <span class="accent">los dos escenarios</span></h2>
+            <div class="split-final">
+                <div class="card final-panel reveal d3">
+                    <h3>Recomendaciones del Escenario A</h3>
+                    <ul>
+                        <li><span class="mk">→</span> Definir el DoD desde el Sprint 0 — evita retrabajo por criterios mal interpretados</li>
+                        <li><span class="mk">→</span> Buffer de riesgo del 20% en las estimaciones iniciales, no del 10%</li>
+                        <li><span class="mk">→</span> Congelar el alcance tras el Sprint 1 — cualquier historia nueva debe reemplazar a una existente</li>
+                        <li><span class="mk">→</span> Configurar todos los servicios externos antes del Sprint 1, no durante</li>
+                        <li><span class="mk">→</span> El Scrum Master debe revisar la velocidad real al cierre de cada sprint y ajustar el backlog</li>
+                    </ul>
+                </div>
+                <div class="card final-panel gold-panel reveal d4">
+                    <h3>Lo que confirmó el Escenario B</h3>
+                    <ul>
+                        <li><span class="mk">→</span> Gitflow (feature branches + PR + review) mantiene la rama development estable en todos los sprints</li>
+                        <li><span class="mk">→</span> Separar backend y frontend en el mono-repo facilita la integración</li>
+                        <li><span class="mk">→</span> El seed de datos desde el Sprint 1 permite probar la API real sin datos manuales</li>
+                        <li><span class="mk">→</span> Middlewares reutilizables (verifyToken, checkRole) reducen el código duplicado</li>
+                        <li><span class="mk">→</span> Documentar los endpoints en Swagger desde el inicio — hacerlo al final genera retrabajo</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal d5"><b>Mismas reglas, misma documentación:</b> las lecciones de ambos cierres aplican al mismo equipo y al mismo proyecto — el siguiente ciclo debe planearse con ambas listas sobre la mesa.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">16 · Conclusiones</div>
+            <h2 class="title reveal d2">El presupuesto no decide solo: <span class="accent">lo decide la gestión</span></h2>
+            <p class="sub reveal d3">Con los mismos $280,000, el mismo equipo y el mismo alcance, el resultado dependió de decisiones de planeación y seguimiento — no de la suerte.</p>
+            <div class="stats">
+                <div class="reveal d4">
+                    <div class="stat-num">68%</div>
+                    <div class="stat-label">Alcance en el Escenario A</div>
+                </div>
+                <div class="reveal d5 stat-good">
+                    <div class="stat-num">100%</div>
+                    <div class="stat-label">Alcance en el Escenario B</div>
+                </div>
+                <div class="reveal d6 stat-bad">
+                    <div class="stat-num">$63,000</div>
+                    <div class="stat-label">Contingencia usada en A</div>
+                </div>
+                <div class="reveal d7 stat-good">
+                    <div class="stat-num">+$14,800</div>
+                    <div class="stat-label">Ahorro devuelto en B</div>
+                </div>
+            </div>
+            <div class="duo-row" style="width:min(100%,1140px);">
+                <div class="card duo-panel a reveal d6">
+                    <h3>Si el riesgo se subestima</h3>
+                    <div class="d-val">Cierre anticipado</div>
+                    <div class="d-desc">El presupuesto se agota en la Semana 6, tres épicas quedan fuera y el valor de negocio no se materializa. El costo por punto entregado es mayor.</div>
+                </div>
+                <div class="card duo-panel b reveal d7">
+                    <h3>Si el riesgo se gestiona</h3>
+                    <div class="d-val">MVP en producción</div>
+                    <div class="d-desc">Cinco sprints completos, $14,800 devueltos, ROI positivo en el segundo año ($214,800 de ganancia neta) y un cliente satisfecho.</div>
+                </div>
+            </div>
+            <div class="callout reveal d8"><b>Recomendación:</b> planear para el Escenario B con las salvaguardas del A — contingencia del 20%, alcance congelado y velocidad revisada cada sprint. Ese es el plan de cierre del próximo proyecto.</div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+    <section class="slide grid-bg">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal d1">Cierre</div>
+            <div class="thanks reveal d2">Gracias.</div>
+            <p class="thanks-sub reveal d3">Equipo Alfa · Proyecto AulaVirtual Pro para CapacitaTec S.A. — Análisis de escenarios de cierre: límite de presupuesto vs. valor de negocio alcanzado.</p>
+            <div class="cover-footer reveal d4">
+                <span class="chip">2 escenarios</span>
+                <span class="chip">$280,000 · misma inversión</span>
+                <span class="chip">68% vs. 100% de alcance</span>
+                <span class="chip">$240,000 / año de beneficio</span>
+            </div>
+        </div>
+        <div class="doc-footer"><span>AulaVirtual Pro · CapacitaTec S.A.</span><span>Equipo Alfa <span class="df-sep"></span> Escenarios de cierre</span></div>
+    </section>
+
+</div>
+
+<div class="nav-controls">
+    <button class="nav-btn fs-btn" onclick="toggleFullscreen()" title="Pantalla completa (F)">↗</button>
+    <button class="nav-btn" onclick="prevSlide()" title="Anterior">←</button>
+    <span class="slide-counter"><span id="current">1</span> / <span id="total">22</span></span>
+    <button class="nav-btn" onclick="nextSlide()" title="Siguiente">→</button>
+</div>
+
+<script>
+    const centerText = (value, sub) => ({
+        id: 'centerText',
+        afterDraw(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const { ctx, chartArea: { top, left, right, bottom } } = chart;
+            const cx = (left + right) / 2;
+            const cy = (top + bottom) / 2;
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#EDF4F0';
+            ctx.font = "800 30px 'Sora', sans-serif";
+            ctx.fillText(value, cx, cy + 2);
+            ctx.fillStyle = '#8FA59A';
+            ctx.font = "500 10px 'Inter', sans-serif";
+            ctx.fillText(sub, cx, cy + 18);
+            ctx.restore();
+        }
+    });
+
+    const gridColor = 'rgba(190, 214, 200, 0.06)';
+    const tickColor = '#8FA59A';
+    const tooltipOpts = {
+        backgroundColor: '#132019',
+        borderColor: 'rgba(190,214,200,0.25)',
+        borderWidth: 1,
+        titleFont: { family: "'Sora', sans-serif", weight: 600 },
+        bodyFont: { family: "'Inter', sans-serif" }
+    };
+
+    new Chart(document.getElementById('epicChart'), {
+        type: 'bar',
+        data: {
+            labels: ['EP-01 Auth', 'EP-02 Cursos', 'EP-03 Eval.', 'EP-04 Inscrip.', 'EP-05 Admin', 'EP-06 Notif.'],
+            datasets: [
+                { label: 'Planeado', data: [21, 34, 21, 21, 21, 13], backgroundColor: 'rgba(224, 188, 110, 0.4)', borderRadius: 6, borderSkipped: false },
+                { label: 'A · Límite', data: [21, 34, 21, 13, 0, 0], backgroundColor: '#C98F4E', borderRadius: 6, borderSkipped: false },
+                { label: 'B · Valor', data: [21, 34, 21, 21, 21, 13], backgroundColor: '#2FBF8F', borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.dataset.label}: ${c.parsed.y} SP` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 10 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor }, beginAtZero: true, suggestedMax: 40 }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('sprintChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5'],
+            datasets: [
+                { label: 'A · Límite', data: [34, 34, 21, 0, 0], backgroundColor: '#C98F4E', borderRadius: 6, borderSkipped: false },
+                { label: 'B · Valor', data: [34, 34, 34, 21, 8], backgroundColor: '#2FBF8F', borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.dataset.label}: ${c.parsed.y} SP` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor }, beginAtZero: true, suggestedMax: 40 }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('velocityChart'), {
+        type: 'line',
+        data: {
+            labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5'],
+            datasets: [
+                { label: 'A · Límite', data: [34, 34, 21, 0, 0], borderColor: '#C98F4E', backgroundColor: 'rgba(201, 143, 78, 0.1)', fill: true, tension: 0.35, borderWidth: 3, pointBackgroundColor: '#C98F4E', pointRadius: 4 },
+                { label: 'B · Valor', data: [34, 34, 34, 21, 8], borderColor: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.12)', fill: true, tension: 0.35, borderWidth: 3, pointBackgroundColor: '#34D399', pointRadius: 4 },
+                { label: 'Objetivo (32 SP)', data: [32, 32, 32, 32, 3], borderColor: 'rgba(224, 188, 110, 0.7)', borderDash: [6, 6], tension: 0, borderWidth: 2, pointRadius: 0 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.dataset.label}: ${c.parsed.y} SP` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor }, beginAtZero: true, suggestedMax: 40 }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('budgetChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Aprobado', 'A · Límite', 'B · Valor'],
+            datasets: [
+                { label: 'MXN', data: [280000, 277400, 265200], backgroundColor: ['rgba(224, 188, 110, 0.45)', '#C98F4E', '#2FBF8F'], borderRadius: 8, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` $${c.parsed.y.toLocaleString()}` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => '$' + (v / 1000) + 'k' }, beginAtZero: true }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('costAChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Mano de obra', 'Contingencia', 'Nube + herramientas'],
+            datasets: [{
+                data: [206400, 63000, 8000],
+                backgroundColor: ['#C98F4E', '#EF7A7A', '#E0BC6E'],
+                borderColor: '#0E1713',
+                borderWidth: 3,
+                hoverOffset: 6
+            }]
+        },
+        plugins: [centerText('$277.4k', 'gasto real A')],
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '68%',
+            plugins: {
+                legend: { display: false },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.label}: $${c.parsed.toLocaleString()}` } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('costBChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Mano de obra', 'Contingencia', 'Nube + herramientas', 'Deploy'],
+            datasets: [{
+                data: [236080, 20000, 8000, 1120],
+                backgroundColor: ['#2FBF8F', '#34D399', '#E0BC6E', '#C98F4E'],
+                borderColor: '#0E1713',
+                borderWidth: 3,
+                hoverOffset: 6
+            }]
+        },
+        plugins: [centerText('$265.2k', 'gasto real B')],
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '68%',
+            plugins: {
+                legend: { display: false },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.label}: $${c.parsed.toLocaleString()}` } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('memberChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Alberto Anyelo', 'Erick Hernandez', 'Johan Anuart', 'Alan Hazel'],
+            datasets: [
+                { label: 'Planeado', data: [60000, 70000, 64000, 56000], backgroundColor: 'rgba(224, 188, 110, 0.4)', borderRadius: 6, borderSkipped: false },
+                { label: 'A · Límite', data: [36000, 70000, 64000, 36400], backgroundColor: '#C98F4E', borderRadius: 6, borderSkipped: false },
+                { label: 'B · Valor', data: [55500, 69300, 61440, 49840], backgroundColor: '#2FBF8F', borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.dataset.label}: $${c.parsed.y.toLocaleString()}` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 10 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => '$' + (v / 1000) + 'k' }, beginAtZero: true }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('sprintCostChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5'],
+            datasets: [
+                { label: 'A · Límite', data: [52800, 70200, 84400, 0, 0], backgroundColor: '#C98F4E', borderRadius: 6, borderSkipped: false },
+                { label: 'B · Valor', data: [49600, 67200, 66800, 52400, 29200], backgroundColor: '#2FBF8F', borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.dataset.label}: $${c.parsed.y.toLocaleString()}` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => '$' + (v / 1000) + 'k' }, beginAtZero: true }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('contingencyChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Planeada', 'A · Límite', 'B · Valor'],
+            datasets: [
+                { label: 'MXN', data: [22000, 63000, 20000], backgroundColor: ['rgba(224, 188, 110, 0.45)', '#EF7A7A', '#2FBF8F'], borderRadius: 8, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` $${c.parsed.y.toLocaleString()}` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => '$' + (v / 1000) + 'k' }, beginAtZero: true }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('roiChart'), {
+        type: 'line',
+        data: {
+            labels: ['Inversión (año 0)', 'Año 1', 'Año 2'],
+            datasets: [
+                {
+                    label: 'Flujo acumulado',
+                    data: [-265200, -25200, 214800],
+                    borderColor: '#34D399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.12)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3,
+                    pointBackgroundColor: ['#C98F4E', '#E0BC6E', '#34D399'],
+                    pointRadius: 5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { ...tooltipOpts, callbacks: { label: (c) => ` ${c.parsed.y < 0 ? '-$' + (-c.parsed.y).toLocaleString() : '+$' + c.parsed.y.toLocaleString()}` } }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Inter', sans-serif", size: 11 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => (v < 0 ? '-$' : '+$') + (Math.abs(v) / 1000) + 'k' }, beginAtZero: false }
+            }
+        }
+    });
+
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    document.getElementById('total').textContent = total;
+
+    function showSlide(n) {
+        if (n < 1) n = 1;
+        if (n > total) n = total;
+        current = n;
+        document.querySelectorAll('.slide').forEach((s, i) => {
+            s.classList.toggle('active', i === n - 1);
+        });
+        document.getElementById('current').textContent = n;
+        document.getElementById('progressBar').style.width = (n / total * 100) + '%';
+    }
+
+    function nextSlide() { showSlide(current + 1); }
+    function prevSlide() { showSlide(current - 1); }
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.nav-controls')) nextSlide();
+    });
+
+    showSlide(1);
+</script>
+</body>
+</html>
