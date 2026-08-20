@@ -87,8 +87,6 @@ npm run dev            # iniciar app en http://localhost:5173
 - **Asistente IA:** chat integrado para resolver dudas
 - **Reportes:** generación de reportes de rendimiento
 
-## 🌐 Demo en vivo
-[URL del sistema desplegado](https://tu-app.vercel.app)
 
 ## 📄 Licencia
 MIT — NexaTech Consulting 2026
