@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ChatProvider } from "./context/ChatContext";
+import ChatWidget from "./components/ChatWidget";
 
 import LoginPage from "./pages/LoginPage";
 import CatalogPage from "./pages/CatalogPage";
@@ -44,36 +46,46 @@ function HomeRedirect() {
   return <Navigate to="/catalog" replace />;
 }
 
+/** Widget de chat flotante: visible solo con sesión activa */
+function ChatWidgetGlobal() {
+  const { token } = useAuth();
+  if (!token) return null;
+  return <ChatWidget />;
+}
+
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Públicas */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+      <ChatProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Públicas */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          {/* Redirección raíz por rol */}
-          <Route path="/" element={<HomeRedirect />} />
+            {/* Redirección raíz por rol */}
+            <Route path="/" element={<HomeRedirect />} />
 
-          {/* Alumno */}
-          <Route path="/catalog" element={<PrivateRoute><CatalogPage /></PrivateRoute>} />
-          <Route path="/course/:id" element={<PrivateRoute><CoursePage /></PrivateRoute>} />
-          <Route path="/quiz/:id" element={<PrivateRoute><QuizPage /></PrivateRoute>} />
-          <Route path="/progress" element={<PrivateRoute><ProgressPage /></PrivateRoute>} />
-          <Route path="/assignments" element={<PrivateRoute><AssignmentsPage /></PrivateRoute>} />
-          <Route path="/search" element={<PrivateRoute><SearchPage /></PrivateRoute>} />
+            {/* Alumno */}
+            <Route path="/catalog" element={<PrivateRoute><CatalogPage /></PrivateRoute>} />
+            <Route path="/course/:id" element={<PrivateRoute><CoursePage /></PrivateRoute>} />
+            <Route path="/quiz/:id" element={<PrivateRoute><QuizPage /></PrivateRoute>} />
+            <Route path="/progress" element={<PrivateRoute><ProgressPage /></PrivateRoute>} />
+            <Route path="/assignments" element={<PrivateRoute><AssignmentsPage /></PrivateRoute>} />
+            <Route path="/search" element={<PrivateRoute><SearchPage /></PrivateRoute>} />
 
-          {/* Instructor / Profesor */}
-          <Route path="/teacher" element={<InstructorRoute><TeacherDashboardPage /></InstructorRoute>} />
+            {/* Instructor / Profesor */}
+            <Route path="/teacher" element={<InstructorRoute><TeacherDashboardPage /></InstructorRoute>} />
 
-          {/* Admin */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+            {/* Admin */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <ChatWidgetGlobal />
+        </BrowserRouter>
+      </ChatProvider>
     </AuthProvider>
   );
 }

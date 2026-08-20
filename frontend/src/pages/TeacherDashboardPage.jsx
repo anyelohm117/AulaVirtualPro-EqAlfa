@@ -57,7 +57,7 @@ export default function TeacherDashboardPage() {
                 {error&&<p className="form-error">{error}</p>}
                 {!loading&&cursos.length===0&&<div className="empty-state"><div className="empty-state-icon"><BookOpen size={48}/></div><p className="empty-state-desc">Aún no has creado cursos</p><button onClick={()=>{setForm({titulo:"",descripcion:"",imagen:""});setCursoSel(null);setVista("crear");}} className="btn-action-primary">Crear primer curso</button></div>}
                 {!loading&&cursos.length>0&&<div className="teacher-summary">
-                  {[[BookOpen,cursos.length,'Cursos'],[Layers,totalModulos,'Módulos'],[FileText,totalLecciones,'Lecciones']].map(([Icon,val,lbl])=><div key={lbl} className="summary-card"><div className="summary-icon-box"><Icon size={18} color="var(--primary)"/></div><div><p className="summary-value">{val}</p><p className="summary-label">{lbl}</p></div></div>)}
+                  {[[BookOpen,cursos.length,'Cursos']].map(([Icon,val,lbl])=><div key={lbl} className="summary-card"><div className="summary-icon-box"><Icon size={18} color="var(--primary)"/></div><div><p className="summary-value">{val}</p><p className="summary-label">{lbl}</p></div></div>)}
                 </div>}
                 <div className="teacher-course-grid">
                   {cursos.map(c=>(

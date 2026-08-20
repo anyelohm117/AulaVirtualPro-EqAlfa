@@ -3,12 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ChevronUp, ChevronDown, Check, ArrowLeft } from "lucide-react";
 import LessonViewer from "../components/LessonViewer";
 import MaterialDownload from "../components/MaterialDownload";
+import { useChat } from "../context/ChatContext";
 import api from "../services/api";
 import "../styles/global.css";
 import "../styles/courses.css";
 import "../styles/components.css";
 export default function CoursePage() {
   const {id}=useParams(); const navigate=useNavigate();
+  const {setContexto}=useChat();
   const [curso,setCurso]=useState(null); const [progreso,setProgreso]=useState({leccionesCompletadas:[],porcentaje:0}); const [loading,setLoading]=useState(true);
   const [modulosAbiertos,setModulosAbiertos]=useState({}); const [leccionActiva,setLeccionActiva]=useState(null);
   useEffect(()=>{(async()=>{ try{
@@ -16,6 +18,10 @@ export default function CoursePage() {
     if(r.data.modulos?.length>0){ const pm=r.data.modulos[0]; setModulosAbiertos({[pm._id]:true}); if(pm.lecciones?.length>0)setLeccionActiva(pm.lecciones[0]); }
     try{const rp=await api.get(`/progreso/${id}`);setProgreso(rp.data);}catch{}
   }catch{console.error("Error cargando curso");}finally{setLoading(false);} })();},[id]);
+  useEffect(()=>{
+    setContexto(leccionActiva?`Lección: ${leccionActiva.titulo}${leccionActiva.contenido?` - ${leccionActiva.contenido}`:""}`:"");
+    return ()=>setContexto("");
+  },[leccionActiva,setContexto]);
   if(loading)return(<div className="loading-screen"><div className="spinner-large"/></div>);
   if(!curso)return(<div className="error-state">Curso no encontrado.</div>);
   const todasLecciones=curso.modulos.flatMap(m=>m.lecciones);

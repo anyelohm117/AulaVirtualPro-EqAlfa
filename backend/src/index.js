@@ -16,6 +16,7 @@ const reportRoutes   = require('./routes/reportRoutes');
 const userRoutes     = require('./routes/userRoutes');
 const inscripcionRoutes = require('./routes/inscripcionRoutes');
 const assignmentRoutes  = require('./routes/assignmentRoutes');
+const assistantRoutes   = require('./routes/assistantRoutes');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +37,7 @@ app.use('/api/v1/reportes',  reportRoutes);
 app.use('/api/v1/usuarios',  userRoutes);
 app.use('/api/v1/inscripciones', inscripcionRoutes);
 app.use('/api/v1/tareas',        assignmentRoutes);
+app.use('/api/v1/asistente',     assistantRoutes);
 // Ruta base de prueba
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'AulaVirtual Pro API v1 funcionando ✅' });
